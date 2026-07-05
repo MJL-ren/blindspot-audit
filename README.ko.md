@@ -19,11 +19,12 @@ AI 에이전트용 스킬이다. unknown unknowns, 숨은 위험, 빠진 결정,
 이 레포를 읽고 현재 환경에 맞게 설치하게 할 수 있다.
 
 ```text
-Install the Blindspot Audit skill from https://github.com/MJL-ren/blindspot-audit.
+Install and configure Blindspot Audit for this agent environment:
+https://github.com/MJL-ren/blindspot-audit
 
-Please read the repository README and AGENTS.md first, detect whether this environment is Codex, Claude Code, OpenCode, Claude desktop/Cowork, or a plain project folder, then prefer the documented marketplace/plugin install when this host supports it. Otherwise install skills/blindspot-audit using the provided installer script or a safe manual copy.
+Read the repository README.md and AGENTS.md first, then choose the documented install route that fits this host and install scope: marketplace/plugin, Claude desktop .skill, installer script, or safe manual copy.
 
-Do not modify unrelated project files. If this is a project-local install, use the appropriate project skill folder. If this is a user/global install, use the documented user skill folder. After installation, tell me the installed path and the exact prompt I can use to run a deep blindspot audit.
+Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
 ```
 
 ## 무엇을 하나
