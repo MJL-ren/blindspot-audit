@@ -2,6 +2,27 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.4.5] - 2026-07-06
+
+A near-perfect field run on a product project (Codex, deep, no-choice
+host) - Project Context created on an older ledger, named-peer scan,
+contradiction finding - still compressed the awareness check into a
+passing sentence keyed to ledger IDs, which a first-time user would never
+answer, leaving every finding `unconfirmed` forever.
+
+### Changed
+
+- The no-choice awareness check is now verbatim-grade, not paraphrasable
+  (SKILL.md workflow step 7, `references/report-template.md`,
+  `references/host-surfaces.md`): it must be the report's FINAL element,
+  use report finding numbers (never ledger IDs or internal labels),
+  include reply examples with the qualifier forms and the `3?` path, and
+  carry a one-line motivation ("answering is optional, but classified
+  findings stop being re-raised as new"). Same failure shape as the
+  0.4.2 choice-tool fix: a concrete template not marked mandatory gets
+  summarized away.
+- Bumped plugin metadata to `0.4.5` (both manifests).
+
 ## [0.4.4] - 2026-07-06
 
 A self-audit - the skill run against its own repository (Codex, deep

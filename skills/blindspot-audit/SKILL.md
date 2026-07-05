@@ -487,7 +487,9 @@ On hosts that cannot ask, mark every awareness value `unconfirmed`, embed
 the awareness interview in the report, and put open decisions in a
 `Decision packet`. The right output is still a finished audit, not a stalled
 question: include a numbered awareness check asking which finding numbers
-the owner already knew. Treat omitted numbers as `unknown_unknown`, plain
+the owner already knew, placed as the report's FINAL element and
+reproduced from `references/report-template.md` - never paraphrased into
+a passing sentence, never keyed to ledger IDs. Treat omitted numbers as `unknown_unknown`, plain
 number replies as `unknown_known`, and short qualifiers such as "already in
 docs", "intentionally deferred", or "wrong" as `known_known`/downgraded,
 `deliberate_skip`, or rejected/resolved. If they answer, update the

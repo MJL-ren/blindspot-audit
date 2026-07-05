@@ -132,11 +132,24 @@ Strong - same finding, recognizable on first read:
 
 When the host cannot present a choice question, do not stop the audit just
 to ask what the owner already knew. Return the report with `Awareness:
-unconfirmed` on each finding and include a short numbered awareness check.
+unconfirmed` on each finding and place the numbered awareness check as the
+report's FINAL element - a closing question is what invites a reply, and a
+first-time user who never answers leaves every finding `unconfirmed`
+forever.
+
+The check is a template, not a suggestion to paraphrase (field data: a
+run once compressed it to "tell me the ledger IDs you knew, later" - the
+natural reply rate of that sentence is zero). Include all of:
+
+- The report's finding NUMBERS (1, 2, 3) - never ledger IDs and never
+  internal labels like `unknown_known`.
+- Reply examples in the owner's language, including the qualifier forms
+  and the number-plus-question-mark path.
+- One motivation line: answering is optional, but classified findings
+  stop being re-raised as new by future audits.
 
 Use the owner's language, but keep Arabic numerals from the report because
-they are compact and work across languages. Do not require internal labels
-like `unknown_known` from the owner.
+they are compact and work across languages.
 
 Suggested English prompt:
 
@@ -150,6 +163,9 @@ Examples: `1, 3` or `I already knew 1 and 3`
 Optional: say `2 is already in docs`, `4 is intentionally deferred`, or
 `5 is wrong` when that applies. If a finding is unclear, reply with its
 number and a question mark (`3?`) and I will re-explain it more simply.
+
+Answering is optional - the audit stands either way - but whatever you
+classify will not be re-raised as new by future audits.
 ```
 
 Suggested Korean prompt:
@@ -162,6 +178,9 @@ Suggested Korean prompt:
 
 특수한 경우: `2번은 문서에 있음`, `4번은 일부러 보류`, `5번은 아님`
 이해가 안 되는 항목은 `3번?`처럼 물음표를 붙여주시면 더 쉽게 다시 설명해 드립니다.
+
+답하지 않아도 감사는 유효하지만, 답해주신 항목은 다음 감사가 새 발견처럼
+다시 꺼내지 않습니다.
 ```
 
 Interpret number-only replies as `unknown_known`, omitted numbers as

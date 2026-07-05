@@ -142,7 +142,11 @@ Use an assumption-first, two-phase flow:
 Good no-choice output: compact ranked findings, evidence links or file
 paths, `new/changed/confirmed/downgraded/resolved` labels when a ledger
 exists, a short list of exact next checks, the ledger path if one was
-created or updated, and an awareness prompt like:
+created or updated, and the numbered awareness check as the report's
+FINAL element - reproduced faithfully from
+`references/report-template.md` (report finding numbers, reply examples,
+qualifier forms, the `3?` path, and the one-line motivation), never
+compressed into a passing sentence and never keyed to ledger IDs:
 
 ```markdown
 Awareness check:
