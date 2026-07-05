@@ -27,6 +27,8 @@ Do not modify unrelated project files. After installation, tell me which route y
 
 - 先对项目进行画像：项目类型、阶段、负责人的专业领域、是兴趣项目还是商业项目。它会优先读取项目自己的
   TODO、检查表、路线图等跟踪文档，**已经被负责人跟踪的内容不会被重新包装成“发现”。**
+- 首次运行时会收集影响审计的最少项目背景（公开/商业意图、目标用户与地区、阶段、负责人的强项——每个问题
+  都可以跳过），并保存到台账的 `Project Context` 区块；之后的运行直接读取，不再重复询问。
 - 用适合项目类型的不同视角扫描项目。它不仅记录缺失项，也会记录已经做得不错的部分，并附上证据。
 - 执行 fresh-eyes Web 扫描，寻找最近的外部变化，例如法规、平台政策、市场或类型变化。这些通常不会出现在
   项目文档里，却往往影响很大。
@@ -58,8 +60,11 @@ blindspot-audit/
   LICENSE
   dist/
     blindspot-audit.skill        # Claude 桌面应用的一键安装文件
+  evals/
+    fixtures/                    # 行为回归测试夹具（含 EXPECTED 标准）
   examples/
     prompts.md
+    sample-reports/              # 展示目标输出形态的合成示例报告
   scripts/
     build-skill-package.py / .ps1 / .sh
     install-claude-user.ps1 / .sh
@@ -160,6 +165,9 @@ codex plugin add blindspot-audit@blindspot-audit
 
 在 Claude 桌面应用里打开 `dist/blindspot-audit.skill`（把它附加到聊天中），然后点击
 **Save skill**。不需要终端，这是非开发者最简单的方式。
+
+如果你是在桌面应用内以市场**插件**方式安装的，插件默认不会自动更新：请在应用的插件管理界面手动执行
+更新检查，或在其中关联 GitHub 账号以启用与本仓库的自动同步。
 
 ### 手动安装
 

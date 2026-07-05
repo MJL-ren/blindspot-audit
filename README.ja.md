@@ -31,6 +31,9 @@ Do not modify unrelated project files. After installation, tell me which route y
 - プロジェクトを最初に把握します。種類、段階、持ち主の専門性、趣味か商用かを見ます。
   そのうえで、TODO、チェックリスト、ロードマップなど、すでに追跡している文書を先に読み、
   **持ち主がすでに知っている項目を「発見」として再報告しません。**
+- 初回実行では、監査に影響する最小限のプロジェクト文脈（公開・商用の意図、対象ユーザーと地域、
+  段階、持ち主の得意分野。どの質問もスキップ可能）を確認し、台帳の `Project Context` セクションに
+  保存します。次回以降は質問し直さず、そこを読みます。
 - プロジェクトの型に合わせた視点で内部を見ます。足りないものだけでなく、すでに整っている
   ものも証拠つきで記録します。
 - 最近の外部変化を Web で確認します。規制、プラットフォーム方針、市場やジャンルの変化など、
@@ -64,8 +67,11 @@ blindspot-audit/
   LICENSE
   dist/
     blindspot-audit.skill        # Claude デスクトップアプリ用のワンクリックインストールファイル
+  evals/
+    fixtures/                    # 動作リグレッション用フィクスチャ（EXPECTED 基準つき）
   examples/
     prompts.md
+    sample-reports/              # 目標となる出力の形を示す合成サンプルレポート
   scripts/
     build-skill-package.py / .ps1 / .sh
     install-claude-user.ps1 / .sh
@@ -167,6 +173,10 @@ codex plugin add blindspot-audit@blindspot-audit
 
 `dist/blindspot-audit.skill` を Claude デスクトップアプリのチャットに添付し、**Save skill** を
 押します。ターミナルは不要なので、開発者でない人には一番簡単です。
+
+デスクトップアプリ内でマーケットプレイスの**プラグイン**として入れた場合、更新は既定では自動では
+ありません。アプリのプラグイン管理画面から更新チェックを手動で実行するか、GitHub アカウントを
+連携してこのリポジトリとの自動同期を有効にしてください。
 
 ### 手動インストール
 

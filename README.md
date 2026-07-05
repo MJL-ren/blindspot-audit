@@ -35,6 +35,10 @@ Do not modify unrelated project files. After installation, tell me which route y
 - Profiles the project (type, stage, owner's expertise, hobby vs commercial
   intent) and reads its self-tracking docs first — anything the owner
   already tracks is filtered out, never reported as a "discovery".
+- Collects the minimum project context on the first run (public/commercial
+  intent, audience and regions, stage, owner strengths — every question
+  skippable) and stores it in the ledger's `Project Context` section, so
+  later runs read it instead of re-asking.
 - Sweeps the project with archetype-specific lenses, recording evidence for
   what exists as carefully as what's absent.
 - Runs a fresh-eyes web scan for recent external changes (regulation,
@@ -72,8 +76,11 @@ blindspot-audit/
   LICENSE
   dist/
     blindspot-audit.skill        # one-click install for the Claude desktop app
+  evals/
+    fixtures/                    # behavior regression fixtures with EXPECTED criteria
   examples/
     prompts.md
+    sample-reports/              # synthetic reports showing the target output shape
   scripts/
     build-skill-package.py / .ps1 / .sh
     install-claude-user.ps1 / .sh
@@ -178,6 +185,11 @@ Installs to `$CODEX_HOME/skills` when `CODEX_HOME` is set, otherwise
 Open `dist/blindspot-audit.skill` in the Claude desktop app (attach it in
 chat) and click **Save skill**. No terminal needed — this is the easiest
 route for non-developers.
+
+If you installed it as a marketplace **plugin** inside the desktop app
+instead, plugin updates are not automatic by default: run the plugin's
+update check from the app's plugin management screen, or connect your
+GitHub account there to enable automatic sync with this repository.
 
 ### Manual install
 

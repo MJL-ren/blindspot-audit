@@ -29,6 +29,9 @@ Do not modify unrelated project files. After installation, tell me which route y
 - Perfila el proyecto: tipo, etapa, experiencia de la persona dueña, si es hobby o comercial. Primero lee los documentos que el
   proyecto ya usa para seguirse a sí mismo, como TODOs, checklists y roadmaps. **Todo lo que ya esté rastreado se filtra y no se
   reporta como un nuevo descubrimiento.**
+- En la primera ejecución recopila el contexto mínimo que cambia la auditoría (intención pública o comercial, audiencia y regiones,
+  etapa, fortalezas de la persona dueña; toda pregunta se puede omitir) y lo guarda en la sección `Project Context` del ledger,
+  para que las siguientes ejecuciones lo lean en vez de volver a preguntar.
 - Revisa el proyecto con lentes específicos para su arquetipo. Registra evidencia tanto de lo que falta como de lo que ya está bien cubierto.
 - Hace un escaneo web con mirada fresca para detectar cambios recientes externos: regulación, políticas de plataformas, cambios de mercado
   o de género. Muchas veces los hallazgos de más impacto vienen de ahí.
@@ -59,8 +62,11 @@ blindspot-audit/
   LICENSE
   dist/
     blindspot-audit.skill        # instalación de un clic para la app de escritorio de Claude
+  evals/
+    fixtures/                    # fixtures de regresión de comportamiento (con criterios EXPECTED)
   examples/
     prompts.md
+    sample-reports/              # reportes sintéticos que muestran la forma de salida esperada
   scripts/
     build-skill-package.py / .ps1 / .sh
     install-claude-user.ps1 / .sh
@@ -161,6 +167,10 @@ También puedes pasar una ruta personalizada como argumento.
 
 Abre `dist/blindspot-audit.skill` en la app de escritorio de Claude, adjúntalo en el chat y pulsa **Save skill**.
 No hace falta usar terminal; es la ruta más fácil para personas no desarrolladoras.
+
+Si en cambio lo instalaste como **plugin** del marketplace dentro de la app de escritorio, las actualizaciones no son automáticas
+por defecto: ejecuta la comprobación de actualizaciones desde la pantalla de gestión de plugins, o conecta ahí tu cuenta de GitHub
+para activar la sincronización automática con este repositorio.
 
 ### Instalación manual
 

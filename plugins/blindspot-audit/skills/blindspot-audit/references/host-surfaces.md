@@ -76,7 +76,15 @@ quirks change HOW to gather evidence:
 - Prefer file tools for all writes (ledger, routing edits). Treat the
   mirror's `.git` as read-only and untrusted: `git log/status/diff` are fine
   for evidence (cross-check surprises against file tools), but do not run
-  `git add/commit/restore` from the sandbox - a stale mirror can present a
+  `git add/commit/restore` from the sandbox. The stale-index failure also
+  runs in the QUIET direction (observed in the field): after file-tool
+  edits, the mirror's `git status`/`git diff HEAD` can claim modified
+  files are clean while the file contents clearly differ from HEAD. Never
+  conclude "no changes" from mirror git alone - compare actual contents,
+  and when handing the owner commit commands, include a verification step
+  (`git status --short` must list the expected files; if it does not, run
+  `git update-index --really-refresh` first) so a lying index cannot cause
+  a partial commit - a stale mirror can present a
   corrupt index (observed in the field: "bad signature 0x00000000"). Hand
   the user a copy-paste command block to commit on their machine instead -
   or, if a real-machine executor MCP (e.g. Desktop Commander) is connected,
@@ -182,24 +190,4 @@ they are not re-asked on later runs unless the owner reopens them.
   quoting pitfalls. Shell commands like `rg` are the fallback, not the
   default.
 - On Windows, `python` may not be on PATH while the `py` launcher is; try
-  `py` if `python` fails. Always quote paths that may contain spaces
-  (AppData paths usually do).
-- Do not assume `bash` fences imply a POSIX shell; the same command may run
-  under PowerShell. Keep commands single-line and quote-safe where possible.
-
-## Decision Packet Template
-
-Use this when the host cannot ask interactive choices or when the user
-asked for a non-blocking audit.
-
-```markdown
-Decision packet:
-
-1. <decision title>
-   Recommended: <option>
-   Options:
-   - <option A>: <tradeoff>
-   - <option B>: <tradeoff>
-   - <option C>: <tradeoff>
-   Why it matters: <what changes if chosen>
-```
+  `py` if `python` fails. Always quote paths 

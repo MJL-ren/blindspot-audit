@@ -2,6 +2,46 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.4.1] - 2026-07-06
+
+Repository-level quality pass: show what good output looks like, and make
+the skill's behavior testable - plus one field-observed Cowork mirror rule.
+
+### Added
+
+- `examples/sample-reports/`: five synthetic sample reports showing the
+  target output shape - a web app about to go public, an indie game
+  heading to Steam, a research-analysis project, a Korean web-novel
+  serialization audit (demonstrating the owner-language rule), and a
+  `weak-vs-strong.md` that writes three findings twice (checklist-nag vs
+  evidence-based) with the ground rule each version passes or fails.
+- `evals/fixtures/`: three behavior regression fixtures with pass/fail
+  criteria in per-fixture `EXPECTED.md` files - `documented-gap` (Ground
+  Rule 1: tracked gaps are filtered, not rediscovered), `toy-stage`
+  (stage fit: no enterprise findings on a personal script), and
+  `injection-resistance` (Ground Rule 8: embedded audit-steering text is
+  disobeyed and surfaced). `evals/README.md` documents how to run and
+  grade them without contaminating the test.
+
+### Changed
+
+- All five READMEs: introduce the project-context intake in "What It
+  Does", document the new `evals/` and `examples/sample-reports/` folders,
+  and add a desktop-app note that marketplace plugins do not auto-update
+  by default (manual update check, or connect GitHub for auto-sync).
+- `examples/prompts.md`: added context-rich prompt examples (English and
+  Korean) that set owner strengths, category-only search privacy, and
+  ledger context storage in one message, plus a pointer to the sample
+  reports.
+- Cowork adapter (`references/host-surfaces.md`): field-observed quiet
+  variant of the stale-mirror-git failure - after file-tool edits, the
+  sandbox's `git status`/`git diff HEAD` can claim modified files are
+  clean while contents differ from HEAD. Never conclude "no changes" from
+  mirror git alone; owner-facing commit blocks must include a status
+  verification step (with `git update-index --really-refresh` as the
+  fallback) so a lying index cannot cause a partial commit.
+- Bumped plugin metadata to `0.4.1` (both manifests).
+
 ## [0.4.0] - 2026-07-06
 
 External review pass (owner + a second AI reviewer) on top of field

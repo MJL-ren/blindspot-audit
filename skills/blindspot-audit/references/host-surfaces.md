@@ -76,7 +76,15 @@ quirks change HOW to gather evidence:
 - Prefer file tools for all writes (ledger, routing edits). Treat the
   mirror's `.git` as read-only and untrusted: `git log/status/diff` are fine
   for evidence (cross-check surprises against file tools), but do not run
-  `git add/commit/restore` from the sandbox - a stale mirror can present a
+  `git add/commit/restore` from the sandbox. The stale-index failure also
+  runs in the QUIET direction (observed in the field): after file-tool
+  edits, the mirror's `git status`/`git diff HEAD` can claim modified
+  files are clean while the file contents clearly differ from HEAD. Never
+  conclude "no changes" from mirror git alone - compare actual contents,
+  and when handing the owner commit commands, include a verification step
+  (`git status --short` must list the expected files; if it does not, run
+  `git update-index --really-refresh` first) so a lying index cannot cause
+  a partial commit - a stale mirror can present a
   corrupt index (observed in the field: "bad signature 0x00000000"). Hand
   the user a copy-paste command block to commit on their machine instead -
   or, if a real-machine executor MCP (e.g. Desktop Commander) is connected,

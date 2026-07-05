@@ -34,6 +34,9 @@ Do not modify unrelated project files. After installation, tell me which route y
 - 프로젝트를 먼저 프로파일링한다(종류, 단계, 주인의 전문 분야, 취미인지
   상업인지). 이때 프로젝트가 스스로 추적 중인 문서(TODO, 체크리스트, 로드맵)를
   필터로 써서, **이미 알고 있는 항목은 절대 "발견"으로 재보고하지 않는다.**
+- 첫 실행에서는 감사에 영향을 주는 최소한의 프로젝트 맥락(공개/상업 의도, 대상
+  사용자·지역, 단계, 주인의 강점 — 모든 질문은 패스 가능)을 물어서 원장의
+  `Project Context` 섹션에 저장한다. 다음 실행부터는 다시 묻지 않고 그걸 읽는다.
 - 프로젝트 유형별 렌즈로 내부를 훑고, 없는 것만이 아니라 잘 갖춰진 것도 증거와
   함께 기록한다.
 - 웹 리서치로 최근 외부 변화(규제, 플랫폼 정책, 시장·장르 변화)를 스캔한다.
@@ -72,8 +75,11 @@ blindspot-audit/
   LICENSE
   dist/
     blindspot-audit.skill        # Claude 데스크톱 앱용 원클릭 설치 파일
+  evals/
+    fixtures/                    # 동작 회귀 테스트 픽스처 (EXPECTED 기준 포함)
   examples/
     prompts.md
+    sample-reports/              # 목표 출력 형태를 보여주는 합성 샘플 리포트
   scripts/
     build-skill-package.py / .ps1 / .sh
     install-claude-user.ps1 / .sh
@@ -176,6 +182,10 @@ codex plugin add blindspot-audit@blindspot-audit
 
 `dist/blindspot-audit.skill` 파일을 Claude 데스크톱 앱 채팅에 첨부하고 **Save
 skill** 버튼을 누르면 끝. 터미널이 필요 없어서 비개발자에게 가장 쉬운 경로다.
+
+앱 안에서 마켓플레이스 **플러그인**으로 설치한 경우에는 업데이트가 기본적으로
+자동이 아니다. 앱의 플러그인 관리 화면에서 업데이트 체크를 수동으로 실행하거나,
+GitHub 계정을 연결해 이 레포와의 자동 동기화를 켜면 된다.
 
 ### 수동 설치
 
