@@ -34,12 +34,14 @@ the skill's behavior testable - plus one field-observed Cowork mirror rule.
   ledger context storage in one message, plus a pointer to the sample
   reports.
 - Cowork adapter (`references/host-surfaces.md`): field-observed quiet
-  variant of the stale-mirror-git failure - after file-tool edits, the
-  sandbox's `git status`/`git diff HEAD` can claim modified files are
-  clean while contents differ from HEAD. Never conclude "no changes" from
-  mirror git alone; owner-facing commit blocks must include a status
-  verification step (with `git update-index --really-refresh` as the
-  fallback) so a lying index cannot cause a partial commit.
+  variants of the stale-mirror-sync failure, in BOTH directions - the
+  sandbox's `git status`/`git diff HEAD` can claim file-tool-modified
+  files are clean, and a freshly rebuilt artifact (the packaged `.skill`)
+  can reach the owner's disk late, so their commit ships new sources with
+  a stale package (CI caught exactly this during this release). Owner-
+  facing commit blocks must list the exact expected files and require
+  `git status --short` to match before committing, with
+  `git update-index --really-refresh` as the fallback.
 - Bumped plugin metadata to `0.4.1` (both manifests).
 
 ## [0.4.0] - 2026-07-06
