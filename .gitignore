@@ -22,5 +22,4 @@ tmp/
 .tmp/
 
 # Self-audit results stay local (owner decision, 2026-07-05)
-BLINDSPOT_LEDGER.md
-
+/BLINDSPOT_LEDGER.md
