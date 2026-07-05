@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -22,6 +25,9 @@ jobs:
 
       - name: Validate Python script syntax
         run: python -m py_compile scripts/*.py
+
+      - name: Guard version bump for skill/package changes
+        run: python scripts/check-version-bump.py
 
       - name: Verify committed Claude desktop skill package contents
         run: python scripts/verify-skill-package.py

@@ -243,6 +243,11 @@ Este proyecto se inspiró en el flujo de unknown unknowns descrito en
 por Thariq (@trq212), del equipo de Claude Code. La implementación, el texto, las plantillas y los scripts de este repositorio
 son trabajo original.
 
+## Seguridad
+
+Qué hacen los scripts, qué no toca la red y cómo reportar problemas de
+forma privada: ver [SECURITY.md](./SECURITY.md).
+
 ## Licencia
 
 MIT License. Consulta [LICENSE](./LICENSE).

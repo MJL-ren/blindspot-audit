@@ -21,8 +21,17 @@ if (-not $Destination) {
 }
 
 New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+
+# Replace, don't merge: an overwrite-copy leaves files that were renamed or
+# deleted upstream lingering in the install, silently steering agents.
+$installedPath = Join-Path $Destination "blindspot-audit"
+if (Test-Path -LiteralPath $installedPath) {
+    $resolved = (Resolve-Path -LiteralPath $installedPath).Path
+    if ((Split-Path -Leaf $resolved) -ne "blindspot-audit") {
+        throw "Refusing to remove unexpected path: $resolved"
+    }
+    Remove-Item -LiteralPath $resolved -Recurse -Force
+}
 Copy-Item -LiteralPath $source -Destination $Destination -Recurse -Force
 
-$installedPath = Join-Path $Destination "blindspot-audit"
-Write-Host "Installed blindspot-audit skill to: $installedPath"
-
+Write-Host "Installed blindspot-audit skill to: $installedPath (previous install replaced)"

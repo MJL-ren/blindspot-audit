@@ -237,6 +237,11 @@ python3 scripts/verify-codex-plugin.py
 [A Field Guide to Fable: Finding Your Unknowns](https://x.com/trq212/status/2073100352921215386)
 中 unknown unknowns 工作流的启发。本仓库中的实现、文字、模板和脚本均为原创。
 
+## 安全
+
+脚本做什么、哪些部分不接触网络、以及如何私下报告问题，见
+[SECURITY.md](./SECURITY.md)。
+
 ## 许可证
 
 MIT License。请查看 [LICENSE](./LICENSE)。

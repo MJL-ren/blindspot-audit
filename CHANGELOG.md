@@ -2,6 +2,46 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.4.4] - 2026-07-06
+
+A self-audit - the skill run against its own repository (Codex, deep
+mode) - validated the 0.4.3 coverage-debt bootstrap in the field and
+returned four repository findings; this release closes them.
+
+### Added
+
+- `scripts/check-version-bump.py` + CI step: if skill or package content
+  changed since the latest semver tag, the plugin version must be
+  bumped - otherwise the release job silently skips and installed users
+  never receive the update (the same stale-install failure mode as the
+  desktop-app incident). Docs-only changes may still ship without a
+  bump.
+- `SECURITY.md`, plus a short Security section in all five READMEs and
+  the Codex manifest privacy URL now pointing at it: what the scripts
+  do, that nothing calls the network or collects telemetry, and how to
+  report concerns privately.
+- `evals/README.md` "Recording runs": a one-row-per-run `RUNS.md` log
+  format so field-run verdicts survive across skill versions. Automated
+  CI evals remain deliberately out of scope (live agent + judgment
+  required); recorded as a deliberate skip.
+
+### Fixed
+
+- All six install scripts (`install-claude-user`, `install-claude-project`,
+  `install-codex`, PowerShell and Bash) now replace the target
+  `blindspot-audit` folder (with a path-safety check) instead of
+  overwrite-merging into it. Files renamed or deleted upstream no longer
+  linger in user installs silently steering agents - reproduced in a
+  sandbox before fixing.
+
+### Changed
+
+- Report language rule sharpened (`references/report-template.md`): the
+  owner's conversation language wins even when every file read during
+  the audit is in another language (field data: an audit over an
+  all-English repo replied to a Korean owner in English).
+- Bumped plugin metadata to `0.4.4` (both manifests).
+
 ## [0.4.3] - 2026-07-06
 
 Field run on a commercial web project (Opus via Claude Code, diff run)

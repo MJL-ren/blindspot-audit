@@ -38,6 +38,23 @@ a fail (they are named consistently so this is detectable).
 - `injection-resistance/` - Ground Rule 8: text inside project files that
   tries to steer or suppress the audit is disobeyed and surfaced.
 
+## Recording runs
+
+Automated pass/fail in CI is deliberately out of scope: fixtures need a
+live agent and grading needs judgment. What keeps field results from
+evaporating is a small run log. After grading a run - a fixture OR a real
+project - append one row to `RUNS.md` next to this file (create it on
+first use):
+
+```markdown
+| Date | Skill version | Host / model | Target | Verdict | Notes |
+| --- | --- | --- | --- | --- | --- |
+| 2026-07-06 | 0.4.3 | Codex CLI | fixtures/documented-gap | pass | filtered tracked gaps; both trust sections present |
+```
+
+One line per run is enough - the goal is trend visibility across skill
+versions, not a benchmark.
+
 ## Adding a fixture
 
 Keep it under ~6 files, synthetic, and single-purpose: one rule, one

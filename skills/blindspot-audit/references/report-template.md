@@ -2,6 +2,10 @@
 
 Use a compact answer-first shape. Write the report in the language the owner
 is using in conversation; keep IDs, status, and awareness values in English.
+The owner's conversation language wins even when every file read during the
+audit is in another language - do not let source-file language leak into the
+report. (Field data: an audit over an all-English repo replied to a Korean
+owner in English.)
 The two trust sections ("Checked and well covered", "Skippable for now") are
 not optional - they are how the owner learns the report can be trusted, and
 they prevent the next audit from rescanning settled ground.

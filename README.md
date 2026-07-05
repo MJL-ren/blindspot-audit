@@ -267,6 +267,11 @@ This project was inspired by the unknown-unknowns workflow described in
 by Thariq (@trq212) of the Claude Code team. The implementation, wording,
 templates, and scripts in this repository are original work.
 
+## Security
+
+What the scripts do, what never touches the network, and how to report
+concerns privately: see [SECURITY.md](./SECURITY.md).
+
 ## License
 
 MIT License. See [LICENSE](./LICENSE).

@@ -250,6 +250,11 @@ python3 scripts/verify-codex-plugin.py
 で紹介された unknown unknowns の流れに着想を得ました。このリポジトリの実装、文面、
 テンプレート、スクリプトは独自に作成したものです。
 
+## セキュリティ
+
+スクリプトの動作、ネットワークに触れない範囲、問題を非公開で報告する方法は
+[SECURITY.md](./SECURITY.md) を参照してください。
+
 ## ライセンス
 
 MIT License。詳しくは [LICENSE](./LICENSE) を見てください。

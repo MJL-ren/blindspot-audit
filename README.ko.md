@@ -262,6 +262,11 @@ python3 scripts/verify-codex-plugin.py
 소개된 unknown unknowns 작업 흐름에서 영감을 받았다. 이 레포의 구현, 문장,
 템플릿, 스크립트는 해당 글을 복사하지 않고 새로 작성한 것이다.
 
+## 보안
+
+스크립트가 하는 일, 네트워크에 닿지 않는 범위, 문제를 비공개로 신고하는
+방법은 [SECURITY.md](./SECURITY.md)를 보면 된다.
+
 ## 라이선스
 
 MIT License. [LICENSE](./LICENSE)를 보면 된다.

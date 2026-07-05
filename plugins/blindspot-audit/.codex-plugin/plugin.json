@@ -1,6 +1,6 @@
 {
   "name": "blindspot-audit",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Find project unknown unknowns, hidden risks, stale assumptions, and missing decisions with a durable BLINDSPOT_LEDGER.md.",
   "author": {
     "name": "MJL-ren",
@@ -29,7 +29,7 @@
       "Write"
     ],
     "websiteURL": "https://github.com/MJL-ren/blindspot-audit",
-    "privacyPolicyURL": "https://github.com/MJL-ren/blindspot-audit",
+    "privacyPolicyURL": "https://github.com/MJL-ren/blindspot-audit/blob/main/SECURITY.md",
     "termsOfServiceURL": "https://github.com/MJL-ren/blindspot-audit/blob/main/LICENSE",
     "defaultPrompt": [
       "Run a deep blindspot audit on this project.",
