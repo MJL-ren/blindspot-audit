@@ -1,5 +1,7 @@
 # Blindspot Audit
 
+[English](./README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [Español](./README.es.md)
+
 Blindspot Audit is a portable AI-agent skill that finds what a project's
 owner is missing without knowing it: unknown unknowns, hidden risks, missing
 decisions, stale assumptions, and questions nobody thought to ask.
@@ -8,8 +10,6 @@ It works on any kind of project — software, games, novels and creative
 writing, research, content, business plans — and runs on Claude Code, Codex,
 OpenCode, the Claude desktop app, and plain chat. The audit core is shared;
 each host only adapts how it asks questions and writes results.
-
-[한국어 README](./README.ko.md)
 
 ## Quick AI Install
 
@@ -54,6 +54,9 @@ blindspot-audit/
   AGENTS.md
   README.md
   README.ko.md
+  README.ja.md
+  README.zh.md
+  README.es.md
   LICENSE
   dist/
     blindspot-audit.skill        # one-click install for the Claude desktop app

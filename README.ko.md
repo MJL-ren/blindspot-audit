@@ -1,5 +1,7 @@
 # Blindspot Audit
 
+[English](./README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [Español](./README.es.md)
+
 Blindspot Audit는 프로젝트 주인이 "모르고 있다는 것조차 모르는" 부분을 찾아주는
 AI 에이전트용 스킬이다. unknown unknowns, 숨은 위험, 빠진 결정, 오래된 가정,
 아직 아무도 떠올리지 못한 질문을 찾아서 `BLINDSPOT_LEDGER.md`에 남긴다.
@@ -8,8 +10,6 @@ AI 에이전트용 스킬이다. unknown unknowns, 숨은 위험, 빠진 결정,
 않고, Claude Code, Codex, OpenCode, Claude 데스크톱 앱, 일반 채팅에서 모두
 돌아간다. 감사 핵심 흐름은 공통이고, 도구마다 질문 방식과 결과 저장 방식만
 맞춘다.
-
-[English README](./README.md)
 
 ## AI에게 복사해서 설치하기
 
@@ -54,6 +54,9 @@ blindspot-audit/
   AGENTS.md
   README.md
   README.ko.md
+  README.ja.md
+  README.zh.md
+  README.es.md
   LICENSE
   dist/
     blindspot-audit.skill        # Claude 데스크톱 앱용 원클릭 설치 파일
