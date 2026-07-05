@@ -11,6 +11,20 @@ each host only adapts how it asks questions and writes results.
 
 [한국어 README](./README.ko.md)
 
+## Quick AI Install
+
+Copy this prompt into Codex, Claude Code, OpenCode, or another coding agent.
+The agent should read this repository and install the skill for the current
+host or project.
+
+```text
+Install the Blindspot Audit skill from https://github.com/MJL-ren/blindspot-audit.
+
+Please read the repository README and AGENTS.md first, detect whether this environment is Codex, Claude Code, OpenCode, Claude desktop/Cowork, or a plain project folder, then install skills/blindspot-audit using the provided installer script or a safe manual copy.
+
+Do not modify unrelated project files. If this is a project-local install, use the appropriate project skill folder. If this is a user/global install, use the documented user skill folder. After installation, tell me the installed path and the exact prompt I can use to run a deep blindspot audit.
+```
+
 ## What It Does
 
 - Profiles the project (type, stage, owner's expertise, hobby vs commercial
@@ -66,7 +80,7 @@ needed); on Windows use `.ps1` from PowerShell, or the `.sh` versions from
 Git Bash / WSL.
 
 ```bash
-git clone https://github.com/<your-name>/blindspot-audit.git
+git clone https://github.com/MJL-ren/blindspot-audit.git
 cd blindspot-audit
 ```
 
