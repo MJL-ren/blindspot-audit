@@ -11,6 +11,7 @@ from pathlib import Path
 SKILL_NAME = "blindspot-audit"
 EXCLUDED_DIRS = {"__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache"}
 EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
+TEXT_SUFFIXES = {".json", ".md", ".py", ".txt", ".yaml", ".yml"}
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 
@@ -20,6 +21,13 @@ def should_include(path: Path) -> bool:
     if path.suffix in EXCLUDED_SUFFIXES:
         return False
     return path.is_file()
+
+
+def package_bytes(path: Path) -> bytes:
+    data = path.read_bytes()
+    if path.suffix.lower() in TEXT_SUFFIXES:
+        return data.replace(b"\r\n", b"\n")
+    return data
 
 
 def build_package(repo_root: Path) -> Path:
@@ -39,7 +47,7 @@ def build_package(repo_root: Path) -> Path:
             info = zipfile.ZipInfo(archive_path, date_time=ZIP_TIMESTAMP)
             info.compress_type = zipfile.ZIP_STORED
             info.external_attr = (0o644 & 0xFFFF) << 16
-            archive.writestr(info, path.read_bytes())
+            archive.writestr(info, package_bytes(path))
 
     return output
 
