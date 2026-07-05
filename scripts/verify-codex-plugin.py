@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Verify the Codex plugin bundle and marketplace metadata."""
+"""Verify the Codex plugin bundle, marketplace metadata, and version alignment."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -141,10 +142,59 @@ def verify_marketplace(repo_root: Path) -> list[str]:
     return errors
 
 
+def verify_version_alignment(repo_root: Path) -> list[str]:
+    """Assert the Codex manifest and CHANGELOG agree with the canonical version.
+
+    The canonical version lives in .claude-plugin/plugin.json. The Codex
+    manifest version is maintained by hand - sync-codex-plugin.py only copies
+    skill files, not the manifest - so a release bump can silently miss it
+    (it did between 0.3.3 and 0.3.4). This gate fails CI loudly instead of
+    shipping a mislabeled release.
+    """
+    canonical_path = repo_root / ".claude-plugin" / "plugin.json"
+    if not canonical_path.exists():
+        return [f"Missing canonical plugin manifest: {canonical_path}"]
+
+    canonical_version = load_json(canonical_path).get("version")
+    if not isinstance(canonical_version, str) or not canonical_version:
+        return [f"Canonical version missing or not a string in {canonical_path}"]
+
+    errors: list[str] = []
+
+    codex_path = repo_root / "plugins" / SKILL_NAME / ".codex-plugin" / "plugin.json"
+    if codex_path.exists():
+        codex_version = load_json(codex_path).get("version")
+        if codex_version != canonical_version:
+            errors.append(
+                f"Codex plugin.json version {codex_version!r} != canonical "
+                f"{canonical_version!r} (.claude-plugin/plugin.json); bump both together."
+            )
+
+    changelog_path = repo_root / "CHANGELOG.md"
+    if not changelog_path.exists():
+        errors.append(f"Missing CHANGELOG.md: {changelog_path}")
+    else:
+        match = re.search(
+            r"^##\s*\[(\d+\.\d+\.\d+)\]",
+            changelog_path.read_text(encoding="utf-8"),
+            re.MULTILINE,
+        )
+        if match is None:
+            errors.append("CHANGELOG.md has no '## [x.y.z]' version heading")
+        elif match.group(1) != canonical_version:
+            errors.append(
+                f"CHANGELOG.md newest entry {match.group(1)!r} != canonical "
+                f"{canonical_version!r}; add a CHANGELOG entry for the release."
+            )
+
+    return errors
+
+
 def verify(repo_root: Path) -> int:
     errors = []
     errors.extend(verify_plugin_manifest(repo_root))
     errors.extend(verify_marketplace(repo_root))
+    errors.extend(verify_version_alignment(repo_root))
     errors.extend(compare_skill_copy(repo_root))
 
     if errors:

@@ -21,6 +21,10 @@ adaptation.
   `wrangler.*`, `netlify.toml`, `vercel.json`) are now recognized, plus a
   new "Config hints (common-but-missing)" section (e.g. Pages files without
   `wrangler.*`, `package.json` without a lockfile).
+- `.codex-plugin/plugin.json` was left at `0.3.3` during the 0.3.4 metadata
+  bump; realigned to `0.3.4`. The Codex skill *content* was already in sync
+  (verified by `verify-codex-plugin.py`); only the manifest version string
+  had drifted.
 
 ### Added
 
@@ -37,6 +41,11 @@ adaptation.
   spaces.
 - Skill-folder glob fallback in SKILL.md Quick Start
   (`**/blindspot-audit/scripts/project_inventory.py`).
+- Version-alignment gate in `verify-codex-plugin.py`: the Codex manifest
+  version must equal the canonical `.claude-plugin/plugin.json`, and the
+  newest CHANGELOG heading must match it. CI already runs this script, so a
+  future bump that misses a manifest now fails loudly instead of shipping a
+  mislabeled release (this is the exact drift that hid the 0.3.3/0.3.4 gap).
 
 ### Changed
 
