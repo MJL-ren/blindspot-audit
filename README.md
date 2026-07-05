@@ -2,6 +2,8 @@
 
 [English](./README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [Español](./README.es.md)
 
+![Blindspot Audit hero](./docs/assets/readme/en/hero.png)
+
 Blindspot Audit is a portable AI-agent skill that finds what a project's
 owner is missing without knowing it: unknown unknowns, hidden risks, missing
 decisions, stale assumptions, and questions nobody thought to ask.
@@ -27,6 +29,8 @@ Do not modify unrelated project files. If this is a project-local install, use t
 
 ## What It Does
 
+![Four unknowns frame](./docs/assets/readme/en/four-unknowns.png)
+
 - Profiles the project (type, stage, owner's expertise, hobby vs commercial
   intent) and reads its self-tracking docs first — anything the owner
   already tracks is filtered out, never reported as a "discovery".
@@ -43,6 +47,8 @@ Do not modify unrelated project files. If this is a project-local install, use t
 - Keeps a durable `BLINDSPOT_LEDGER.md`; later runs diff against it and
   report only what's new or changed, so re-runs feel like progress instead
   of nagging.
+
+![Blindspot Audit audit flow](./docs/assets/readme/en/audit-flow.png)
 
 This is not a generic quality checklist. The question it answers is:
 "Given this specific project, what are we probably not seeing yet?"
@@ -176,6 +182,8 @@ Use $blindspot-audit in deep mode on this project. Create or update the BLINDSPO
 ```
 
 More examples (English and Korean) in [examples/prompts.md](./examples/prompts.md).
+
+![BLINDSPOT_LEDGER repeat audit](./docs/assets/readme/en/ledger-diff.png)
 
 ## Maintainers
 
