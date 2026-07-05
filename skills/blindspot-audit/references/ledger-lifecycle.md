@@ -138,6 +138,11 @@ On later runs:
 - Read the ledger first - the `Project Context` section before anything
   else. Refresh only entries that look stale or that the owner reopens;
   items marked `skipped` are respected and never re-asked.
+- Record which scans this run applied in the audit-log Notes cell
+  (external-change scan, peer expectation scan, context intake). Future
+  diff runs read this to find coverage debt: scans the skill now offers
+  that this project has never received (SKILL.md, Ledger And Diff Runs
+  rule 8).
 - Verify stale or high-impact items against current code/docs.
 - Add only new or changed findings.
 - Findings that came from the external/web scan keep their source URL in

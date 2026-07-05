@@ -51,6 +51,18 @@ Use the tool sparingly:
 4. Record the selected option in the report or ledger.
 5. Continue after the answer; do not ask a series of preference questions
    that only refine wording.
+6. The numbered awareness check (see the no-choice adapter) is a FALLBACK
+   for hosts without this tool. If the tool exists, use it for the
+   awareness interview, the context intake, and the single highest-value
+   known-unknown question - and leave the numbered check out of the
+   report entirely. (Field data: a choice-capable run once shipped the
+   numbered fallback instead of asking through the tool; the concrete
+   template below exists so the tool path is never the vaguer option.)
+   Interview shape: one multiSelect question - "Which of these did you
+   already know about?" - with one option per finding, labeled by the
+   finding's short consequence title; "already in docs", "deliberately
+   skipped", and "wrong" corrections arrive through the built-in Other
+   path. Mind the option cap from rule 3.
 
 Good structured-choice output: same findings as the shared core, a decision
 log when interactive choices were used, awareness classifications from the

@@ -2,6 +2,47 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.4.2] - 2026-07-06
+
+Two field runs on the same knowledge-base project - a diff run (Opus) and
+a full deep re-run (Fable via Claude Code) - exposed three behavior gaps:
+the audit diffed the project but never its own coverage, the context
+intake wording had a hole on re-runs, and a choice-capable host shipped
+the numbered awareness fallback instead of asking through the tool.
+
+### Added
+
+- Coverage-diff rule (SKILL.md Ledger And Diff Runs rule 8, ledger
+  template audit log, ledger-lifecycle): each run records which scans it
+  applied; diff runs treat scans that have never run on this project
+  (peer expectation scan, context intake, external-change scan) as
+  first-run work - a zero project delta does not satisfy a scan that
+  never happened.
+- Zero-delta diff run definition (rule 9): when the project delta is near
+  zero, say so plainly; the run earns its keep through remediation
+  verification, re-verification of time-sensitive external findings,
+  coverage-debt scans, and context intake if the section is missing -
+  never through invented findings.
+- Concrete multiSelect interview shape in the structured-choice adapter
+  (one question, one option per finding labeled by consequence title),
+  plus an explicit rule that the numbered awareness check is a fallback
+  only and must not appear in reports on choice-capable hosts (matching
+  text strengthened in `report-template.md` and SKILL.md workflow
+  step 7).
+
+### Changed
+
+- Peer expectation scan is now explicitly mandatory whenever the
+  fresh-eyes scan runs on a full audit - it is half of Question 1, not
+  optional garnish; diff runs repeat it only when never run or when the
+  project's category/stage changed.
+- Context intake wording now covers re-runs on ledgers that predate the
+  `Project Context` section: if the section is missing, collect it once,
+  whatever the run number.
+- Source-tier rule: cite the primary source itself, not the aggregator or
+  comparison article that led to it.
+- Bumped plugin metadata to `0.4.2` (both manifests).
+
 ## [0.4.1] - 2026-07-06
 
 Repository-level quality pass: show what good output looks like, and make

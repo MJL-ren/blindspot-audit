@@ -47,7 +47,7 @@ keep entries coarse and impersonal (see the sensitive-findings rule in
 
 | Date | Host | Mode | Scope | Notes |
 | --- | --- | --- | --- | --- |
-| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation> | <project/path or boundary> | <inspected surfaces, web scan yes/no, limits> |
+| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation> | <project/path or boundary> | <inspected surfaces, scans applied (external-change / peer expectation / context intake), limits - future diff runs read this to spot never-run scans> |
 
 ## Findings
 

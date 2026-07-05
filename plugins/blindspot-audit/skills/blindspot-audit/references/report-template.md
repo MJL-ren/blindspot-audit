@@ -42,7 +42,9 @@ Interview:
 - <the awareness questions, or the classified results once answered>
 
 Awareness check:
-- <include only when no structured choice UI was available>
+- <FALLBACK ONLY - include when the host has no structured choice tool;
+  on choice-capable hosts run the multi-select interview through the tool
+  instead and omit this section entirely>
 - <ask for finding numbers the owner already knew; do not require internal labels>
 
 Context check:

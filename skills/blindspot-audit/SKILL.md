@@ -250,6 +250,18 @@ When a project already has a blindspot ledger:
 7. Keep the ledger compact: move `resolved`/`rejected` rows into a one-line
    archive section. IDs are compressed, never deleted or renumbered. See
    `references/ledger-lifecycle.md`.
+8. Diff the audit's own coverage, not only the project. Read the audit
+   log's scan notes: any scan this skill offers that has never run on
+   this project (peer expectation scan, context intake, external-change
+   scan) is FIRST-RUN work in this run - a zero project delta does not
+   satisfy a scan that never happened. Ledgers created by older audit
+   versions may predate these scans entirely.
+9. When the project delta is near zero, say so plainly and do not invent
+   findings to fill space. A zero-delta run still earns its keep by:
+   verifying past remediations actually landed, re-verifying
+   time-sensitive external findings at their sources, running the
+   coverage-debt scans from rule 8, and collecting the Project Context
+   section if the ledger lacks one.
 
 Good ledgers make future audits cheaper. Bad ledgers become another hidden
 document, so always check discoverability.
@@ -307,10 +319,12 @@ profile:
 **Project context intake.** Blind-spot weighting depends on context the
 files rarely state, so collect it before running lenses - but never twice.
 If the ledger already has a `Project Context` section, read it and
-re-verify only entries that look stale; do not re-interview. On a first
-run, gather the minimum that changes the audit: public/private/commercial
-intent, target users and regions, stage and deadline, owner strong and
-weak areas, and any web-search privacy rule. On choice-capable hosts this
+re-verify only entries that look stale; do not re-interview. If the
+section is missing - a true first run, OR a re-run on a ledger created
+before this section existed - collect it now, once: gather the minimum
+that changes the audit: public/private/commercial intent, target users
+and regions, stage and deadline, owner strong and weak areas, and any
+web-search privacy rule. On choice-capable hosts this
 is the natural FIRST interview - one or two compact questions before
 evidence gathering, always including a "prefer not to say / just infer
 it" option. On no-choice hosts, never block: continue with labeled
@@ -371,6 +385,8 @@ verify them against a primary source before promoting to a finding; if
 they cannot be verified, drop them or park them in the watchlist labeled
 "community-reported, unverified". Never mix the tiers in one unlabeled
 citation list - unsorted sources make the report noisy and cost trust.
+When a comparison article or aggregator leads you to a fact, cite the
+primary source itself, not the article that pointed at it.
 
 **Peer expectation scan.** Question 1 is not only about infrastructure -
 it includes what USERS of this category take for granted. Audits naturally
@@ -378,7 +394,12 @@ drift toward safety/legal/plumbing findings because file absence is easy
 evidence; category expectation gaps need an outside reference, so build
 one: pick 2-3 representative peers of this project's category (a tarot
 reading service, a gallery manager, a roguelike) and walk their
-user-visible surface. A gap qualifies as a finding only if it passes all
+user-visible surface. This walk is mandatory whenever the fresh-eyes scan
+runs on a full audit - it is half of Question 1, not optional garnish, and
+audits that skip it regress into safety/plumbing-only findings (the exact
+drift this step exists to fix). On diff runs, repeat it only when it has
+never run for this project or the category/stage changed since it last
+ran. A gap qualifies as a finding only if it passes all
 three tests:
 
 1. All chosen peers have it (table stakes, not a differentiator).
@@ -412,7 +433,11 @@ Drop candidates that appear in the project's own tracking docs (Ground Rule
 ### 7. Interview The Owner
 
 Present the findings, then ask which ones the owner already knew about (a
-single multi-select question works well on choice-capable hosts). The
+single multi-select question works well on choice-capable hosts). On
+choice-capable hosts the structured tool IS the interview: ask through the
+tool and do not print the numbered awareness check in the report - that
+check exists only for hosts without such a tool (see
+`references/host-surfaces.md` for the concrete question shape). The
 interview only measures awareness if the owner UNDERSTOOD each finding
 first (Ground Rule 6) - "I don't know what this means" and "I didn't know
 about this" are different answers, and conflating them corrupts the
