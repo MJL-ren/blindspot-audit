@@ -30,7 +30,11 @@ Use the tool sparingly:
 
 1. Ask only questions whose answer changes audit scope, architecture,
    workflow, or risk - plus the owner-awareness interview (one multi-select
-   question listing the top findings works well).
+   question listing the top findings works well) and, on first runs, the
+   Project context intake (one or two compact questions BEFORE evidence
+   gathering; every option set includes a "prefer not to say / just infer
+   it" path, and a skip is recorded as a labeled assumption, never re-asked
+   on later runs).
 2. Offer 2-3 clear options, with the recommended option first.
    Option labels and descriptions follow the same plain-language rule as
    findings (SKILL.md Ground Rule 6): a label like "Steam AI disclosure
@@ -140,6 +144,25 @@ Interpret replies generously:
 If the owner replies with classifications, update the ledger and report only
 the delta. Do not rerun the whole audit unless the reply changes scope or
 evidence.
+
+When project context is missing or stale (no usable `Project Context`
+section in the ledger), append a compact numbered Context check after the
+awareness check, answerable in the same single reply. Keep it optional and
+obviously skippable - some owners do not want to state intent, audience,
+or personal detail, and that choice is respected:
+
+```markdown
+Context check (optional - answer any, skip any, or reply "pass"):
+C1. Public, commercial, or private project? (current assumption: <assumption>)
+C2. Who is it for, and in which regions?
+C3. Any deadline or launch window?
+C4. Anything I should not search for on the web? (default: category-only,
+    no private names)
+```
+
+Unanswered or passed items keep their labeled assumptions and are recorded
+in the ledger's Project Context section as `skipped (assumption: ...)` -
+they are not re-asked on later runs unless the owner reopens them.
 
 ## Chat-Only Or Read-Only Adapter
 

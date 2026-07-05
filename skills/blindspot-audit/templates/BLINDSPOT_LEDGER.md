@@ -25,6 +25,23 @@ and awareness values in English so runs stay diffable.
 - Keep rejected/deferred items with the reason so future audits do not rediscover them as new.
 - Keep the Findings table for open items only; move `resolved`/`rejected` rows to the Resolved Archive as one-liners (IDs never renumber).
 - Findings from the external/web scan keep their source URL in the row so the next audit re-verifies instead of re-searching.
+- Read Project Context before asking the owner anything; refresh only stale entries, and never re-ask items marked `skipped`.
+
+## Project Context (verified <YYYY-MM-DD>)
+
+Collected once on the first run, then read instead of re-asked. The owner
+may skip any item - record `skipped (assumption: <working assumption>)`
+and respect it on later runs. If this ledger can reach a public surface,
+keep entries coarse and impersonal (see the sensitive-findings rule in
+`references/ledger-lifecycle.md`).
+
+- Intent: <private hobby / public non-commercial / commercial / undecided>
+- Target users and regions: <who it is for, where they are>
+- Stage and deadline: <prototype / pre-launch / launched + window if any>
+- Owner strong areas: <best-covered domains>
+- Owner weak or new areas: <where blind spots concentrate>
+- Web-search privacy rule: <category-only (default) / stricter owner rule>
+- Standing decisions: <must-not-change items, platform choices, scope caps>
 
 ## Audit Log
 

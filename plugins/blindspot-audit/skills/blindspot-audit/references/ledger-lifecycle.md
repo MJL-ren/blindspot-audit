@@ -92,6 +92,9 @@ them so the ledger looks native. Fill:
 - audit date.
 - audit mode and host.
 - scope boundary.
+- project context (intent, users/regions, stage, owner strong/weak areas,
+  web-search privacy rule) - collected once via the context intake, every
+  item skippable; skips are stored as `skipped (assumption: ...)`.
 - inspected surfaces.
 - findings table.
 - decision packet, if the host could not ask interactive choices.
@@ -132,7 +135,9 @@ agents will see them.
 
 On later runs:
 
-- Read the ledger first.
+- Read the ledger first - the `Project Context` section before anything
+  else. Refresh only entries that look stale or that the owner reopens;
+  items marked `skipped` are respected and never re-asked.
 - Verify stale or high-impact items against current code/docs.
 - Add only new or changed findings.
 - Findings that came from the external/web scan keep their source URL in

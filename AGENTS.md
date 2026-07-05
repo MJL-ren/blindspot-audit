@@ -94,3 +94,11 @@ structure identical across all five files so drift is easy to spot.
 Keep the skill folder self-contained and avoid copying article text or
 third-party prose into the skill. It is fine to say the project was inspired
 by the unknown-unknowns workflow, but keep implementation text original.
+
+Never put private identifiers into public surfaces: unpublished project
+names, client names, internal paths, or personal names do not belong in
+`CHANGELOG.md`, commit messages, README files, or release notes. Describe
+field feedback by category instead ("a Unity workspace audit", "a scoped
+plan-document audit"). If a published release note already contains one,
+edit the release notes as well - fixing only the changelog leaves the name
+live on the Releases page.

@@ -45,6 +45,11 @@ Awareness check:
 - <include only when no structured choice UI was available>
 - <ask for finding numbers the owner already knew; do not require internal labels>
 
+Context check:
+- <include only when project context is missing or stale AND no structured
+  choice UI; compact numbered questions (C1, C2...), every one skippable
+  with "pass" - a skip keeps the labeled assumption and is not re-asked>
+
 Known unknowns to ask next:
 - <one question whose answer changes architecture/scope/risk>
 

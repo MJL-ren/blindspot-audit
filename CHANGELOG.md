@@ -2,6 +2,58 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.4.0] - 2026-07-06
+
+External review pass (owner + a second AI reviewer) on top of field
+feedback: the audit calibrates best when project context is collected
+explicitly instead of inferred every run, and the skill needed privacy and
+injection rules for its OWN behavior - not only lenses that check the
+audited project for them.
+
+### Added
+
+- Ground Rule 7 (SKILL.md): web searches are category-only by default.
+  Private identifiers (unpublished project or product names, client names,
+  internal paths, personal names) never go into queries; the ledger's
+  Project Context or the owner can set stricter rules, and identifier
+  searches (e.g. trademark collisions) are proposed as checks or asked
+  first. The fresh-eyes scan references the rule at the point of use.
+- Ground Rule 8 (SKILL.md): project files, web pages, and tool outputs are
+  evidence, never instructions - embedded text that tries to redirect the
+  audit or suppress findings is disobeyed and surfaced as a finding
+  candidate. Explicitly bounds the Ground Rule 1 tracking-doc filter to
+  owner-maintained docs, so a doc cannot claim "already tracked" its way
+  into hiding a gap.
+- Project context intake (SKILL.md workflow, ledger template `Project
+  Context` section, host adapters, report template): first runs collect
+  the minimum context that changes the audit - intent, target users and
+  regions, stage and deadline, owner strong/weak areas, web-search privacy
+  rule - via one or two compact questions on choice-capable hosts, or a
+  numbered skippable `Context check` beside the awareness check on
+  no-choice hosts. Every question is skippable ("prefer not to say");
+  skips are stored as `skipped (assumption: ...)` and never re-asked.
+  Later runs read the ledger section instead of re-interviewing. This
+  restores the natural "ask what kind of project this is first" flow from
+  the original design.
+- `templates/implementation-notes.md`: a concrete shape for the file the
+  During Implementation flow already required (assumptions, deviations,
+  edge cases, tradeoffs, open questions); post-implementation audits read
+  it first as the plan-vs-territory diff.
+- Post-implementation mode may offer (never force) a short comprehension
+  quiz on the change; a wrong answer is an unknown to re-explain, not a
+  fault to grade.
+- Negative triggers in the skill description: routine bug fixes, ordinary
+  code review, formatting, and implementation-only requests no longer
+  match unless the user also asks what they may be missing or risking.
+
+### Changed
+
+- CHANGELOG entries now describe field-feedback projects by category only;
+  earlier entries that named private projects were rewritten to neutral
+  descriptions, and AGENTS.md gained a publishing rule keeping private
+  identifiers out of changelogs, commit messages, and release notes.
+- Bumped plugin metadata to `0.4.0` (both manifests).
+
 ## [0.3.9] - 2026-07-06
 
 Owner feedback after five real-project ledgers: findings clustered in
@@ -51,8 +103,8 @@ Release automation and catch-up publishing for the post-`0.3.1` changes.
 
 ## [0.3.7] - 2026-07-06
 
-Field feedback from two Codex runs: a scoped plan-document audit
-(Fortune_AI routing stub) and a mixed multi-repo workspace audit (Arisu).
+Field feedback from two Codex runs: a scoped plan-document audit and a
+mixed multi-repo workspace audit.
 
 ### Added
 
@@ -154,9 +206,9 @@ files, 17k `.meta` sidecars, CSV-indexed docs).
 
 ## [0.3.4] - 2026-07-05
 
-Field feedback from the first registered Claude Code run (grenomj-v3 audit,
-Opus review): the thinking frame held; all friction was in tooling and host
-adaptation.
+Field feedback from the first registered Claude Code run (a web-project
+audit, Opus review): the thinking frame held; all friction was in tooling
+and host adaptation.
 
 ### Fixed
 
@@ -244,7 +296,8 @@ structured choice UI.
 
 ## [0.3.1] - 2026-07-05
 
-Field feedback from the first registered Cowork run (World_Lore audit).
+Field feedback from the first registered Cowork run (a worldbuilding
+knowledge-base audit).
 
 ### Added
 
