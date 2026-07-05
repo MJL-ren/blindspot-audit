@@ -13,9 +13,11 @@ they prevent the next audit from rescanning settled ground.
 ```markdown
 **Blindspot Audit**
 
-Scope: <project/path + mode + what was inspected + scans applied this run
-(external-change / peer expectation / context intake) + any coverage debt
-cleared (scans that had never run on this project before)>
+Scope: <project/path + mode (+ focus/<domain> when narrowed) + what was
+inspected + scans applied this run (external-change / peer expectation /
+context intake / focus packs) + any coverage debt cleared (scans or packs
+that had never run on this project before) + descent step taken, when a
+zero-delta run went deeper (SKILL.md diff-run rule 10)>
 Project shape: <archetype(s), stage, owner profile, assumptions>
 Ledger: <created path | read path | proposed path only> + <new/changed/confirmed/downgraded/resolved counts>
 

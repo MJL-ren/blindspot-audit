@@ -49,9 +49,15 @@ Do not modify unrelated project files. After installation, tell me which route y
   for now" with re-check triggers.
 - Interviews the owner about which findings they already knew — a gap the
   owner knows about needs a checklist line, not a lecture.
+- Narrows on demand: a `focus: ux-ui` run loads a deep probe pack for that
+  one domain, and full audits flag weak-domain surfaces they only skimmed
+  (an engineer-owner's UI, a designer-owner's operations) instead of
+  silently passing them. More packs over time.
 - Keeps a durable `BLINDSPOT_LEDGER.md`; later runs diff against it and
   report only what's new or changed, so re-runs feel like progress instead
-  of nagging.
+  of nagging - and when nothing changed, the run descends one tier deeper
+  (un-run packs, watchlist re-checks, least-inspected subsystem) instead
+  of coming back empty.
 
 ![Blindspot Audit audit flow](./docs/assets/readme/en/audit-flow.png)
 
@@ -266,6 +272,19 @@ This project was inspired by the unknown-unknowns workflow described in
 [A Field Guide to Fable: Finding Your Unknowns](https://x.com/trq212/status/2073100352921215386)
 by Thariq (@trq212) of the Claude Code team. The implementation, wording,
 templates, and scripts in this repository are original work.
+
+The `ux-ui` focus pack's probe structure was informed by these open
+projects, consulted as reference-only local clones under `external_repos/`
+(untracked); all pack text is original:
+
+- [mistyhx/frontend-design-audit](https://github.com/mistyhx/frontend-design-audit)
+  (MIT) - 15-heuristic frontend audit skill with code-level violation
+  patterns and a severity model.
+- [raintree-technology/hig-doctor](https://github.com/raintree-technology/hig-doctor)
+  (MIT for structure/tooling; HIG text © Apple - not copied) -
+  detection-category taxonomy for appearance, access, and device checks.
+- [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
+  (MIT) - accessibility audit agent patterns.
 
 ## Security
 

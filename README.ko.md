@@ -47,8 +47,14 @@ Do not modify unrelated project files. After installation, tell me which route y
   반드시 함께 준다.
 - 발견 중 주인이 이미 알고 있던 게 뭔지 인터뷰한다. 알고 있던 구멍이면 필요한 건
   긴 설명이 아니라 체크리스트 한 줄이니까, 처방이 달라진다.
+- 필요할 때는 좁혀서 판다: `focus: ux-ui` 실행은 그 도메인 전용 심층 프로브
+  팩을 로드하고, 전체 감사는 주인의 약한 도메인 표면(엔지니어 주인의 UI,
+  디자이너 주인의 운영)을 훑기만 했으면 그 사실을 조용히 넘기지 않고
+  발견으로 보고한다. 팩은 점차 늘어난다.
 - `BLINDSPOT_LEDGER.md`를 남겨서, 다음 실행부터는 원장과 비교해 새로 생겼거나
-  바뀐 것만 보고한다. 재실행이 잔소리가 아니라 진행 상황 확인이 된다.
+  바뀐 것만 보고한다. 재실행이 잔소리가 아니라 진행 상황 확인이 된다. 그리고
+  바뀐 게 없으면 빈손으로 돌아오는 대신 한 단계 더 깊이 내려간다(미실행 팩,
+  워치리스트 재심사, 가장 얕게 본 서브시스템 순).
 
 ![Blindspot Audit 감사 흐름](./docs/assets/readme/ko/audit-flow.png)
 
@@ -261,6 +267,19 @@ python3 scripts/verify-codex-plugin.py
 [A Field Guide to Fable: Finding Your Unknowns](https://x.com/trq212/status/2073100352921215386)에서
 소개된 unknown unknowns 작업 흐름에서 영감을 받았다. 이 레포의 구현, 문장,
 템플릿, 스크립트는 해당 글을 복사하지 않고 새로 작성한 것이다.
+
+`ux-ui` 포커스 팩의 프로브 구조는 아래 오픈소스 프로젝트들을 참고했다.
+참고용 로컬 클론은 `external_repos/`(git 미추적)에 두며, 팩의 문장은 전부
+새로 작성한 것이다.
+
+- [mistyhx/frontend-design-audit](https://github.com/mistyhx/frontend-design-audit)
+  (MIT) - 15개 사용성 휴리스틱과 코드 수준 위반 패턴, 심각도 모델을 갖춘
+  프론트엔드 감사 스킬.
+- [raintree-technology/hig-doctor](https://github.com/raintree-technology/hig-doctor)
+  (구조/도구는 MIT, HIG 본문은 Apple 저작권이라 복사하지 않음) - 외형·접근성·
+  기기 점검의 감지 카테고리 분류 체계.
+- [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
+  (MIT) - 접근성 감사 에이전트 패턴.
 
 ## 보안
 

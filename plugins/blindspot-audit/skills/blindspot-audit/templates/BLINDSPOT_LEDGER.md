@@ -50,7 +50,7 @@ sensitive-findings rule in `references/ledger-lifecycle.md`).
 
 | Date | Host | Mode | Scope | Notes |
 | --- | --- | --- | --- | --- |
-| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation> | <project/path or boundary> | <inspected surfaces, scans applied (external-change / peer expectation / context intake), limits - future diff runs read this to spot never-run scans> |
+| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation, + focus/<domain> when narrowed> | <project/path or boundary> | <inspected surfaces, scans applied (external-change / peer expectation / context intake), focus packs run or standing pack debt, descent step taken on a zero-delta run, limits - future diff runs read this to spot never-run scans and continue the descent> |
 
 ## Findings
 

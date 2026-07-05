@@ -35,8 +35,12 @@ Do not modify unrelated project files. After installation, tell me which route y
 - 输出 3 到 7 个按重要性排序的发现，而不是无限长的清单。报告里始终包含两个信任区块：“已经检查且覆盖良好”
   和“现在可以跳过（附重新检查触发条件）”。
 - 询问负责人哪些发现其实早就知道。已知的缺口需要的是一条待办，而不是一段长篇解释。
+- 需要时可以收窄深挖：`focus: ux-ui` 运行会加载该领域专用的深度探针包；全量审计如果只是略过了
+  所有者薄弱领域的表面（工程师的 UI、设计师的运维），不会默默放过，而是作为发现如实报告。
+  探针包会逐步增加。
 - 维护一个持久的 `BLINDSPOT_LEDGER.md`。后续运行会和旧台账比较，只报告新增或变化的内容，让复查更像进展跟踪，
-  而不是重复提醒。
+  而不是重复提醒。如果没有任何变化，运行不会空手而归，而是向下深入一层（未运行的探针包、
+  观察清单复审、检查最浅的子系统，依此顺序）。
 
 这不是通用质量检查表。它回答的问题是：
 
@@ -236,6 +240,17 @@ python3 scripts/verify-codex-plugin.py
 本项目受到 Claude Code 团队 Thariq (@trq212) 的
 [A Field Guide to Fable: Finding Your Unknowns](https://x.com/trq212/status/2073100352921215386)
 中 unknown unknowns 工作流的启发。本仓库中的实现、文字、模板和脚本均为原创。
+
+`ux-ui` 聚焦包的探针结构参考了以下开源项目。参考用本地克隆放在
+`external_repos/`（不纳入 git 跟踪），探针包的文字均为原创：
+
+- [mistyhx/frontend-design-audit](https://github.com/mistyhx/frontend-design-audit)
+  (MIT) - 具备 15 条可用性启发式、代码级违规模式与严重度模型的前端审计技能。
+- [raintree-technology/hig-doctor](https://github.com/raintree-technology/hig-doctor)
+  (结构/工具为 MIT，HIG 正文版权归 Apple，未复制) - 外观、无障碍与设备检查的
+  检测类别分类体系。
+- [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
+  (MIT) - 无障碍审计代理模式。
 
 ## 安全
 

@@ -42,8 +42,12 @@ Do not modify unrelated project files. After installation, tell me which route y
   と「今は後回しでよいもの（再確認のきっかけつき）」も必ず含めます。
 - どの発見を持ち主がすでに知っていたかを確認します。知っている穴に必要なのは長い説明ではなく、
   次に動ける短いチェック項目です。
+- 必要なときは絞って掘ります。`focus: ux-ui` 実行はそのドメイン専用の深掘りプローブパックを
+  読み込み、フル監査はオーナーの弱いドメインの表面（エンジニアの UI、デザイナーの運用）を
+  ざっと見ただけなら、その事実を黙って通さず発見として報告します。パックは順次増えます。
 - `BLINDSPOT_LEDGER.md` を残します。次回以降はその台帳と比較し、新しく出たもの、変わったものだけを
-  報告します。
+  報告します。変化がなければ手ぶらで戻る代わりに一段深く降ります（未実行パック、
+  ウォッチリストの再審査、最も浅くしか見ていないサブシステムの順）。
 
 これは汎用的な品質チェックリストではありません。答える問いはこれです。
 
@@ -249,6 +253,19 @@ python3 scripts/verify-codex-plugin.py
 [A Field Guide to Fable: Finding Your Unknowns](https://x.com/trq212/status/2073100352921215386)
 で紹介された unknown unknowns の流れに着想を得ました。このリポジトリの実装、文面、
 テンプレート、スクリプトは独自に作成したものです。
+
+`ux-ui` フォーカスパックのプローブ構成は、以下のオープンソースプロジェクトを
+参考にしました。参照用ローカルクローンは `external_repos/`（git 追跡外）に置き、
+パックの文章はすべて独自に書いたものです。
+
+- [mistyhx/frontend-design-audit](https://github.com/mistyhx/frontend-design-audit)
+  (MIT) - 15 のユーザビリティヒューリスティックとコードレベルの違反パターン、
+  重大度モデルを備えたフロントエンド監査スキル。
+- [raintree-technology/hig-doctor](https://github.com/raintree-technology/hig-doctor)
+  (構成/ツールは MIT、HIG 本文は Apple の著作物のため複製しない) - 外観・
+  アクセシビリティ・デバイス検査の検出カテゴリ分類。
+- [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
+  (MIT) - アクセシビリティ監査エージェントのパターン。
 
 ## セキュリティ
 

@@ -38,7 +38,12 @@ Do not modify unrelated project files. After installation, tell me which route y
 - Reporta entre 3 y 7 hallazgos priorizados, no una lista infinita. Siempre incluye dos secciones de confianza: «qué está bien cubierto»
   y «qué se puede omitir por ahora», con señales para volver a revisar.
 - Entrevista a la persona dueña sobre qué hallazgos ya conocía. Una brecha conocida necesita una línea accionable, no una explicación larga.
+- Se enfoca cuando hace falta: una ejecución `focus: ux-ui` carga un paquete de sondas profundas para ese dominio,
+  y la auditoría completa no pasa en silencio por las superficies de los dominios débiles del dueño
+  (la UI de un ingeniero, las operaciones de un diseñador): lo reporta como hallazgo. Habrá más paquetes con el tiempo.
 - Mantiene un `BLINDSPOT_LEDGER.md` duradero. Las siguientes ejecuciones comparan contra ese archivo y reportan solo lo nuevo o cambiado.
+  Y cuando nada cambió, la ejecución desciende un nivel (paquetes sin ejecutar, revisión de la lista de vigilancia,
+  el subsistema menos inspeccionado) en vez de volver con las manos vacías.
 
 No es una checklist genérica de calidad. La pregunta que responde es:
 
@@ -242,6 +247,19 @@ Este proyecto se inspiró en el flujo de unknown unknowns descrito en
 [A Field Guide to Fable: Finding Your Unknowns](https://x.com/trq212/status/2073100352921215386)
 por Thariq (@trq212), del equipo de Claude Code. La implementación, el texto, las plantillas y los scripts de este repositorio
 son trabajo original.
+
+La estructura de sondas del paquete de enfoque `ux-ui` se informó con estos proyectos de código abierto,
+consultados como clones locales de solo referencia en `external_repos/` (sin seguimiento de git);
+todo el texto del paquete es original:
+
+- [mistyhx/frontend-design-audit](https://github.com/mistyhx/frontend-design-audit)
+  (MIT) - habilidad de auditoría frontend con 15 heurísticas de usabilidad, patrones de violación a nivel de código
+  y un modelo de severidad.
+- [raintree-technology/hig-doctor](https://github.com/raintree-technology/hig-doctor)
+  (MIT para estructura/herramientas; el texto de las HIG es © Apple y no se copia) - taxonomía de categorías de detección
+  para apariencia, accesibilidad y dispositivos.
+- [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
+  (MIT) - patrones de agentes de auditoría de accesibilidad.
 
 ## Seguridad
 

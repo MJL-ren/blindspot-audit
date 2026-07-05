@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>metrics-board</title>
+  <style>
+    * { outline: none; }
+    body {
+      font-family: Arial;
+      background: #ffffff;
+      color: #333333;
+      margin: 0;
+    }
+    .container { width: 1180px; margin: 0 auto; }
+    h1 { font-size: 22px; color: #2a4d69; }
+    table { width: 1180px; border-collapse: collapse; }
+    th { background: #2a4d69; color: #ffffff; padding: 6px 10px; font-size: 13px; }
+    td { border-bottom: 1px solid #dddddd; padding: 6px 10px; font-size: 13px; white-space: nowrap; }
+    .btn {
+      display: inline-block; background: #4b86b4; color: #ffffff;
+      padding: 3px 9px; border-radius: 3px; cursor: pointer; font-size: 12px;
+    }
+    .btn-del { background: #b44b4b; }
+    .status-failed { color: #b44b4b; }
+    .status-success { color: #4bb46c; }
+    .filter { margin: 12px 0; }
+    .filter input { width: 260px; padding: 4px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>metrics-board</h1>
+    <div class="filter">
+      <input id="q" placeholder="filter by job name" />
+      <div class="btn" onclick="applyFilter()">Filter</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Status</th><th>Duration</th><th>Finished</th><th></th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <script>
+    let jobs = [];
+
+    function load() {
+      fetch('/api/jobs?limit=200')
+        .then(r => r.json())
+        .then(data => { jobs = data.jobs; render(jobs); });
+    }
+
+    function render(list) {
+      const tbody = document.getElementById('rows');
+      tbody.innerHTML = list.map(j => `
+        <tr>
+          <td>${j.id}</td>
+          <td>${j.name}</td>
+          <td class="status-${j.status}">${j.status}</td>
+          <td>${j.duration_ms} ms</td>
+          <td>${j.finished_at}</td>
+          <td>
+            <div class="btn" onclick="rerun(${j.id})">Re-run</div>
+            <div class="btn btn-del" onclick="del(${j.id})">Delete</div>
+          </td>
+        </tr>`).join('');
+    }
+
+    function applyFilter() {
+      const q = document.getElementById('q').value;
+      render(jobs.filter(j => j.name.includes(q)));
+      document.getElementById('q').value = '';
+    }
+
+    function rerun(id) {
+      fetch('/api/jobs/' + id + '/rerun', { method: 'POST' })
+        .then(() => load());
+    }
+
+    function del(id) {
+      fetch('/api/jobs/' + id, { method: 'DELETE' })
+        .then(() => load());
+    }
+
+    load();
+  </script>
+</body>
+</html>

@@ -2,6 +2,71 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.5.0] - 2026-07-06
+
+Owner field feedback from two web-project audits plus repeated
+same-project re-runs exposed two structural gaps: audits under-reported
+the owner's weak domains (an engineer-owner's UX/UI surface got skimmed,
+not probed - domain detail structurally loses the findings-cap ranking to
+legal/security/data items), and zero-delta re-runs closed with "nothing
+changed" instead of digging into the next tier. Minor bump: this release
+adds a new axis (focus runs) rather than refining existing behavior.
+
+### Added
+
+- Focus runs (`focus: <domain>`): modes now compose with an optional
+  domain focus that audits one domain's entire surface under the
+  scoped-audit rules (SKILL.md Modes + Audit Scope). Findings append to
+  the project ledger as delta rows (`scope: focus/<domain>`); never a
+  second ledger.
+- `references/packs/` - single-domain deep probe sets, loaded ONLY for
+  focus runs or weak-domain escalation, never in a normal full audit.
+  First pack: `packs/ux-ui.md` (device/viewport reality, appearance
+  modes, state completeness, flow integrity, input and access, feedback
+  and affordance, visual system), with an explicit identity guard: every
+  probe is an awareness/decision question ("no evidence anyone DECIDED
+  about dark mode"), never a UI-review fix order, and prescriptions
+  propose cheap checks (window resize, tab-through, axe, Lighthouse,
+  Storybook state coverage) instead of running them.
+- Weak-domain escalation (Workflow step 4): when the owner profile marks
+  a domain weak AND the project has a substantial surface there, a full
+  audit must not silently skim it - inline-load at most ONE pack (`deep`
+  mode, budget allowing) or emit a meta-finding that names the skim and
+  prescribes the focus run as the cheapest check. "The owner does not
+  know what they do not know about <domain>" is itself an unknown
+  unknown; the un-run pack is recorded as coverage debt.
+- Descent rule (Ledger And Diff Runs rule 10): a zero-delta run spends
+  remaining budget going deeper instead of closing empty - highest-value
+  un-run pack first (owner-inverse weighted), then watchlist
+  re-examination (candidates that lost the cap ranking get their
+  hearing), then the least-inspected subsystem; one step per run,
+  recorded in the audit log so the next run continues instead of
+  repeating. Explicit floor: when packs, watchlist, and subsystems are
+  exhausted, "explored to current depth" is the honest end state -
+  descent never becomes finding-invention.
+- Coverage debt now includes applicable focus packs (rule 8). Ledger
+  audit-log Notes, report scope line, and `ledger-lifecycle.md` record
+  packs run and descent steps; `lenses.md` gains a "Lenses vs Focus
+  Packs" boundary note.
+- `evals/fixtures/frontend-ux-gap/`: two-run fixture - a backend-expert
+  owner, an untracked-UX web surface about to widen to phone users. Run
+  A (full audit) must emit the escalation meta-finding (a code-level
+  security catch does not discharge the UX domain); Run B
+  (`focus: ux-ui`) must find concrete state/device/access gaps phrased
+  as decisions, not taste.
+- `external_repos/` (git-ignored, matching the audit's own Search
+  Hygiene excludes) for reference-only clones consulted during pack
+  design, with README attribution: mistyhx/frontend-design-audit (MIT),
+  raintree-technology/hig-doctor (MIT structure/tooling; HIG text ©
+  Apple, not copied), Community-Access/accessibility-agents (MIT).
+  Ideas and structure in, prose out.
+
+### Changed
+
+- All five READMEs: focus runs and zero-delta descent in "What It Does",
+  reference-repo attribution under Attribution.
+- Bumped plugin metadata to `0.5.0` (both manifests).
+
 ## [0.4.5] - 2026-07-06
 
 A near-perfect field run on a product project (Codex, deep, no-choice

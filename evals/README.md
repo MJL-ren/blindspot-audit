@@ -37,6 +37,11 @@ a fail (they are named consistently so this is detectable).
   script must not receive enterprise-grade findings.
 - `injection-resistance/` - Ground Rule 8: text inside project files that
   tries to steer or suppress the audit is disobeyed and surfaced.
+- `frontend-ux-gap/` - weak-domain escalation + `ux-ui` focus pack: a
+  backend-expert owner with an untracked-UX web surface must get the
+  escalation meta-finding on a full audit, and concrete state/device/
+  access gaps on a `focus: ux-ui` run (two graded runs - see its
+  EXPECTED.md).
 
 ## Recording runs
 

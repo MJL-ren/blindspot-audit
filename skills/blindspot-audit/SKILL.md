@@ -108,6 +108,14 @@ it is becoming a generic checklist nag that gets ignored.
 - `planning`: before implementation, surface decisions likely to change data
   models, interfaces, UX flows, operations, or verification.
 
+Modes compose with an optional **focus** (for example `focus: ux-ui`): the
+audit keeps its mode behavior but narrows to a single domain and loads that
+domain's probe pack from `references/packs/`. Run focused when the owner
+asks for it, or as the follow-up that a weak-domain escalation finding
+prescribes (see Workflow step 4). A focus run follows the scoped-audit
+rules in Audit Scope - the "target" is the domain's entire surface across
+the project.
+
 Infer the mode from the user's wording. If the user asks to run it now, do
 not ask mode questions unless the audit boundary is impossible to infer.
 
@@ -129,6 +137,14 @@ run a scoped audit - the full project machinery is overhead there:
   itself raises. Skip it entirely for purely internal targets.
 - Findings: same 3-7 cap, ranked by what the next action on the target
   could actually hit.
+
+A focus run (`focus: <domain>`) is a domain-scoped audit under the same
+rules, except the target is one domain's surface across the whole project -
+for `ux-ui`, every user-facing screen, flow, and state - instead of one
+file or module. Findings still append to the project ledger as delta rows
+(`scope: focus/<domain>`), and the audit log records the pack as run so
+coverage tracking (Ledger And Diff Runs rules 8 and 10) knows this domain
+has real depth behind it, not a skim.
 
 State the scope in the report header so a later full audit knows this run
 did not cover the rest of the project.
@@ -164,6 +180,9 @@ manual directory listing. See `references/host-surfaces.md`.
 3. Read only the relevant references:
    - `references/archetypes.md`: choose project type and expected blind spots.
    - `references/lenses.md`: derive and apply audit lenses.
+   - `references/packs/`: single-domain deep probes (e.g. `ux-ui.md`) -
+     ONLY for focus runs or weak-domain escalation (Workflow step 4),
+     never in a normal full audit.
    - `references/host-surfaces.md`: adapt questions and outputs to
      choice-capable, no-choice, file-mirrored, CLI, or chat-only surfaces.
    - `references/ledger-lifecycle.md`: discover, create, route, or update a
@@ -254,18 +273,37 @@ When a project already has a blindspot ledger:
    log's scan notes: any scan this skill offers that has never run on
    this project (peer expectation scan, context intake, external-change
    scan) is FIRST-RUN work in this run - a zero project delta does not
-   satisfy a scan that never happened. Ledgers created by older audit
-   versions may predate these scans entirely - if the audit log carries
-   no scan notes at all, treat EVERY scan as never-run for this project
-   and say so in the report's scope line. Reusing yesterday's scan
-   results is fine for scans that ran; it never covers scans that did
-   not.
+   satisfy a scan that never happened. The same applies to focus packs:
+   a pack whose domain surface this project has, but which has never run
+   (and was not skipped on record), is standing coverage debt. Ledgers
+   created by older audit versions may predate these scans entirely - if
+   the audit log carries no scan notes at all, treat EVERY scan as
+   never-run for this project and say so in the report's scope line.
+   Reusing yesterday's scan results is fine for scans that ran; it never
+   covers scans that did not.
 9. When the project delta is near zero, say so plainly and do not invent
    findings to fill space. A zero-delta run still earns its keep by:
    verifying past remediations actually landed, re-verifying
    time-sensitive external findings at their sources, running the
    coverage-debt scans from rule 8, and collecting the Project Context
    section if the ledger lacks one.
+10. Descend when the surface is exhausted. After rule 9's duties are done
+    and the delta is still near zero, spend the remaining budget going
+    DEEPER instead of closing with "nothing changed" - a stable project
+    is exactly when the next tier becomes affordable. Descend one step
+    per run, in this order: (a) run the highest-value un-run focus pack
+    (owner-inverse weighted; in modes lighter than `deep`, propose it as
+    the next run instead of running it inline), (b) re-examine the
+    ledger's watchlist and lower-signal items against current evidence -
+    candidates that lost the findings-cap ranking earlier get their
+    hearing now, (c) pick the least-inspected subsystem from the
+    inventory and audit it scoped. Record the descent step in the audit
+    log so the next run continues from there instead of repeating it.
+    Descent is not invention: every finding it produces still needs
+    evidence, project fit, and the cap. And descent has a floor - when
+    packs, watchlist, and subsystems are all explored, say so:
+    "explored to current depth; new findings can only come from project
+    or external change" is a trustworthy end state, not a failure.
 
 Good ledgers make future audits cheaper. Bad ledgers become another hidden
 document, so always check discoverability.
@@ -376,6 +414,29 @@ the project into one category if it is hybrid.
 Apply only lenses that fit the project stage. A prototype does not need
 enterprise compliance, but it may still need data-loss boundaries, secret
 handling, or recoverability.
+
+**Focus packs.** `references/packs/` holds single-domain deep probe sets
+(currently `ux-ui.md`). A normal full audit does NOT load them - its job
+is breadth, and pack-level detail loses the findings-cap ranking to
+bigger-ticket items anyway (which is why domain gaps kept going unreported
+before packs existed). Load a pack only when:
+
+1. this is a focus run (`focus: <domain>`), or
+2. weak-domain escalation applies (below) AND the mode is `deep` AND
+   context budget allows - at most ONE pack per run, chosen by
+   owner-inverse.
+
+**Weak-domain escalation.** When the owner profile marks a domain as weak
+or unfamiliar AND the project has a substantial surface in that domain (a
+web UI, a public API, a store presence), the full audit must not silently
+skim it. If no pack was inline-loaded, emit ONE meta-finding instead:
+name the domain, say plainly that this audit only skimmed it, and
+prescribe the focus run as the cheapest next check. "The owner does not
+know what they do not know about <domain>" is itself an unknown unknown -
+reporting the coverage gap honestly beats pretending the skim was depth.
+Record the un-run pack as coverage debt in the audit log (Ledger And Diff
+Runs rule 8) so later runs keep seeing it until the focus run happens or
+the owner skips it on record.
 
 ### 5. Fresh-Eyes External Scan
 

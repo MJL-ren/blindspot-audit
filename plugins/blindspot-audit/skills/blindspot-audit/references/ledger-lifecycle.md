@@ -139,18 +139,21 @@ On later runs:
   else. Refresh only entries that look stale or that the owner reopens;
   items marked `skipped` are respected and never re-asked.
 - Record which scans this run applied in the audit-log Notes cell
-  (external-change scan, peer expectation scan, context intake). Future
-  diff runs read this to find coverage debt: scans the skill now offers
-  that this project has never received (SKILL.md, Ledger And Diff Runs
-  rule 8).
+  (external-change scan, peer expectation scan, context intake, focus
+  packs run), plus any descent step a zero-delta run took (pack /
+  watchlist re-examination / subsystem - SKILL.md rule 10). Future diff
+  runs read this to find coverage debt - scans or applicable focus packs
+  this project has never received (rule 8) - and to continue the descent
+  where the last run stopped instead of repeating it.
 - Verify stale or high-impact items against current code/docs.
 - Add only new or changed findings.
 - Findings that came from the external/web scan keep their source URL in
   the row (Finding or next-check cell). The next audit re-verifies from the
   source instead of re-searching from scratch.
-- Scoped audits (a single document, feature, or module) append their delta
-  rows to this project ledger with the scope noted in the audit log - they
-  do not get their own ledger file.
+- Scoped audits (a single document, feature, or module) and focus runs
+  (`focus: <domain>`) append their delta rows to this project ledger with
+  the scope noted in the audit log - they do not get their own ledger
+  file.
 - Mark changed status instead of rewriting history (date the change in the
   status cell).
 - Keep local labels and decision terms.

@@ -23,3 +23,8 @@ tmp/
 
 # Self-audit results stay local (owner decision, 2026-07-05)
 /BLINDSPOT_LEDGER.md
+
+# Reference-only clones for expansion work - consulted, never shipped
+# (matches the audit's own Search Hygiene default excludes; see README
+# "Reference Repositories" note under Attribution)
+external_repos/

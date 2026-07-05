@@ -26,6 +26,15 @@ fits none of them cleanly, apply the frames yourself:
    will be beautiful and unmonitored; an engineer's will be tested and
    unmarketed; a writer's will be well-plotted and unbacked-up.
 
+## Lenses vs Focus Packs
+
+Lenses are breadth: a few questions per frame, applied to the whole
+project. When one domain needs real depth - the owner is weak there and
+the surface is large - the deep probes live in `references/packs/`
+(currently `packs/ux-ui.md`), loaded only for `focus: <domain>` runs or
+weak-domain escalation (SKILL.md Workflow step 4). Do not inline a pack's
+detail into a full audit; emit the escalation meta-finding instead.
+
 ## User And Workflow Lens
 
 - Is the main user journey visible from entry to outcome?

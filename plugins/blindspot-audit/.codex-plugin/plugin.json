@@ -1,6 +1,6 @@
 {
   "name": "blindspot-audit",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "description": "Find project unknown unknowns, hidden risks, stale assumptions, and missing decisions with a durable BLINDSPOT_LEDGER.md.",
   "author": {
     "name": "MJL-ren",
