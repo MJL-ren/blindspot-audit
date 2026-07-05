@@ -2,7 +2,7 @@
 
 [English](./README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [Español](./README.es.md)
 
-![Blindspot Audit 메인 이미지](./docs/assets/readme/ko/hero.svg)
+![Blindspot Audit 메인 이미지](./docs/assets/readme/ko/hero.png)
 
 Blindspot Audit는 프로젝트 주인이 "모르고 있다는 것조차 모르는" 부분을 찾아주는
 AI 에이전트용 스킬이다. unknown unknowns, 숨은 위험, 빠진 결정, 오래된 가정,
@@ -28,7 +28,7 @@ Do not modify unrelated project files. If this is a project-local install, use t
 
 ## 무엇을 하나
 
-![네 가지 미지 프레임](./docs/assets/readme/ko/four-unknowns.svg)
+![네 가지 미지 프레임](./docs/assets/readme/ko/four-unknowns.png)
 
 - 프로젝트를 먼저 프로파일링한다(종류, 단계, 주인의 전문 분야, 취미인지
   상업인지). 이때 프로젝트가 스스로 추적 중인 문서(TODO, 체크리스트, 로드맵)를
@@ -46,7 +46,7 @@ Do not modify unrelated project files. If this is a project-local install, use t
 - `BLINDSPOT_LEDGER.md`를 남겨서, 다음 실행부터는 원장과 비교해 새로 생겼거나
   바뀐 것만 보고한다. 재실행이 잔소리가 아니라 진행 상황 확인이 된다.
 
-![Blindspot Audit 감사 흐름](./docs/assets/readme/ko/audit-flow.svg)
+![Blindspot Audit 감사 흐름](./docs/assets/readme/ko/audit-flow.png)
 
 이건 일반적인 품질 체크리스트가 아니다. 핵심 질문은 이거다.
 
@@ -181,7 +181,7 @@ Use $blindspot-audit in deep mode on this project. Create or update the BLINDSPO
 
 더 많은 예시(한국어/영어)는 [examples/prompts.md](./examples/prompts.md)에 있다.
 
-![BLINDSPOT_LEDGER.md와 반복 감사](./docs/assets/readme/ko/ledger-diff.svg)
+![BLINDSPOT_LEDGER.md와 반복 감사](./docs/assets/readme/ko/ledger-diff.png)
 
 ## 관리용
 
