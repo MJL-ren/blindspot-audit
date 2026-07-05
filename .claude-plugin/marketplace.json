@@ -1,0 +1,19 @@
+{
+  "name": "blindspot-audit",
+  "description": "Marketplace for the Blindspot Audit skill - project-level unknown-unknowns audits with a durable ledger, for any kind of project.",
+  "owner": {
+    "name": "MJL-ren"
+  },
+  "plugins": [
+    {
+      "name": "blindspot-audit",
+      "description": "Find what a project's owner is missing without knowing it: unknown unknowns, hidden risks, missing decisions, stale assumptions - across software, games, creative writing, research, content, and business projects. Keeps a durable BLINDSPOT_LEDGER.md so repeat audits report only what changed.",
+      "author": {
+        "name": "MJL-ren"
+      },
+      "category": "productivity",
+      "source": "./",
+      "homepage": "https://github.com/MJL-ren/blindspot-audit"
+    }
+  ]
+}

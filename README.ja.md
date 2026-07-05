@@ -9,8 +9,8 @@ unknowns、隠れたリスク、未決定の判断、古くなった前提、ま
 
 ソフトウェア、ゲーム、小説や創作、リサーチ、コンテンツ、事業計画など、どんな種類の
 プロジェクトにも使えます。Claude Code、Codex、OpenCode、Claude デスクトップアプリ、
-通常のチャットで動きます。監査の中核は共通で、各ホストでは質問方法と結果の保存方法だけを
-合わせます。
+通常のチャットで動きます。監査の中核は共通で、ホストごとに変わるのは質問の仕方と結果の
+保存方法だけです。
 
 ## AI に貼り付けてインストール
 
@@ -49,7 +49,10 @@ Do not modify unrelated project files. If this is a project-local install, use t
 
 ```text
 blindspot-audit/
+  .claude-plugin/
+    marketplace.json / plugin.json  # Claude Code プラグインマーケットプレイス用
   AGENTS.md
+  CHANGELOG.md
   README.md
   README.ko.md
   README.ja.md
@@ -83,6 +86,17 @@ PowerShell で `.ps1` を使うか、Git Bash / WSL で `.sh` を使えます。
 git clone https://github.com/MJL-ren/blindspot-audit.git
 cd blindspot-audit
 ```
+
+### Claude Code — プラグインマーケットプレイス（1 行インストール + 自動更新）
+
+Claude Code 内で次を実行します。
+
+```text
+/plugin marketplace add MJL-ren/blindspot-audit
+/plugin install blindspot-audit@blindspot-audit
+```
+
+クローンは不要で、`/plugin marketplace update blindspot-audit` で更新を受け取れます。
 
 ### Claude Code — 個人インストール（推奨、OpenCode も対象）
 
@@ -175,7 +189,8 @@ Use $blindspot-audit in deep mode on this project. Create or update the BLINDSPO
   持ち主がすでに知っていたかの確認は 1 つの複数選択質問で行います。
 - Codex / チャットのみのホスト: 質問で止まりません。安全で戻せる仮定で進め、後で答えられる
   `Decision packet` を残します。
-- Web アクセスがないホスト: 外部変化スキャンを省略し、そのことを明示します。
+- Web アクセスがないホスト: 外部変化スキャンを省略し、そのことを明示します。規制や
+  プラットフォーム関連の項目は「未検証」として扱います。
 - ファイルを書けるホスト: 既定で `BLINDSPOT_LEDGER.md` を作成または更新します。
 - 読み取り専用ホスト: 台帳候補を含む持ち運び可能なレポートを返します。
 

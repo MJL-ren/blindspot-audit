@@ -51,7 +51,10 @@ This is not a generic quality checklist. The question it answers is:
 
 ```text
 blindspot-audit/
+  .claude-plugin/
+    marketplace.json / plugin.json  # Claude Code plugin marketplace
   AGENTS.md
+  CHANGELOG.md
   README.md
   README.ko.md
   README.ja.md
@@ -86,6 +89,17 @@ Git Bash / WSL.
 git clone https://github.com/MJL-ren/blindspot-audit.git
 cd blindspot-audit
 ```
+
+### Claude Code — plugin marketplace (one-liner, with updates)
+
+Inside Claude Code, run:
+
+```text
+/plugin marketplace add MJL-ren/blindspot-audit
+/plugin install blindspot-audit@blindspot-audit
+```
+
+No clone needed, and updates arrive via `/plugin marketplace update blindspot-audit`.
 
 ### Claude Code — personal (recommended; also covers OpenCode)
 

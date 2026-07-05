@@ -47,8 +47,10 @@ ledger first and report the delta.
 
 ## If The Skill Itself Changes
 
-Regenerate `dist/blindspot-audit.skill` so app users stay in sync with
-source users:
+1. Bump `version` in `.claude-plugin/plugin.json` and add a `CHANGELOG.md`
+   entry.
+2. Regenerate `dist/blindspot-audit.skill` so app users stay in sync with
+   source users:
 
 ```powershell
 .\scripts\build-skill-package.ps1
@@ -57,6 +59,12 @@ source users:
 ```bash
 ./scripts/build-skill-package.sh
 ```
+
+## If README.md Changes
+
+The four translations (`README.ko.md`, `README.ja.md`, `README.zh.md`,
+`README.es.md`) must be updated in the same change. Keep the section
+structure identical across all five files so drift is easy to spot.
 
 ## If The User Wants To Publish The Repo
 

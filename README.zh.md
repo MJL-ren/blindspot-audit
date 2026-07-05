@@ -43,7 +43,10 @@ Do not modify unrelated project files. If this is a project-local install, use t
 
 ```text
 blindspot-audit/
+  .claude-plugin/
+    marketplace.json / plugin.json  # Claude Code 插件市场配置
   AGENTS.md
+  CHANGELOG.md
   README.md
   README.ko.md
   README.ja.md
@@ -77,6 +80,17 @@ blindspot-audit/
 git clone https://github.com/MJL-ren/blindspot-audit.git
 cd blindspot-audit
 ```
+
+### Claude Code — 插件市场（一行安装 + 自动更新）
+
+在 Claude Code 中运行：
+
+```text
+/plugin marketplace add MJL-ren/blindspot-audit
+/plugin install blindspot-audit@blindspot-audit
+```
+
+无需克隆仓库，之后用 `/plugin marketplace update blindspot-audit` 获取更新。
 
 ### Claude Code — 个人安装（推荐，也适用于 OpenCode）
 

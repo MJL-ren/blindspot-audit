@@ -31,8 +31,8 @@ Do not modify unrelated project files. If this is a project-local install, use t
 - Revisa el proyecto con lentes específicos para su arquetipo. Registra evidencia tanto de lo que falta como de lo que ya está bien cubierto.
 - Hace un escaneo web con mirada fresca para detectar cambios recientes externos: regulación, políticas de plataformas, cambios de mercado
   o de género. Muchas veces los hallazgos de más impacto vienen de ahí.
-- Reporta entre 3 y 7 hallazgos priorizados, no una lista infinita. Siempre incluye dos secciones de confianza: "checked and well covered"
-  y "skippable for now" con señales para volver a revisar.
+- Reporta entre 3 y 7 hallazgos priorizados, no una lista infinita. Siempre incluye dos secciones de confianza: «qué está bien cubierto»
+  y «qué se puede omitir por ahora», con señales para volver a revisar.
 - Entrevista a la persona dueña sobre qué hallazgos ya conocía. Una brecha conocida necesita una línea accionable, no una explicación larga.
 - Mantiene un `BLINDSPOT_LEDGER.md` duradero. Las siguientes ejecuciones comparan contra ese archivo y reportan solo lo nuevo o cambiado.
 
@@ -44,7 +44,10 @@ No es una checklist genérica de calidad. La pregunta que responde es:
 
 ```text
 blindspot-audit/
+  .claude-plugin/
+    marketplace.json / plugin.json  # marketplace de plugins de Claude Code
   AGENTS.md
+  CHANGELOG.md
   README.md
   README.ko.md
   README.ja.md
@@ -78,6 +81,17 @@ desde Git Bash / WSL.
 git clone https://github.com/MJL-ren/blindspot-audit.git
 cd blindspot-audit
 ```
+
+### Claude Code — marketplace de plugins (una línea, con actualizaciones)
+
+Dentro de Claude Code ejecuta:
+
+```text
+/plugin marketplace add MJL-ren/blindspot-audit
+/plugin install blindspot-audit@blindspot-audit
+```
+
+No hace falta clonar el repositorio, y recibes actualizaciones con `/plugin marketplace update blindspot-audit`.
 
 ### Claude Code — instalación personal (recomendada; también cubre OpenCode)
 
@@ -166,7 +180,7 @@ Después de cambiar `skills/blindspot-audit`, reconstruye el paquete para la app
 ## Cómo se adapta a cada host
 
 - Hosts con preguntas de selección (Claude Code, OpenCode): hacen una pregunta corta solo cuando la respuesta cambia el trabajo,
-  y una pregunta de selección múltiple para la entrevista de conciencia de la persona dueña.
+  y una pregunta de selección múltiple para confirmar qué hallazgos la persona dueña ya conocía.
 - Codex / hosts solo de chat: no se bloquean esperando preguntas. Continúan con una suposición segura y reversible, y dejan un
   `Decision packet` para responder después.
 - Host sin acceso web: omite el escaneo de mirada fresca y lo dice claramente, en vez de afirmar conocimiento viejo sobre regulación o plataformas.
