@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560" role="img" aria-labelledby="title desc">
+  <title id="title">Blindspot Audit 감사 흐름</title>
+  <desc id="desc">프로젝트 문서, 외부 기준, 렌즈 점검, 발견 정리, 원장 기록으로 이어지는 감사 흐름</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f2ea; }
+      .ink { fill: #151515; }
+      .muted { fill: #716b62; }
+      .accent { fill: #c96f4c; }
+      .sage { fill: #7b8767; }
+      .card { fill: #fffdf8; stroke: #151515; stroke-width: 4; }
+      .line { stroke: #151515; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .accent-line { stroke: #c96f4c; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      text { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; }
+      .serif { font-family: "Georgia", "Noto Serif KR", serif; font-weight: 700; }
+      .title { font-size: 44px; }
+      .step { font-size: 26px; font-weight: 700; }
+      .body { font-size: 21px; }
+      .mini { font-size: 18px; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10" fill="none" stroke="#151515" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1280" height="560" rx="42"/>
+  <text class="serif title ink" x="76" y="92">감사는 체크리스트가 아니라, 지도 밖을 보는 과정</text>
+  <text class="body muted" x="78" y="132">이미 적힌 내용은 필터로 쓰고, 프로젝트 밖의 기준으로 빈틈을 좁힌다.</text>
+
+  <g transform="translate(68 190)">
+    <rect class="card" width="206" height="210" rx="24"/>
+    <circle class="accent" cx="46" cy="48" r="12"/>
+    <text class="step ink" x="72" y="58">문서 읽기</text>
+    <text class="body muted" x="32" y="104">README</text>
+    <text class="body muted" x="32" y="138">TODO · 계획</text>
+    <text class="body muted" x="32" y="172">코드 구조</text>
+    <text class="mini muted" x="32" y="202">이미 아는 것은 제외</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M294 294 H372"/>
+
+  <g transform="translate(396 190)">
+    <rect class="card" width="206" height="210" rx="24"/>
+    <circle class="sage" cx="46" cy="48" r="12"/>
+    <text class="step ink" x="72" y="58">렌즈 적용</text>
+    <text class="body muted" x="32" y="104">사용자 흐름</text>
+    <text class="body muted" x="32" y="138">데이터 · 보안</text>
+    <text class="body muted" x="32" y="172">비용 · 운영</text>
+    <text class="mini muted" x="32" y="202">프로젝트 종류별 가중</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M622 294 H700"/>
+
+  <g transform="translate(724 190)">
+    <rect class="card" width="206" height="210" rx="24"/>
+    <circle class="accent" cx="46" cy="48" r="12"/>
+    <text class="step ink" x="72" y="58">외부 스캔</text>
+    <text class="body muted" x="32" y="104">최근 정책</text>
+    <text class="body muted" x="32" y="138">플랫폼 변화</text>
+    <text class="body muted" x="32" y="172">장르 · 시장 기준</text>
+    <text class="mini muted" x="32" y="202">문서 안에 없을 정보</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M950 294 H1028"/>
+
+  <g transform="translate(1052 190)">
+    <rect fill="#151515" width="170" height="210" rx="24"/>
+    <text class="step" fill="#fffdf8" x="34" y="58">3~7개</text>
+    <text class="body" fill="#d8d1c3" x="34" y="104">상위 발견</text>
+    <text class="body" fill="#d8d1c3" x="34" y="138">증거</text>
+    <text class="body" fill="#d8d1c3" x="34" y="172">가장 싼 확인</text>
+    <text class="mini" fill="#c96f4c" x="34" y="202">불안보다 행동</text>
+  </g>
+
+</svg>

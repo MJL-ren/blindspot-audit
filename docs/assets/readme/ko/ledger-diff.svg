@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">BLINDSPOT_LEDGER.md와 반복 감사</title>
+  <desc id="desc">첫 감사에서 원장을 만들고, 다음 감사에서 새 항목과 바뀐 항목만 보고하는 흐름</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f2ea; }
+      .ink { fill: #151515; }
+      .muted { fill: #716b62; }
+      .accent { fill: #c96f4c; }
+      .green { fill: #7b8767; }
+      .card { fill: #fffdf8; stroke: #151515; stroke-width: 4; }
+      .dark { fill: #151515; }
+      .line { stroke: #151515; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .dash { stroke: #c96f4c; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 9 12; fill: none; }
+      .soft { stroke: #d8d1c3; stroke-width: 3; stroke-linecap: round; fill: none; }
+      text { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; }
+      .serif { font-family: "Georgia", "Noto Serif KR", serif; font-weight: 700; }
+      .title { font-size: 46px; }
+      .head { font-size: 30px; font-weight: 700; }
+      .body { font-size: 23px; }
+      .small { font-size: 19px; }
+      .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 21px; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10" fill="none" stroke="#151515" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1280" height="640" rx="42"/>
+  <text class="serif title ink" x="78" y="92">원장은 기억이 아니라, 다음 감사의 기준점</text>
+  <text class="body muted" x="80" y="132">한 번 찾은 구멍을 계속 반복하지 않고, 새로 생긴 변화만 더 선명하게 본다.</text>
+
+  <g transform="translate(76 202)">
+    <rect class="card" width="330" height="290" rx="24"/>
+    <text class="head ink" x="34" y="58">첫 실행</text>
+    <text class="body muted" x="34" y="102">상위 사각지대 기록</text>
+    <text class="body muted" x="34" y="138">알고 있던 것 분류</text>
+    <text class="body muted" x="34" y="174">건너뛰어도 되는 것 보관</text>
+    <rect x="34" y="210" width="260" height="48" rx="12" fill="#151515"/>
+    <text class="mono" fill="#fffdf8" x="52" y="242">BLINDSPOT_LEDGER.md</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M430 346 H520"/>
+
+  <g transform="translate(544 178)">
+    <rect class="card" width="330" height="338" rx="24"/>
+    <text class="head ink" x="34" y="58">다음 실행</text>
+    <text class="body muted" x="34" y="102">기존 원장 먼저 읽기</text>
+    <line class="soft" x1="34" y1="132" x2="286" y2="132"/>
+    <text class="body muted" x="34" y="170">new</text>
+    <circle class="accent" cx="134" cy="162" r="8"/>
+    <text class="small muted" x="152" y="170">새로 생긴 구멍</text>
+    <text class="body muted" x="34" y="214">changed</text>
+    <circle class="accent" cx="134" cy="206" r="8"/>
+    <text class="small muted" x="152" y="214">상황이 바뀐 항목</text>
+    <text class="body muted" x="34" y="258">confirmed</text>
+    <circle class="green" cx="134" cy="250" r="8"/>
+    <text class="small muted" x="152" y="258">아직 유효한 항목</text>
+    <text class="body muted" x="34" y="302">resolved</text>
+    <circle class="green" cx="134" cy="294" r="8"/>
+    <text class="small muted" x="152" y="302">해결된 항목</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M898 346 H988"/>
+
+  <g transform="translate(1012 202)">
+    <rect class="dark" width="210" height="290" rx="24"/>
+    <text class="head" fill="#fffdf8" x="32" y="58">짧은 보고</text>
+    <text class="body" fill="#d8d1c3" x="32" y="108">반복 없음</text>
+    <text class="body" fill="#d8d1c3" x="32" y="148">새 변화 중심</text>
+    <text class="body" fill="#d8d1c3" x="32" y="188">다음 행동만</text>
+    <text class="serif" fill="#c96f4c" x="32" y="252" font-size="54">diff</text>
+  </g>
+
+  <path class="dash" d="M1090 514 C920 594, 490 594, 214 516"/>
+  <text class="small muted" x="412" y="574">좋은 원장은 다음 세션의 시간을 아끼고, 같은 걱정을 다시 꺼내지 않게 한다.</text>
+</svg>

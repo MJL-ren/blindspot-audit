@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Blindspot Audit 메인 이미지</title>
+  <desc id="desc">프로젝트 문서의 지도와 실제 프로젝트의 빈틈 사이를 찾아 BLINDSPOT_LEDGER.md에 남기는 과정을 보여주는 이미지</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f2ea; }
+      .ink { fill: #151515; }
+      .muted { fill: #6f6a61; }
+      .line { stroke: #151515; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .thin { stroke: #d8d1c3; stroke-width: 2; fill: none; }
+      .accent { fill: #c96f4c; }
+      .accent-stroke { stroke: #c96f4c; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .sage { fill: #7b8767; }
+      .panel { fill: #fffdf8; stroke: #151515; stroke-width: 4; }
+      .soft { fill: #ece7dc; }
+      text { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; }
+      .serif { font-family: "Georgia", "Noto Serif KR", serif; font-weight: 700; }
+      .title { font-size: 72px; letter-spacing: 0; }
+      .subtitle { font-size: 30px; }
+      .small { font-size: 22px; }
+      .label { font-size: 24px; font-weight: 700; }
+      .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 24px; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1280" height="640" rx="42"/>
+
+  <g transform="translate(80 82)">
+    <text class="serif title ink" x="0" y="78">Blindspot Audit</text>
+    <text class="subtitle muted" x="2" y="130">보이지 않는 프로젝트 구멍을 찾는 AI 스킬</text>
+    <line class="accent-stroke" x1="4" y1="168" x2="118" y2="168"/>
+
+    <g transform="translate(0 224)">
+      <rect class="panel" x="0" y="0" width="390" height="170" rx="24"/>
+      <text class="label ink" x="34" y="56">내 문서의 지도</text>
+      <text class="small muted" x="34" y="98">README · TODO · 계획 · 코드</text>
+      <text class="small muted" x="34" y="132">이미 아는 질문은 필터링</text>
+      <circle class="accent" cx="322" cy="78" r="12"/>
+      <path class="thin" d="M296 112 C330 88, 352 72, 374 40"/>
+    </g>
+  </g>
+
+  <g transform="translate(555 82)">
+    <rect class="soft" x="80" y="22" width="520" height="448" rx="230"/>
+    <path class="thin" d="M130 120 H560 M112 210 H576 M122 300 H552 M176 36 V448 M296 36 V458 M416 52 V446"/>
+    <path class="line" d="M136 386 C210 330, 252 250, 344 236 C436 222, 462 120, 552 88"/>
+    <circle class="ink" cx="136" cy="386" r="14"/>
+    <circle fill="#fffdf8" stroke="#151515" stroke-width="4" cx="344" cy="236" r="16"/>
+    <circle fill="#fffdf8" stroke="#151515" stroke-width="4" cx="552" cy="88" r="16"/>
+
+    <g transform="translate(0 332)">
+      <rect class="panel" x="0" y="0" width="280" height="120" rx="22"/>
+      <text class="label ink" x="28" y="48">사각지대 후보</text>
+      <text class="small muted" x="28" y="82">증거와 함께 좁히기</text>
+    </g>
+
+    <g transform="translate(380 320)">
+      <rect fill="#151515" x="0" y="0" width="300" height="132" rx="22"/>
+      <text class="mono" fill="#fffdf8" x="26" y="50">BLINDSPOT_LEDGER.md</text>
+      <text class="small" fill="#d8d1c3" x="28" y="88">다음 실행은 diff만 보고</text>
+    </g>
+
+    <path class="accent-stroke" d="M625 86 C682 126, 700 182, 682 238" stroke-dasharray="8 12"/>
+    <text class="serif" fill="#c96f4c" x="682" y="76" font-size="42">?</text>
+  </g>
+
+  <g transform="translate(82 558)">
+    <circle class="sage" cx="12" cy="-6" r="8"/>
+    <text class="small muted" x="32" y="2">일반 체크리스트가 아니라, 지금 이 프로젝트에서 놓치기 쉬운 질문만 남긴다.</text>
+  </g>
+</svg>
