@@ -31,13 +31,13 @@ def build_package(repo_root: Path) -> Path:
     dist.mkdir(parents=True, exist_ok=True)
     output = dist / f"{SKILL_NAME}.skill"
 
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
         for path in sorted(source.rglob("*")):
             if not should_include(path):
                 continue
             archive_path = f"{SKILL_NAME}/{path.relative_to(source).as_posix()}"
             info = zipfile.ZipInfo(archive_path, date_time=ZIP_TIMESTAMP)
-            info.compress_type = zipfile.ZIP_DEFLATED
+            info.compress_type = zipfile.ZIP_STORED
             info.external_attr = (0o644 & 0xFFFF) << 16
             archive.writestr(info, path.read_bytes())
 
