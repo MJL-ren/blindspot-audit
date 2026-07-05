@@ -41,7 +41,11 @@ the skill's behavior testable - plus one field-observed Cowork mirror rule.
   a stale package (CI caught exactly this during this release). Owner-
   facing commit blocks must list the exact expected files and require
   `git status --short` to match before committing, with
-  `git update-index --really-refresh` as the fallback.
+  `git update-index --really-refresh` as the fallback. Derived artifacts
+  (the packaged `.skill`, the synced plugin copy) are regenerated and
+  verified on the owner's machine right before committing - an in-session
+  build can package a truncated mirror snapshot that in-session
+  verification cannot catch (it compares against the same corrupted view).
 - Bumped plugin metadata to `0.4.1` (both manifests).
 
 ## [0.4.0] - 2026-07-06

@@ -97,7 +97,15 @@ quirks change HOW to gather evidence:
   list the EXACT expected files and require `git status --short` to match
   that list before committing; a missing file means stale index or
   unfinished sync - wait a moment, run `git update-index --really-refresh`,
-  and re-check rather than committing blind.
+  and re-check rather than committing blind. For DERIVED artifacts
+  (packaged skills, synced copies, built bundles) the only reliable cure
+  is not to build them in the session at all: a build can snapshot a
+  truncated mirror file, and an in-session verify then blesses the
+  corrupted artifact by comparing it against the same corrupted view
+  (observed: a packaged file cut off mid-word passed in-session
+  verification and failed only in CI). Have the owner regenerate derived
+  artifacts on their machine with the project's own build scripts and run
+  the verify scripts there, immediately before committing.
 
 ## No Structured Choice Tool Adapter
 

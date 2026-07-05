@@ -97,7 +97,15 @@ quirks change HOW to gather evidence:
   list the EXACT expected files and require `git status --short` to match
   that list before committing; a missing file means stale index or
   unfinished sync - wait a moment, run `git update-index --really-refresh`,
-  and re-check rather than committing blind.
+  and re-check rather than committing blind. For DERIVED artifacts
+  (packaged skills, synced copies, built bundles) the only reliable cure
+  is not to build them in the session at all: a build can snapshot a
+  truncated mirror file, and an in-session verify then blesses the
+  corrupted artifact by comparing it against the same corrupted view
+  (observed: a packaged file cut off mid-word passed in-session
+  verification and failed only in CI). Have the owner regenerate derived
+  artifacts on their machine with the project's own build scripts and run
+  the verify scripts there, immediately before committing.
 
 ## No Structured Choice Tool Adapter
 
@@ -190,4 +198,29 @@ they are not re-asked on later runs unless the owner reopens them.
 
 ## OS And Shell Notes
 
-- Pref
+- Prefer the host's native file tools (Glob/Grep/Read or equivalents) over
+  shell commands for discovery: they work identically across OSes and avoid
+  quoting pitfalls. Shell commands like `rg` are the fallback, not the
+  default.
+- On Windows, `python` may not be on PATH while the `py` launcher is; try
+  `py` if `python` fails. Always quote paths that may contain spaces
+  (AppData paths usually do).
+- Do not assume `bash` fences imply a POSIX shell; the same command may run
+  under PowerShell. Keep commands single-line and quote-safe where possible.
+
+## Decision Packet Template
+
+Use this when the host cannot ask interactive choices or when the user
+asked for a non-blocking audit.
+
+```markdown
+Decision packet:
+
+1. <decision title>
+   Recommended: <option>
+   Options:
+   - <option A>: <tradeoff>
+   - <option B>: <tradeoff>
+   - <option C>: <tradeoff>
+   Why it matters: <what changes if chosen>
+```
