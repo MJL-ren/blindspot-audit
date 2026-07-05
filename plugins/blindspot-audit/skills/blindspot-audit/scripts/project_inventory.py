@@ -262,7 +262,7 @@ def emit_markdown(inv: dict) -> str:
         ("tests", "Tests"),
         ("ci", "CI"),
         ("ai_files", "AI/prompt/agent files"),
-        ("security_related", "Security/auth/sensitive-name related"),
+        ("security_related", "Sensitive-name matches (name-based heuristic; in creative projects these are often story/spoiler docs, not security surfaces)"),
         ("data_related", "Data/schema related"),
     ]:
         lines.append("")

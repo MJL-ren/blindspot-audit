@@ -107,6 +107,26 @@ Track owner awareness separately from status - it changes the follow-up:
   section with the reason and a re-check trigger.
 - `unconfirmed`: interview not yet done (non-interactive run).
 
+## Keep The Ledger Compact
+
+A ledger that only grows becomes another hidden document - the exact
+problem it exists to solve. Target state: the main findings table holds
+only items that still need attention (`pending`, `accepted`, `deferred`).
+
+- Same-session remediation: when a finding is fixed while the session is
+  still open, set it to `resolved` with the date before finishing. The
+  final report and the ledger must not disagree.
+- Compress, do not delete: move `resolved` and `rejected` rows out of the
+  findings table into a "Resolved archive" section, one line each
+  (`ID - title - resolved <date>: <one-line resolution>`). Keep the reason
+  on `rejected` items so future runs do not rediscover them as new.
+- IDs stay permanent even in the archive; never renumber.
+- "Checked and well covered" and "Skipped for now" sections are replaced
+  in place on each run (date the section), not accumulated.
+- If the archive itself grows long, squash lines older than the last few
+  runs into a single count line - the full trail remains in version
+  control, the ledger only needs what future runs must not re-report.
+
 Use these diff labels in the audit report:
 
 - `new`

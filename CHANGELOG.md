@@ -2,6 +2,31 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.1] - 2026-07-05
+
+Field feedback from the first registered Cowork run (World_Lore audit).
+
+### Added
+
+- Cowork (Claude desktop app) adapter in `references/host-surfaces.md`:
+  plugin folder may not be shell-reachable (copy scripts via file tools),
+  shell sandbox mirror can lag or truncate files on mid-session folders
+  (trust file tools; never run destructive git from an unverified mirror).
+- "Keep The Ledger Compact" rules in `references/ledger-lifecycle.md` plus
+  matching SKILL.md diff-run steps: same-session remediation must be marked
+  `resolved` before finishing, and closed items compress into a one-line
+  Resolved Archive so the ledger never grows unbounded.
+- `Resolved Archive` section in `templates/BLINDSPOT_LEDGER.md`.
+- SKILL.md Quick Start note for hosts where the skill folder is not
+  shell-accessible.
+
+### Changed
+
+- `project_inventory.py`: the security-keyword section is now labeled as a
+  name-based heuristic to avoid false alarms on creative files (e.g.
+  `Reveals_And_Secrets.md` in a story project).
+- Bumped plugin metadata to `0.3.1`.
+
 ## [0.3.0] - 2026-07-05
 
 ### Added

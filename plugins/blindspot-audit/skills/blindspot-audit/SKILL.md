@@ -94,6 +94,11 @@ python <this-skill-folder>/scripts/project_inventory.py <project-root> --format 
 Use `--include-generated` only when runtime outputs, generated reports,
 logs, or cached artifacts are part of the audit question.
 
+If the skill folder is not reachable from the shell (some hosts mount
+plugins outside the sandbox - e.g. Cowork), copy the script into the
+session workspace with the file tools and run that copy, or fall back to a
+manual directory listing. See `references/host-surfaces.md`.
+
 3. Read only the relevant references:
    - `references/archetypes.md`: choose project type and expected blind spots.
    - `references/lenses.md`: derive and apply audit lenses.
@@ -168,6 +173,12 @@ When a project already has a blindspot ledger:
 4. If the ledger is new but not routed from an index, handoff, or operations
    README, flag that as a discoverability blind spot.
 5. Preserve the ledger's local status language and IDs when updating it.
+6. If findings were remediated during the session, set them to `resolved`
+   (with date) before finishing - the ledger must not describe already
+   fixed problems.
+7. Keep the ledger compact: move `resolved`/`rejected` rows into a one-line
+   archive section. IDs are compressed, never deleted or renumbered. See
+   `references/ledger-lifecycle.md`.
 
 Good ledgers make future audits cheaper. Bad ledgers become another hidden
 document, so always check discoverability.

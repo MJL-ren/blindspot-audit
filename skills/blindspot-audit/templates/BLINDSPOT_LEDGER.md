@@ -23,6 +23,7 @@ and awareness values in English so runs stay diffable.
 - Record decisions as `pending`, `accepted`, `deferred`, `rejected`, or `resolved`.
 - Record owner awareness as `unknown_unknown`, `unknown_known`, `deliberate_skip`, or `unconfirmed`.
 - Keep rejected/deferred items with the reason so future audits do not rediscover them as new.
+- Keep the Findings table for open items only; move `resolved`/`rejected` rows to the Resolved Archive as one-liners (IDs never renumber).
 
 ## Audit Log
 
@@ -35,6 +36,14 @@ and awareness values in English so runs stay diffable.
 | ID | Finding | Priority | Awareness | Status | Next check / owner |
 | --- | --- | --- | --- | --- | --- |
 | BS-YYYYMMDD-01 | <what may be missing + concrete consequence + evidence pointer> | now/next/later/watch | unknown_unknown/unknown_known/deliberate_skip/unconfirmed | pending | <cheapest next check> |
+
+## Resolved Archive
+
+One line per closed item, moved here from Findings. Keep the ID and the
+reason; squash lines older than the last few runs into a count line if this
+section grows long.
+
+- BS-YYYYMMDD-NN - <title> - resolved <date>: <one-line resolution>
 
 ## Checked And Well Covered (as of <date>)
 

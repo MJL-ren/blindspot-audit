@@ -35,6 +35,30 @@ Good Claude Code output: same findings as the shared core, a decision log
 when interactive choices were used, awareness classifications from the
 interview, ledger updates that preserve IDs and status language.
 
+## Cowork (Claude Desktop App) Adapter
+
+Cowork runs the same interactive flow as the Claude Code adapter
+(`AskUserQuestion` is available; use it the same way). Two environment
+quirks change HOW to gather evidence:
+
+- The installed plugin folder is usually NOT reachable from the shell
+  sandbox. To run `scripts/project_inventory.py`, copy the script into the
+  session workspace with the file tools first (read from the skill folder,
+  write next to the outputs), then run the copy.
+- The shell sandbox works on a synced mirror of the user's folders, while
+  the file tools read the real files. On a folder attached mid-session the
+  mirror can lag or even truncate file contents. If shell output (`wc`,
+  `diff`, `git status`) disagrees with a file-tool read, trust the file
+  tools, re-verify, and say which view each claim came from. Never run
+  destructive git commands (restore/checkout/clean) from the shell against
+  a folder whose mirror freshness has not been verified.
+- Prefer file tools for all writes (ledger, routing edits). Treat the
+  mirror's `.git` as read-only and untrusted: `git log/status/diff` are fine
+  for evidence (cross-check surprises against file tools), but do not run
+  `git add/commit/restore` from the sandbox - a stale mirror can present a
+  corrupt index (observed in the field: "bad signature 0x00000000"). Hand
+  the user a copy-paste command block to commit on their machine instead.
+
 ## Codex Adapter
 
 Codex often cannot show arbitrary multiple-choice questions during normal
