@@ -2,6 +2,48 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.4] - 2026-07-05
+
+Field feedback from the first registered Claude Code run (grenomj-v3 audit,
+Opus review): the thinking frame held; all friction was in tooling and host
+adaptation.
+
+### Fixed
+
+- `project_inventory.py` doc detection (Ground Rule 1's foundation): any
+  root-level `.md`/`.mdx`/`.txt`/`.rst` is now a doc candidate, and
+  RUNBOOK/GUIDE/FORM/HANDBOOK/CHECKLIST/NOTES-style names are recognized
+  anywhere in the tree. Previously `COMMISSION_ORDER_RUNBOOK.md` at root was
+  counted in extensions but missed by the docs section, silently weakening
+  the self-tracking-doc filter.
+- `project_inventory.py` config detection: Cloudflare Pages/Workers,
+  Netlify, and Vercel files (`_headers`, `_redirects`, `_routes.json`,
+  `wrangler.*`, `netlify.toml`, `vercel.json`) are now recognized, plus a
+  new "Config hints (common-but-missing)" section (e.g. Pages files without
+  `wrangler.*`, `package.json` without a lockfile).
+
+### Added
+
+- Structured-choice option cap rule in `references/host-surfaces.md`:
+  Claude Code's `AskUserQuestion` caps options at 4, so 5-7 findings must
+  split into two questions or fall back to the numbered awareness check -
+  a UI limit must not shrink the audit.
+- Public/private boundary rule for ledger placement (SKILL.md +
+  `references/ledger-lifecycle.md`): the ledger inherits the project's
+  PRIVATE side; verify it stays out of deploys/exports (404 check or export
+  denylist).
+- OS and shell notes in `references/host-surfaces.md`: prefer native file
+  tools over `rg`, `py` launcher fallback on Windows, quote paths with
+  spaces.
+- Skill-folder glob fallback in SKILL.md Quick Start
+  (`**/blindspot-audit/scripts/project_inventory.py`).
+
+### Changed
+
+- Quick Start inventory command fence changed from `bash` to `text` with
+  quoted paths (the same command may run under PowerShell).
+- Bumped plugin metadata to `0.3.4`.
+
 ## [0.3.3] - 2026-07-05
 
 Follow-up usability pass for hosts without a structured choice UI.

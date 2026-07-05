@@ -32,8 +32,15 @@ Use the tool sparingly:
    workflow, or risk - plus the owner-awareness interview (one multi-select
    question listing the top findings works well).
 2. Offer 2-3 clear options, with the recommended option first.
-3. Record the selected option in the report or ledger.
-4. Continue after the answer; do not ask a series of preference questions
+3. Mind the option cap: structured choice tools usually limit options per
+   question (Claude Code's `AskUserQuestion` caps at 4, plus a built-in
+   "Other"). With 5-7 findings, never silently drop the overflow - either
+   split the awareness interview into two questions, or ask about the top 4
+   and cover the rest with a numbered awareness check in the report. A UI
+   limit must not shrink the audit. (Field data: a 5th finding once went
+   uninterviewed exactly this way.)
+4. Record the selected option in the report or ledger.
+5. Continue after the answer; do not ask a series of preference questions
    that only refine wording.
 
 Good structured-choice output: same findings as the shared core, a decision
@@ -134,6 +141,18 @@ evidence.
 - Both: fold interview questions into the end of the report and mark
   awareness `unconfirmed`; use the numbered awareness check instead of a
   plain open-ended question.
+
+## OS And Shell Notes
+
+- Prefer the host's native file tools (Glob/Grep/Read or equivalents) over
+  shell commands for discovery: they work identically across OSes and avoid
+  quoting pitfalls. Shell commands like `rg` are the fallback, not the
+  default.
+- On Windows, `python` may not be on PATH while the `py` launcher is; try
+  `py` if `python` fails. Always quote paths that may contain spaces
+  (AppData paths usually do).
+- Do not assume `bash` fences imply a POSIX shell; the same command may run
+  under PowerShell. Keep commands single-line and quote-safe where possible.
 
 ## Decision Packet Template
 

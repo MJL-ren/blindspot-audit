@@ -53,6 +53,29 @@ DOC_NAMES = {
     "LICENSE",
 }
 
+DOC_EXTS = {".md", ".mdx", ".txt", ".rst"}
+# Name patterns that mark a file as documentation wherever it lives.
+# Ground Rule 1 (the self-tracking-doc filter) depends on catching these:
+# a missed RUNBOOK or FORM doc silently breaks the audit's noise filter.
+DOC_NAME_HINTS = (
+    "readme",
+    "runbook",
+    "guide",
+    "handbook",
+    "manual",
+    "howto",
+    "form",
+    "checklist",
+    "policy",
+    "plan",
+    "spec",
+    "notes",
+    "faq",
+    "todo",
+    "roadmap",
+)
+DOC_PATH_HINTS = ("docs", "doc", "plans", "research", "decisions", "notes", "wiki")
+
 CONFIG_NAMES = {
     "package.json",
     "pnpm-lock.yaml",
@@ -70,7 +93,20 @@ CONFIG_NAMES = {
     "next.config.ts",
     "docker-compose.yml",
     "Dockerfile",
+    # Deploy-platform configs (Cloudflare Pages/Workers, Netlify, Vercel).
+    # These are easy to miss because some have no extension at all.
+    "_headers",
+    "_redirects",
+    "_routes.json",
+    "wrangler.toml",
+    "wrangler.json",
+    "wrangler.jsonc",
+    "netlify.toml",
+    "vercel.json",
 }
+
+LOCKFILE_NAMES = {"package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb", "bun.lock"}
+CLOUDFLARE_PAGES_HINTS = {"_headers", "_redirects", "_routes.json"}
 
 ENV_PATTERNS = (".env", ".env.example", ".env.local", ".env.template")
 TEST_HINTS = ("test", "tests", "spec", "__tests__", "playwright", "vitest", "pytest", "jest")
@@ -119,6 +155,25 @@ def rel_list(paths: Iterable[Path], root: Path, limit: int = 25) -> list[str]:
 def has_any(text: str, hints: tuple[str, ...]) -> bool:
     lower = text.lower()
     return any(h in lower for h in hints)
+
+
+def is_doc_file(path: Path, root: Path) -> bool:
+    if path.name in DOC_NAMES:
+        return True
+    if path.suffix.lower() not in DOC_EXTS:
+        return False
+    try:
+        rel = path.relative_to(root)
+    except ValueError:
+        rel = path
+    # Any root-level markdown/text file is a doc candidate: this is where
+    # RUNBOOK.md, ORDER_FORM.md, INTERNAL_README.md style files live.
+    if len(rel.parts) == 1:
+        return True
+    rel_str = str(rel).replace("\\", "/").lower()
+    if any(f"/{hint}/" in f"/{rel_str}" or rel_str.startswith(f"{hint}/") for hint in DOC_PATH_HINTS):
+        return True
+    return has_any(path.stem, DOC_NAME_HINTS)
 
 
 def is_test_file(path: Path, root: Path) -> bool:
@@ -211,14 +266,32 @@ def build_inventory(root: Path, max_files: int, include_generated: bool = False)
     ext_counts = Counter(p.suffix.lower() or "[none]" for p in files)
     top_dirs = Counter((p.relative_to(root).parts[0] if len(p.relative_to(root).parts) > 1 else ".") for p in files)
 
-    docs = [p for p in files if p.name in DOC_NAMES or p.suffix.lower() in {".md", ".mdx", ".txt"} and has_any(str(p), ("docs", "plan", "research", "decision"))]
-    configs = [p for p in files if p.name in CONFIG_NAMES or p.name.startswith(".") and has_any(p.name, ("config", "rc"))]
+    docs = [p for p in files if is_doc_file(p, root)]
+    configs = [
+        p
+        for p in files
+        if p.name in CONFIG_NAMES
+        or p.name.startswith("wrangler.")
+        or (p.name.startswith(".") and has_any(p.name, ("config", "rc")))
+    ]
     envs = [p for p in files if p.name in ENV_PATTERNS or p.name.startswith(".env")]
     tests = [p for p in files if is_test_file(p, root)]
     ai_files = [p for p in files if has_any(str(p.relative_to(root)), AI_HINTS) or p.name in {"AGENTS.md", "CLAUDE.md", "SKILL.md"}]
     security_files = [p for p in files if has_any(str(p.relative_to(root)), SECURITY_HINTS)]
     data_files = [p for p in files if has_any(str(p.relative_to(root)), DATA_HINTS)]
     ci_files = [p for p in files if is_ci_file(p, root)]
+
+    # Common-but-missing config hints: presence of one platform artifact
+    # often implies a sibling that is worth checking for. These are hints
+    # for the auditor, not findings by themselves.
+    names = {p.name for p in files}
+    config_hints: list[str] = []
+    if names & CLOUDFLARE_PAGES_HINTS and not any(n.startswith("wrangler.") for n in names):
+        config_hints.append(
+            "Cloudflare Pages files (_headers/_redirects/_routes.json) present but no wrangler.* found - deployment config may live only in the dashboard (not versioned)"
+        )
+    if "package.json" in names and not (names & LOCKFILE_NAMES):
+        config_hints.append("package.json present without a lockfile - installs are not reproducible")
 
     return {
         "root": str(root),
@@ -231,6 +304,7 @@ def build_inventory(root: Path, max_files: int, include_generated: bool = False)
         "frameworks": detect_frameworks(files, root),
         "docs": rel_list(docs, root),
         "configs": rel_list(configs, root),
+        "config_hints": config_hints,
         "env_files": rel_list(envs, root),
         "tests": rel_list(tests, root),
         "ci": rel_list(ci_files, root),
@@ -258,6 +332,7 @@ def emit_markdown(inv: dict) -> str:
     for key, title in [
         ("docs", "Docs and plans"),
         ("configs", "Configs"),
+        ("config_hints", "Config hints (common-but-missing)"),
         ("env_files", "Env files"),
         ("tests", "Tests"),
         ("ci", "CI"),

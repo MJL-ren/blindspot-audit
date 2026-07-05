@@ -85,14 +85,17 @@ not ask mode questions unless the audit boundary is impossible to infer.
 1. Identify the project root and audit boundary.
 2. Run the inventory helper when a filesystem project is available. The
    script lives in this skill's own folder - resolve it relative to this
-   SKILL.md:
+   SKILL.md. If the exact skill path is unknown, locate it with the host's
+   file search (glob `**/blindspot-audit/scripts/project_inventory.py`).
 
-```bash
-python <this-skill-folder>/scripts/project_inventory.py <project-root> --format md
+```text
+python "<this-skill-folder>/scripts/project_inventory.py" "<project-root>" --format md
 ```
 
-Use `--include-generated` only when runtime outputs, generated reports,
-logs, or cached artifacts are part of the audit question.
+Quote both paths (install locations often contain spaces). On Windows,
+try the `py` launcher if `python` is not on PATH. Use
+`--include-generated` only when runtime outputs, generated reports, logs,
+or cached artifacts are part of the audit question.
 
 If the skill folder is not reachable from the shell (some hosts mount
 plugins outside the sandbox - e.g. Cowork), copy the script into the
@@ -157,7 +160,10 @@ or likely to produce misleading results.
 First run:
 
 1. Choose the best durable location for `BLINDSPOT_LEDGER.md` using
-   `references/ledger-lifecycle.md`.
+   `references/ledger-lifecycle.md`. If the project separates public and
+   private surfaces (deploy dir, publish pipeline, public export), the
+   ledger inherits the PRIVATE side - verify it stays out of deploys and
+   exports (an audit trail leaking into production is itself a blind spot).
 2. Create the ledger from `templates/BLINDSPOT_LEDGER.md` when file writes
    are appropriate.
 3. Add the ledger to the nearest routing surface, such as an operations

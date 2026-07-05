@@ -7,7 +7,11 @@ again - and future audits diff against it instead of re-nagging.
 
 ## Discover Existing Ledgers
 
-Before creating a new file, search for existing risk or blindspot surfaces:
+Before creating a new file, search for existing risk or blindspot surfaces.
+Prefer the host's native file-search tools (e.g. Glob for
+`**/BLINDSPOT_LEDGER.md`, `**/*blindspot*`, `**/*risk*register*`,
+`**/*release*checklist*`) - they behave identically across OSes. The CLI
+fallback:
 
 ```text
 rg --files <project-root> -g "BLINDSPOT_LEDGER.md" -g "*blindspot*" -g "*risk*register*" -g "*release*checklist*" -g "!node_modules/**" -g "!runtime/**" -g "!docs/archive/**"
@@ -46,6 +50,14 @@ Prefer the most discoverable project-local documentation location:
 
 If two locations are plausible, choose the one future agents are most
 likely to read first and mention the assumption.
+
+If the project separates public and private surfaces (a deploy folder, a
+publish pipeline, a public-repo export, spoiler-free docs), the ledger must
+inherit the PRIVATE side. An audit trail leaking into production or a
+public export is itself a blind spot. Cheap checks: the deployed URL for
+the ledger path should 404, the export manifest/denylist should cover it,
+or the ledger should live outside the published directory entirely. Record
+which check was done in the ledger's audit-log notes.
 
 ## Create The First Ledger
 
