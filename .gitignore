@@ -1,0 +1,23 @@
+.DS_Store
+Thumbs.db
+
+# Python / tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Node / build
+node_modules/
+build/
+
+# dist/ is tracked on purpose: it holds the packaged .skill for app users
+
+# Local run output
+runtime/
+tmp/
+.tmp/
+
