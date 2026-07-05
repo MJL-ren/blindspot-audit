@@ -38,11 +38,11 @@ and awareness values in English so runs stay diffable.
 
 ## Checked And Well Covered (as of <date>)
 
-- <what exists and is healthy, with evidence paths — prevents future audits from rescanning settled ground>
+- <what exists and is healthy, with evidence paths - prevents future audits from rescanning settled ground>
 
 ## Skipped For Now (with re-check triggers)
 
-- <item> — <reason> — re-check when: <trigger>
+- <item> - <reason> - re-check when: <trigger>
 
 ## Decision Packet
 

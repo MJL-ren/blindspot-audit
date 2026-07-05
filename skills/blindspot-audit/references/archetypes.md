@@ -66,7 +66,7 @@ Likely blind spots:
 
 Likely blind spots:
 - Manuscript survival: the text lives on one device or account with no
-  version history — "restore yesterday's draft" is impossible.
+  version history - "restore yesterday's draft" is impossible.
 - Continuity debt: no series bible / timeline / name-and-rules tracker, so
   consistency lives entirely in the author's memory and contradictions
   accumulate silently with chapter count (brutal to audit retroactively).
@@ -110,7 +110,7 @@ Likely blind spots:
 - Input, failure, restart, and onboarding states are missing.
 - Store/platform mechanics: registration fees and waiting periods, page
   assets, demo/festival calendars, age rating requirements (including
-  regional boards such as GRAC in Korea), platform cert rules — all with
+  regional boards such as GRAC in Korea), platform cert rules - all with
   long lead times that are invisible until shipping week.
 - Performance floor: lowest-spec machine it has actually run on is unknown.
 - Accessibility baseline (remapping, colorblind-safe signals, text scaling)

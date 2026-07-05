@@ -3,7 +3,7 @@
 Use this reference when a blindspot audit needs durable project memory. The
 ledger is the permanent fix for the self-selecting-context problem: once a
 blind spot is written into the project, it can never be an unknown unknown
-again — and future audits diff against it instead of re-nagging.
+again - and future audits diff against it instead of re-nagging.
 
 ## Discover Existing Ledgers
 
@@ -98,12 +98,12 @@ Use these statuses unless the project already has its own:
 - `rejected`: intentionally rejected with reason.
 - `resolved`: no longer present or fixed.
 
-Track owner awareness separately from status — it changes the follow-up:
+Track owner awareness separately from status - it changes the follow-up:
 
-- `unknown_unknown`: owner did not know → explain + cheapest first step.
-- `unknown_known`: owner knew but it was written nowhere → the fix is
+- `unknown_unknown`: owner did not know -> explain + cheapest first step.
+- `unknown_known`: owner knew but it was written nowhere -> the fix is
   documentation (a checklist/tracking-doc line), not implementation.
-- `deliberate_skip`: owner considered and declined → move to the skip
+- `deliberate_skip`: owner considered and declined -> move to the skip
   section with the reason and a re-check trigger.
 - `unconfirmed`: interview not yet done (non-interactive run).
 

@@ -1,6 +1,6 @@
 ---
 name: blindspot-audit
-description: "Project-level blind spot audit that finds what the owner is missing without knowing it: unknown unknowns, hidden risks, missing decisions, stale assumptions, and questions the user did not know to ask. Works on ANY kind of project — software, games, novels and creative writing, research, content, business plans. Use when the user asks for a blindspot pass, unknown unknowns audit, what they may be missing, a readiness/gap/health check that should go beyond their own checklist, cross-project sanity checks, unfamiliar-domain planning, or post-implementation review. Also triggers in Korean: '내가 놓치고 있는 게 있을까', '사각지대 점검', '빈틈 점검', '출시 전에 모르고 넘어가는 부분 봐줘'. Trigger even when the user never says 'audit'."
+description: "Project-level blind spot audit that finds what the owner is missing without knowing it: unknown unknowns, hidden risks, missing decisions, stale assumptions, and questions the user did not know to ask. Works on any kind of project - software, games, novels and creative writing, research, content, business plans. Use when the user asks for a blindspot pass, unknown unknowns audit, what they may be missing, a readiness/gap/health check beyond their own checklist, cross-project sanity checks, unfamiliar-domain planning, or post-implementation review. Also use for equivalent non-English requests about missed gaps, blind spots, or overlooked launch/project risks. Trigger even when the user never says audit."
 ---
 
 # Blindspot Audit
@@ -13,7 +13,7 @@ inspect, answer, test, or intentionally defer.
 
 A project's context is self-selecting: the owner can only write down what
 they already know, so every README, TODO, and plan encodes the map they
-carry in their head — and an AI working from those files inherits the same
+carry in their head - and an AI working from those files inherits the same
 blind spots. This audit deliberately imports reference frames from OUTSIDE
 the project to measure that gap.
 
@@ -21,7 +21,7 @@ This skill is not a generic quality checklist. It should identify what is
 unusually important for this specific project, at this specific stage, with
 evidence from the repo or provided artifacts. The audit succeeds when the
 owner says "I didn't even know I should be thinking about that" at least
-once — AND feels calmer afterward, because they now also know what they can
+once - AND feels calmer afterward, because they now also know what they can
 safely ignore.
 
 ## Core Model
@@ -43,7 +43,7 @@ exposes candidates and gives the cheapest next check.
 
 ## Ground Rules
 
-These exist because the failure mode of this skill is not "missing a gap" —
+These exist because the failure mode of this skill is not "missing a gap" -
 it is becoming a generic checklist nag that gets ignored.
 
 1. **The project's own tracking docs are a filter, not a source of
@@ -51,9 +51,9 @@ it is becoming a generic checklist nag that gets ignored.
    issue list is a KNOWN unknown. Never report it as a discovery. (Field
    data: this filter typically cuts the candidate list by more than half and
    is the main reason owners trust the report.)
-2. **Cap top findings at 3–7**, ranked by impact × likelihood the owner is
+2. **Cap top findings at 3-7**, ranked by impact x likelihood the owner is
    truly unaware. Overflow goes to a short "Lower-signal watchlist" or the
-   ledger — never into the main list.
+   ledger - never into the main list.
 3. **Absence alone is not a finding.** "You have no X" only counts if you can
    state the concrete consequence for THIS project and the cheapest first
    step toward closing it.
@@ -84,7 +84,7 @@ not ask mode questions unless the audit boundary is impossible to infer.
 
 1. Identify the project root and audit boundary.
 2. Run the inventory helper when a filesystem project is available. The
-   script lives in this skill's own folder — resolve it relative to this
+   script lives in this skill's own folder - resolve it relative to this
    SKILL.md:
 
 ```bash
@@ -104,7 +104,7 @@ logs, or cached artifacts are part of the audit question.
    - `references/report-template.md`: format the result.
 4. Discover or initialize the blindspot ledger:
    - If a prior ledger exists, read it before searching (diff-run rules
-     apply — see Ledger And Diff Runs).
+     apply - see Ledger And Diff Runs).
    - If no ledger exists and the host can write files, create
      `BLINDSPOT_LEDGER.md` in the best project-local documentation location
      unless the user requested read-only/chat-only output.
@@ -125,8 +125,8 @@ CLI, and plain chat. Only the interaction style changes. See
 `references/host-surfaces.md` for per-host details.
 
 - Choice-capable hosts (Claude Code `AskUserQuestion`, OpenCode `question`):
-  when a decision changes architecture, workflow, scope, or risk — and for
-  the owner-awareness interview — ask one short 2-3 option question and
+  when a decision changes architecture, workflow, scope, or risk - and for
+  the owner-awareness interview - ask one short 2-3 option question and
   record the selected option in the report or ledger.
 - Codex or chat-only hosts: do not block on non-critical questions. Continue
   with the safest reversible assumption, mark it as an assumption, and
@@ -207,20 +207,20 @@ State the user's apparent goal, project type, maturity, and your audit
 boundary in 2-4 lines. Mark assumptions explicitly. Include an owner
 profile:
 
-- Solo or team? What is the owner clearly expert in, and — more useful —
+- Solo or team? What is the owner clearly expert in, and - more useful -
   NOT expert in? Blind spots cluster in the owner's non-expert areas, so
   weight those lenses up.
 - Hobby or commercial? Private or public? Commercial or public intent
   activates legal, tax, and market lenses that would be pure noise for a
   private hobby project. If intent is not readable from the files, ask
-  before scanning (one short question) — guessing wrong on intent wastes
+  before scanning (one short question) - guessing wrong on intent wastes
   the whole audit.
 
 ### 2. Gather Evidence
 
 Use the inventory helper plus targeted reads. Read the project's
 self-awareness surfaces first (README, TODO, roadmap, checklists, design
-docs, synopsis/outline) — they are both your best profile source and your
+docs, synopsis/outline) - they are both your best profile source and your
 noise filter (Ground Rule 1). Prefer evidence over broad speculation. Tag
 evidence as:
 
@@ -246,15 +246,15 @@ When the host has web access, do time-boxed research on two questions:
 
 1. What do healthy projects of this category treat as standard equipment
    **right now**?
-2. What changed in the last 6–12 months — regulation, platform policy,
-   market or genre conventions, tooling — that this project's documents
+2. What changed in the last 6-12 months - regulation, platform policy,
+   market or genre conventions, tooling - that this project's documents
    could not possibly contain?
 
 Question 2 is disproportionately valuable: time-dependent changes are
 structurally invisible to both the repo and the owner's memory. (Field data:
-in early runs the single highest-impact findings — an AI-content labeling
+in early runs the single highest-impact findings - an AI-content labeling
 law taking effect the following month, a payment provider acquisition that
-invalidated a documented plan — all came from this step.) Cite sources for
+invalidated a documented plan - all came from this step.) Cite sources for
 anything found here. Without web access, skip and disclose (see Host Surface
 Policy).
 
@@ -271,7 +271,7 @@ For every finding, include:
 - confidence: high, medium, low.
 
 Drop candidates that appear in the project's own tracking docs (Ground Rule
-1), keep the top 3–7, and move the rest to the watchlist or ledger.
+1), keep the top 3-7, and move the rest to the watchlist or ledger.
 
 ### 7. Interview The Owner
 
@@ -282,11 +282,11 @@ each finding:
 | Awareness | Meaning | Prescription |
 |---|---|---|
 | `unknown_unknown` | Owner did not know | Explain why it matters here + cheapest first step |
-| `unknown_known` | Owner knew, but it is written nowhere | The fix is documentation, not implementation — get it into their tracking docs so agents and future sessions can see it |
+| `unknown_known` | Owner knew, but it is written nowhere | The fix is documentation, not implementation - get it into their tracking docs so agents and future sessions can see it |
 | `deliberate_skip` | Owner considered it and chose not to | Move to the skip list WITH the reason and a re-check trigger |
 
 (Field data: in early runs roughly half of top findings turned out to be
-`unknown_known` — real gaps in the repo, but not in the owner's head. The
+`unknown_known` - real gaps in the repo, but not in the owner's head. The
 distinction changes the follow-up entirely.)
 
 On hosts that cannot ask, mark every awareness value `unconfirmed`, embed

@@ -47,9 +47,16 @@ ledger first and report the delta.
 
 ## If The Skill Itself Changes
 
-Regenerate `dist/blindspot-audit.skill` (a zip of the `skills/blindspot-audit`
-folder with a `.skill` extension) so app users stay in sync with source
-users.
+Regenerate `dist/blindspot-audit.skill` so app users stay in sync with
+source users:
+
+```powershell
+.\scripts\build-skill-package.ps1
+```
+
+```bash
+./scripts/build-skill-package.sh
+```
 
 ## If The User Wants To Publish The Repo
 

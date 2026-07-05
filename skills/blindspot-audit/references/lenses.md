@@ -17,7 +17,7 @@ fits none of them cleanly, apply the frames yourself:
    does not? Pre-release projects fail on release mechanics; launched
    projects fail on operations; growing ones fail on things that don't
    scale.
-3. **Role walk.** Walk the project past a row of specialists — security
+3. **Role walk.** Walk the project past a row of specialists - security
    engineer, lawyer, accountant, designer, operations person, marketer,
    editor, community manager. For each: what is the FIRST thing they would
    point at? Keep only the roles the owner isn't.
@@ -62,7 +62,7 @@ fits none of them cleanly, apply the frames yourself:
 - Are there cheap smoke tests before expensive full tests?
 - Are tests tied to user-facing behavior, not only implementation details?
 - Can future agents reproduce the check from documented commands?
-- Is test coverage lopsided — one layer heavily tested while another (often the UI or the newest surface) has none?
+- Is test coverage lopsided - one layer heavily tested while another (often the UI or the newest surface) has none?
 
 ## Operations And Failure Lens
 
@@ -100,7 +100,7 @@ fits none of them cleanly, apply the frames yourself:
 
 ## External Change Lens
 
-Time-dependent by nature — pair with the fresh-eyes web scan in the
+Time-dependent by nature - pair with the fresh-eyes web scan in the
 workflow. These cannot be answered from the repo alone:
 
 - Did regulation change in the operating regions (AI-content labeling, data

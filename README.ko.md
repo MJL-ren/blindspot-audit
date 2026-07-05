@@ -47,6 +47,7 @@ blindspot-audit/
   examples/
     prompts.md
   scripts/
+    build-skill-package.py / .ps1 / .sh
     install-claude-user.ps1 / .sh
     install-claude-project.ps1 / .sh
     install-codex.ps1 / .sh
@@ -143,6 +144,18 @@ Use $blindspot-audit in deep mode on this project. Create or update the BLINDSPO
 ```
 
 더 많은 예시(한국어/영어)는 [examples/prompts.md](./examples/prompts.md)에 있다.
+
+## 관리용
+
+`skills/blindspot-audit`를 수정한 뒤에는 Claude 데스크톱 앱용 패키지를 다시 만든다.
+
+```powershell
+.\scripts\build-skill-package.ps1
+```
+
+```bash
+./scripts/build-skill-package.sh
+```
 
 ## 도구별 동작 차이
 

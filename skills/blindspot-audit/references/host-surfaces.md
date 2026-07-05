@@ -24,7 +24,7 @@ The `AskUserQuestion` tool shows interactive choice questions. Use it
 sparingly:
 
 1. Ask only questions whose answer changes audit scope, architecture,
-   workflow, or risk — plus the owner-awareness interview (one multi-select
+   workflow, or risk - plus the owner-awareness interview (one multi-select
    question listing the top findings works well).
 2. Offer 2-3 clear options, with the recommended option first.
 3. Record the selected option in the report or ledger.
@@ -54,14 +54,14 @@ short list of exact next checks, and the ledger path if one was created.
 
 ## OpenCode Adapter
 
-OpenCode provides a `question` tool for interactive choices — use it the
+OpenCode provides a `question` tool for interactive choices - use it the
 same way as the Claude Code adapter (options explicit, one question call at
 a time). Notes:
 
 - OpenCode discovers skills from `.opencode/skills/` and
   `~/.config/opencode/skills/`, and also reads Claude-compatible paths
   (`.claude/skills/`, `~/.claude/skills/`), so this skill may have arrived
-  through either route — behavior is identical.
+  through either route - behavior is identical.
 - Some OpenCode setups auto-continue when a turn looks unfinished; prefer
   the `question` tool over plain-text option lists so the user's choice is
   not skipped.
