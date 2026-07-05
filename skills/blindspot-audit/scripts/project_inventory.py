@@ -36,6 +36,11 @@ IGNORE_DIRS = {
     "vendor",
     "runtime",
     ".playwright-mcp",
+    "coverage",
+    ".ipynb_checkpoints",
+    "wandb",
+    "mlruns",
+    "DerivedData",
 }
 
 IGNORE_PREFIXES = (
@@ -43,6 +48,18 @@ IGNORE_PREFIXES = (
     ".tmp",
     "tmp",
 )
+
+IGNORE_SUFFIXES = {".meta"}  # Unity sidecar files; thousands per project, zero doc signal
+
+# Engine project roots are detected per-directory during the walk (they are
+# often nested, e.g. <repo>/UnityProject/<Game>/), and their generated dirs
+# are pruned only under a confirmed engine root - so a non-engine project
+# with a folder named "Library" is unaffected.
+ENGINE_GENERATED = {
+    "unity": ("Library", "Temp", "Obj", "Logs", "UserSettings", "MemoryCaptures", "Build", "Builds"),
+    "unreal": ("Binaries", "DerivedDataCache", "Intermediate", "Saved"),
+    "godot": (".godot", ".import"),
+}
 
 DOC_NAMES = {
     "README.md",
@@ -116,17 +133,36 @@ DATA_HINTS = ("schema", "migration", "db", "database", "duckdb", "sqlite", "csv"
 TEST_EXTS = {".py", ".js", ".jsx", ".ts", ".tsx", ".rs", ".go", ".java", ".cs", ".rb", ".php", ".md", ".toml", ".ini", ".yml", ".yaml", ".json"}
 
 
-def iter_files(root: Path, max_files: int, ignore_dirs: set[str]) -> Iterable[Path]:
+def iter_files(root: Path, max_files: int, ignore_dirs: set[str], engine_hints: set[str] | None = None) -> Iterable[Path]:
     count = 0
     for dirpath, dirnames, filenames in os.walk(root):
+        # Per-directory engine detection: prune generated dirs directly under
+        # a confirmed engine project root, wherever it is nested.
+        pruned: set[str] = set()
+        dirset = set(dirnames)
+        if {"Assets", "ProjectSettings"} <= dirset:
+            if engine_hints is not None:
+                engine_hints.add("Unity")
+            pruned.update(ENGINE_GENERATED["unity"])
+        if any(f.endswith(".uproject") for f in filenames):
+            if engine_hints is not None:
+                engine_hints.add("Unreal")
+            pruned.update(ENGINE_GENERATED["unreal"])
+        if "project.godot" in filenames:
+            if engine_hints is not None:
+                engine_hints.add("Godot")
+            pruned.update(ENGINE_GENERATED["godot"])
         dirnames[:] = [
             d
             for d in dirnames
             if d not in ignore_dirs
+            and d not in pruned
             and not any(d.startswith(prefix) for prefix in IGNORE_PREFIXES)
         ]
         current = Path(dirpath)
         for filename in filenames:
+            if any(filename.endswith(suffix) for suffix in IGNORE_SUFFIXES):
+                continue
             path = current / filename
             try:
                 rel = path.relative_to(root)
@@ -262,7 +298,8 @@ def build_inventory(root: Path, max_files: int, include_generated: bool = False)
     if include_generated:
         ignore_dirs.discard("runtime")
         ignore_dirs.discard(".playwright-mcp")
-    files = list(iter_files(root, max_files=max_files, ignore_dirs=ignore_dirs))
+    engine_hints: set[str] = set()
+    files = list(iter_files(root, max_files=max_files, ignore_dirs=ignore_dirs, engine_hints=engine_hints))
     ext_counts = Counter(p.suffix.lower() or "[none]" for p in files)
     top_dirs = Counter((p.relative_to(root).parts[0] if len(p.relative_to(root).parts) > 1 else ".") for p in files)
 
@@ -301,7 +338,7 @@ def build_inventory(root: Path, max_files: int, include_generated: bool = False)
         "include_generated": include_generated,
         "extensions": ext_counts.most_common(20),
         "top_dirs": top_dirs.most_common(20),
-        "frameworks": detect_frameworks(files, root),
+        "frameworks": sorted(set(detect_frameworks(files, root)) | {f"{e} (engine dirs auto-skipped)" for e in engine_hints}),
         "docs": rel_list(docs, root),
         "configs": rel_list(configs, root),
         "config_hints": config_hints,
@@ -320,6 +357,15 @@ def emit_markdown(inv: dict) -> str:
         "",
         f"- Root: `{inv['root']}`",
         f"- Files sampled: {inv['file_count_sampled']} / max {inv['max_files']}" + (" (truncated)" if inv["truncated"] else ""),
+        *(
+            [
+                "- NOTE: sampling was truncated - docs/code may be underrepresented. "
+                "Re-run scoped to the docs and source directories (or raise --max-files) "
+                "before trusting absence claims."
+            ]
+            if inv["truncated"]
+            else []
+        ),
         f"- Generated/runtime artifacts included: {'yes' if inv['include_generated'] else 'no'}",
         f"- Framework hints: {', '.join(inv['frameworks']) if inv['frameworks'] else 'none detected'}",
         "",

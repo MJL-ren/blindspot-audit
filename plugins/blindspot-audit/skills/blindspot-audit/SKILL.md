@@ -97,6 +97,12 @@ try the `py` launcher if `python` is not on PATH. Use
 `--include-generated` only when runtime outputs, generated reports, logs,
 or cached artifacts are part of the audit question.
 
+The helper auto-skips engine-generated dirs (Unity `Library`/`Temp`/etc.
+and `.meta` sidecars, Unreal `Intermediate`/`Saved`/etc., Godot `.godot`)
+when it sees engine markers, even nested deep in the tree. If the output
+still says sampling was truncated, do not trust absence claims from it -
+re-run scoped to the docs and source directories first.
+
 If the skill folder is not reachable from the shell (some hosts mount
 plugins outside the sandbox - e.g. Cowork), copy the script into the
 session workspace with the file tools and run that copy, or fall back to a
@@ -164,6 +170,9 @@ First run:
    private surfaces (deploy dir, publish pipeline, public export), the
    ledger inherits the PRIVATE side - verify it stays out of deploys and
    exports (an audit trail leaking into production is itself a blind spot).
+   If the audit boundary contains nested git repos, place the ledger inside
+   the repo that owns the audited surface and verify tracking with that
+   repo (`git -C`), not the outer folder.
 2. Create the ledger from `templates/BLINDSPOT_LEDGER.md` when file writes
    are appropriate.
 3. Add the ledger to the nearest routing surface, such as an operations
@@ -214,6 +223,11 @@ targets those areas:
 !docs/sources/**
 !data/external/raw/**
 ```
+
+In engine projects, also exclude the generated trees: Unity `Library/`,
+`Temp/`, `Obj/`, `Logs/`, `UserSettings/` and `*.meta`; Unreal `Binaries/`,
+`DerivedDataCache/`, `Intermediate/`, `Saved/`; Godot `.godot/`, `.import/`;
+Xcode `DerivedData/`. These can outnumber real source files ten to one.
 
 Prefer targeted paths and `--glob` excludes over repo-wide scans. If a broad
 scan returns huge generated files, stop and rerun with a tighter boundary

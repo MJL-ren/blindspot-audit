@@ -24,6 +24,7 @@ and awareness values in English so runs stay diffable.
 - Record owner awareness as `unknown_unknown`, `unknown_known`, `deliberate_skip`, or `unconfirmed`.
 - Keep rejected/deferred items with the reason so future audits do not rediscover them as new.
 - Keep the Findings table for open items only; move `resolved`/`rejected` rows to the Resolved Archive as one-liners (IDs never renumber).
+- Findings from the external/web scan keep their source URL in the row so the next audit re-verifies instead of re-searching.
 
 ## Audit Log
 

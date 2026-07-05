@@ -35,6 +35,14 @@ equivalent status view). An untracked ledger is a traceability blind spot:
 future checkouts or agents may not see the audit trail even though the file
 exists locally.
 
+Check for nested repositories before trusting any git answer: the audit
+boundary may contain more than one repo (a parent folder holding a game
+repo, a monorepo with vendored repos, a workspace of sibling checkouts).
+Run the tracking check inside the repo that owns the ledger path
+(`git -C <that-dir> ...`), not the outer folder - the outer repo saying
+"untracked" or "clean" proves nothing about the inner one. (Field data: a
+parent folder and its game repo gave different answers on the same path.)
+
 ## Choose The Ledger Location
 
 Prefer the most discoverable project-local documentation location:
@@ -92,6 +100,10 @@ Common routing edits:
 
 - Add it to `docs/operations/README.md` under document list.
 - Add it to `docs/INDEX.md` if that index routes active owner docs.
+- Index-style projects: if docs are routed through a maintained index
+  surface (`Docs/_Index/README.md`, a `DocIndex.csv` catalog, a wiki
+  sidebar), register the ledger there as one entry IN THE PROJECT'S OWN
+  FORMAT - a CSV catalog gets a CSV row, not a markdown link.
 - Mention it in handoff only when the current next session must act on it.
 
 Do not create broad routing systems just for the ledger. Add one small
@@ -109,6 +121,9 @@ On later runs:
 - Read the ledger first.
 - Verify stale or high-impact items against current code/docs.
 - Add only new or changed findings.
+- Findings that came from the external/web scan keep their source URL in
+  the row (Finding or next-check cell). The next audit re-verifies from the
+  source instead of re-searching from scratch.
 - Mark changed status instead of rewriting history (date the change in the
   status cell).
 - Keep local labels and decision terms.

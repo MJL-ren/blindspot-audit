@@ -2,6 +2,45 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.5] - 2026-07-05
+
+Field feedback from a Codex run on a Unity workspace (nested repo, 70k+
+files, 17k `.meta` sidecars, CSV-indexed docs).
+
+### Fixed
+
+- `project_inventory.py` no longer lets engine-generated files eat the
+  sample budget: Unity/Unreal/Godot project roots are detected
+  per-directory during the walk (they are often nested, e.g.
+  `<repo>/UnityProject/<Game>/`), and their generated dirs
+  (Unity `Library`/`Temp`/`Obj`/`Logs`/`UserSettings`/`Build`,
+  Unreal `Binaries`/`DerivedDataCache`/`Intermediate`/`Saved`,
+  Godot `.godot`/`.import`) are pruned only under a confirmed engine root -
+  a non-engine folder named `Library` is unaffected. `.meta` sidecars are
+  skipped globally. Detected engines appear in the framework hints.
+- Truncated sampling now prints an explicit warning that absence claims are
+  untrustworthy and the run should be re-scoped to docs/source dirs first.
+- Added safe generated-dir ignores seen across code/ML projects:
+  `coverage`, `.ipynb_checkpoints`, `wandb`, `mlruns`, `DerivedData`.
+
+### Added
+
+- Nested-repo rule (SKILL.md + `references/ledger-lifecycle.md`): the audit
+  boundary may contain multiple git repos; place the ledger inside the repo
+  that owns the audited surface and verify tracking with `git -C` against
+  that repo, never the outer folder.
+- Index-style routing rule: projects that route docs through a maintained
+  index (`Docs/_Index/README.md`, `DocIndex.csv`, wiki sidebar) get the
+  ledger registered in the project's own index format.
+- Source-URL rule (template + ledger lifecycle): external-scan findings
+  keep their source URL in the ledger row so the next audit re-verifies
+  instead of re-searching.
+- Engine-generated exclude guidance in SKILL.md Search Hygiene.
+
+### Changed
+
+- Bumped plugin metadata to `0.3.5`.
+
 ## [0.3.4] - 2026-07-05
 
 Field feedback from the first registered Claude Code run (grenomj-v3 audit,
