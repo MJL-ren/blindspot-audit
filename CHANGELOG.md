@@ -2,6 +2,39 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.7] - 2026-07-06
+
+Field feedback from two Codex runs: a scoped plan-document audit
+(Fortune_AI routing stub) and a mixed multi-repo workspace audit (Arisu).
+
+### Added
+
+- Audit Scope section in SKILL.md: when the audit targets one document,
+  feature, or module, run scoped - append delta rows to the existing
+  project ledger (never a per-doc ledger file), filter against the
+  target's own owner docs, skip the full-tree inventory, make the
+  fresh-eyes scan targeted or skip it for internal targets, and state the
+  scope in the report header. Matching rule in `ledger-lifecycle.md`.
+- Multi-repo workspace ledger rules: repo-owned findings live in that
+  repo's ledger; workspace-crossing findings get a workspace-level ledger
+  only if the workspace root is durable and private.
+- Sensitive-findings-vs-public-ledger rule: never write exploitable detail
+  into a ledger that gets published; generalized public row + detailed
+  private row (or report-only detail, or ask the owner), with the chosen
+  option recorded.
+- Expensive-command guardrail: audits observe - read-only seconds-fast
+  checks are fine, but builds/test suites/deploys are evidence via
+  existing logs, or become the finding's proposed cheapest check, not
+  something the audit runs uninvited. Deep mode text updated to match.
+- Source-tier rule in the fresh-eyes scan: official/primary sources back
+  findings; community signals are leads that must be verified or parked in
+  the watchlist as "community-reported, unverified"; never one unlabeled
+  citation list.
+
+### Changed
+
+- Bumped plugin metadata to `0.3.7` (both manifests).
+
 ## [0.3.6] - 2026-07-05
 
 Owner feedback after a Codex run: of five findings, a beginner owner could

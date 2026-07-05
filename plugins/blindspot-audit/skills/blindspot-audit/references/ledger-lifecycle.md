@@ -67,6 +67,20 @@ the ledger path should 404, the export manifest/denylist should cover it,
 or the ledger should live outside the published directory entirely. Record
 which check was done in the ledger's audit-log notes.
 
+Multi-repo workspaces: a finding that belongs to one repo goes in THAT
+repo's ledger (create it there if needed); never let a finding about repo
+A live only in repo B's ledger - the next audit of repo A will not see it.
+Workspace-crossing findings go in a workspace-level ledger only when the
+workspace root is itself a durable, private location.
+
+Sensitive findings vs public ledgers: a ledger committed to a public repo
+is published information. Do not write exploitable detail (secret
+locations, unpatched attack paths, credential names) into it. In order of
+preference: keep the detailed row in a private workspace-level ledger and
+put a generalized one-liner in the public one; or generalize the row and
+hand the detail to the owner in the report/chat only; or ask the owner
+where security detail should live. Record which option was used.
+
 ## Create The First Ledger
 
 Use `templates/BLINDSPOT_LEDGER.md` as the starting shape. Write the prose
@@ -124,6 +138,9 @@ On later runs:
 - Findings that came from the external/web scan keep their source URL in
   the row (Finding or next-check cell). The next audit re-verifies from the
   source instead of re-searching from scratch.
+- Scoped audits (a single document, feature, or module) append their delta
+  rows to this project ledger with the scope noted in the audit log - they
+  do not get their own ledger file.
 - Mark changed status instead of rewriting history (date the change in the
   status cell).
 - Keep local labels and decision terms.

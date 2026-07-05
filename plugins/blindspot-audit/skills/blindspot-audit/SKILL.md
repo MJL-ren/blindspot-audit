@@ -79,7 +79,8 @@ it is becoming a generic checklist nag that gets ignored.
 
 - `quick`: read docs and project inventory, return the top blind spots.
 - `deep`: inspect representative code paths, tests, configs, and docs before
-  ranking findings.
+  ranking findings; prefer existing build/test logs over re-running heavy
+  commands (see Guardrails).
 - `interview`: ask one question at a time when the answer would change
   architecture, workflow, scope, or risk.
 - `post-implementation`: compare a completed change, notes, diffs, and tests
@@ -89,6 +90,28 @@ it is becoming a generic checklist nag that gets ignored.
 
 Infer the mode from the user's wording. If the user asks to run it now, do
 not ask mode questions unless the audit boundary is impossible to infer.
+
+## Audit Scope
+
+Default scope is the whole project. When the user points the audit at ONE
+document, feature, or subfolder (a plan review, a single spec, one module),
+run a scoped audit - the full project machinery is overhead there:
+
+- Ledger: read the existing project ledger for filtering and APPEND delta
+  rows to it, scope noted. Do not create a per-document ledger; if the
+  project has no ledger, propose rows inline in the report instead of
+  creating a file for a scoped run.
+- Filter: the self-tracking docs that matter are the target's own owner
+  docs (the plan's linked owners, the module's README) plus the ledger.
+- Inventory: skip the full-tree helper unless the target's surface is
+  unclear; read the target and its direct references instead.
+- Fresh-eyes scan: optional and targeted - only questions the target
+  itself raises. Skip it entirely for purely internal targets.
+- Findings: same 3-7 cap, ranked by what the next action on the target
+  could actually hit.
+
+State the scope in the report header so a later full audit knows this run
+did not cover the rest of the project.
 
 ## Quick Start
 
@@ -303,6 +326,15 @@ invalidated a documented plan - all came from this step.) Cite sources for
 anything found here. Without web access, skip and disclose (see Host Surface
 Policy).
 
+Separate source tiers before writing findings. Official and primary
+sources (platform docs and policy pages, laws and regulator guidance,
+vendor announcements) can back a finding directly. Community signals
+(forums, social threads, third-party blogs) are leads, not evidence:
+verify them against a primary source before promoting to a finding; if
+they cannot be verified, drop them or park them in the watchlist labeled
+"community-reported, unverified". Never mix the tiers in one unlabeled
+citation list - unsorted sources make the report noisy and cost trust.
+
 ### 6. Convert Blind Spots Into Checks
 
 For every finding, include:
@@ -365,6 +397,13 @@ per `references/report-template.md`.
   own tracking docs.
 - Do not require heavy process for personal experiments or early prototypes.
 - Do not make code changes unless the user explicitly asks for remediation.
+- Audits observe; they do not run expensive or side-effectful commands
+  uninvited. Read-only checks that finish in seconds are fine. Builds, full
+  test suites, deploys, or anything that writes artifacts, hits the
+  network, or costs money: prefer existing logs and build artifacts as
+  evidence, and when a heavy command is genuinely decisive, propose it as
+  the finding's cheapest check (or ask first, on choice-capable hosts)
+  instead of running it.
 - Do not claim something is broken solely because a file is absent; say what
   the absence suggests and how to confirm.
 - Treat absent CI, tests, release docs, or deployment files as a blind spot
