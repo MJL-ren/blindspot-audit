@@ -2,6 +2,45 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.3] - 2026-07-05
+
+Follow-up usability pass for hosts without a structured choice UI.
+
+### Changed
+
+- Replaced the no-choice awareness packet with a numbered awareness check:
+  owners can reply with `1, 3`, `I already knew 1 and 3`, or localized
+  variants such as `1번, 3번 알고 있어`.
+- Added parsing guidance for short qualifiers: documented/tracked,
+  intentionally deferred, and wrong/not applicable items.
+- Kept structured choice tool behavior unchanged; this change only affects
+  no-choice/chat/API-style surfaces.
+- Bumped plugin metadata to `0.3.3`.
+
+## [0.3.2] - 2026-07-05
+
+Field feedback from the first registered plugin run on a host without a
+structured choice UI.
+
+### Added
+
+- A generalized "No Structured Choice Tool" flow in `references/host-surfaces.md`:
+  finish the audit, mark awareness as `unconfirmed`, include an
+  `Awareness reply format`, and update the ledger later from the owner's
+  one-message classifications instead of blocking the audit.
+- `Awareness reply format` guidance in `references/report-template.md`.
+- Ledger traceability guidance in `references/ledger-lifecycle.md`: when a
+  project uses version control, check whether the ledger and routing edits
+  are part of the durable tracked state, not just present on disk.
+
+### Changed
+
+- Reframed host guidance around capabilities (`structured choice tool`,
+  `no structured choice tool`, `read-only`) instead of one product-specific
+  adapter.
+- Updated the ledger template host column to use generic host-surface labels.
+- Bumped plugin metadata to `0.3.2`.
+
 ## [0.3.1] - 2026-07-05
 
 Field feedback from the first registered Cowork run (World_Lore audit).

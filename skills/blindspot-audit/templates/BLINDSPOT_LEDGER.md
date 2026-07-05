@@ -29,7 +29,7 @@ and awareness values in English so runs stay diffable.
 
 | Date | Host | Mode | Scope | Notes |
 | --- | --- | --- | --- | --- |
-| <YYYY-MM-DD> | <Claude Code/Codex/OpenCode/CLI/chat> | <quick/deep/interview/planning/post-implementation> | <project/path or boundary> | <inspected surfaces, web scan yes/no, limits> |
+| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation> | <project/path or boundary> | <inspected surfaces, web scan yes/no, limits> |
 
 ## Findings
 

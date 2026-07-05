@@ -102,8 +102,8 @@ manual directory listing. See `references/host-surfaces.md`.
 3. Read only the relevant references:
    - `references/archetypes.md`: choose project type and expected blind spots.
    - `references/lenses.md`: derive and apply audit lenses.
-   - `references/host-surfaces.md`: adapt questions and outputs to Claude
-     Code, Codex, OpenCode, CLI, or chat-only surfaces.
+   - `references/host-surfaces.md`: adapt questions and outputs to
+     choice-capable, no-choice, file-mirrored, CLI, or chat-only surfaces.
    - `references/ledger-lifecycle.md`: discover, create, route, or update a
      durable blindspot ledger.
    - `references/report-template.md`: format the result.
@@ -125,17 +125,20 @@ manual directory listing. See `references/host-surfaces.md`.
 
 ## Host Surface Policy
 
-The audit core should work the same across Claude Code, Codex, OpenCode,
-CLI, and plain chat. Only the interaction style changes. See
+The audit core should work the same across AI coding hosts, CLI tools, and
+plain chat. Only the interaction style changes. See
 `references/host-surfaces.md` for per-host details.
 
-- Choice-capable hosts (Claude Code `AskUserQuestion`, OpenCode `question`):
-  when a decision changes architecture, workflow, scope, or risk - and for
-  the owner-awareness interview - ask one short 2-3 option question and
-  record the selected option in the report or ledger.
-- Codex or chat-only hosts: do not block on non-critical questions. Continue
-  with the safest reversible assumption, mark it as an assumption, and
-  include a `Decision packet` with the options the user should choose later.
+- Choice-capable hosts (for example hosts with a structured question tool):
+  when a decision changes architecture, workflow, scope, or risk, ask one
+  short 2-3 option question and record the selected option in the report or
+  ledger. For the owner-awareness interview, use one compact classification
+  prompt when the host supports it.
+- Hosts without a structured choice tool: do not block on non-critical
+  questions. Continue with the safest reversible assumption, mark it as an
+  assumption, and include a compact numbered awareness check plus any
+  `Decision packet` items so the owner can answer in one later message.
+  Mark awareness values `unconfirmed` until they answer.
 - Hosts without web access: skip the fresh-eyes external scan, say so
   explicitly in the report, and flag time-sensitive domains (regulation,
   platform policy, pricing) as unverified rather than asserting them from
@@ -224,8 +227,9 @@ profile:
 - Hobby or commercial? Private or public? Commercial or public intent
   activates legal, tax, and market lenses that would be pure noise for a
   private hobby project. If intent is not readable from the files, ask
-  before scanning (one short question) - guessing wrong on intent wastes
-  the whole audit.
+  before scanning only when the host can ask cleanly and the answer would
+  change the audit. Otherwise choose the lower-risk reversible assumption
+  and label it.
 
 ### 2. Gather Evidence
 
@@ -301,8 +305,14 @@ each finding:
 distinction changes the follow-up entirely.)
 
 On hosts that cannot ask, mark every awareness value `unconfirmed`, embed
-the interview questions in the report, and put open decisions in a
-`Decision packet`.
+the awareness interview in the report, and put open decisions in a
+`Decision packet`. The right output is still a finished audit, not a stalled
+question: include a numbered awareness check asking which finding numbers
+the owner already knew. Treat omitted numbers as `unknown_unknown`, plain
+number replies as `unknown_known`, and short qualifiers such as "already in
+docs", "intentionally deferred", or "wrong" as `known_known`/downgraded,
+`deliberate_skip`, or rejected/resolved. If they answer, update the
+ledger/classification instead of rerunning the whole audit.
 
 ### 8. Keep The Output Useful
 

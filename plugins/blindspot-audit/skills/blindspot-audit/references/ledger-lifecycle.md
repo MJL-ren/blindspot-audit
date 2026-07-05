@@ -25,6 +25,12 @@ Also check normal routing files when present:
 If an existing ledger is found, use diff-run behavior. Do not create a
 duplicate.
 
+If the project uses version control, also check whether the ledger is part
+of the durable tracked state (for example with `git ls-files` or the host's
+equivalent status view). An untracked ledger is a traceability blind spot:
+future checkouts or agents may not see the audit trail even though the file
+exists locally.
+
 ## Choose The Ledger Location
 
 Prefer the most discoverable project-local documentation location:
@@ -78,6 +84,11 @@ Common routing edits:
 
 Do not create broad routing systems just for the ledger. Add one small
 pointer to an existing routing file.
+
+After routing, verify the ledger and routing edit are visible in the
+project's durable change surface. If they are local-only or untracked, flag
+that in the report as a follow-up rather than silently assuming future
+agents will see them.
 
 ## Update Existing Ledgers
 
