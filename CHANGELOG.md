@@ -14,6 +14,8 @@ All notable changes to the blindspot-audit skill and this repository.
   `dist/blindspot-audit.skill` for Claude desktop app users.
 - `install-claude-user` scripts — Claude Code personal install
   (`~/.claude/skills`), also read by OpenCode.
+- GitHub Actions CI for `dist/blindspot-audit.skill` source/package
+  consistency plus Bash and PowerShell script syntax checks.
 - This changelog.
 
 ### Changed

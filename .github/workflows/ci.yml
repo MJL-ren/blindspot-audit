@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  package-and-script-checks:
+    name: Package and script checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Rebuild Claude desktop skill package
+        run: python scripts/build-skill-package.py
+
+      - name: Verify dist package is committed
+        run: git diff --exit-code -- dist/blindspot-audit.skill
+
+      - name: Validate Bash script syntax
+        run: bash -n scripts/*.sh
+
+      - name: Validate PowerShell script syntax
+        shell: pwsh
+        run: |
+          $hadErrors = $false
+          foreach ($script in Get-ChildItem -Path scripts -Filter *.ps1) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref] $tokens, [ref] $errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $hadErrors = $true
+              Write-Error "PowerShell parse errors in $($script.FullName):"
+              $errors | Format-List | Out-String | Write-Error
+            }
+          }
+          if ($hadErrors) {
+            exit 1
+          }
