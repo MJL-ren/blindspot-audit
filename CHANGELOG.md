@@ -2,6 +2,26 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.8] - 2026-07-06
+
+Release automation and catch-up publishing for the post-`0.3.1` changes.
+
+### Added
+
+- GitHub Actions release publishing: after package/script checks pass on a
+  `main` push, the workflow reads the canonical plugin version, generates
+  release notes from `CHANGELOG.md`, creates the missing GitHub Release,
+  and uploads `dist/blindspot-audit.skill`.
+- `scripts/prepare-github-release.py`: prepares release metadata from
+  `.claude-plugin/plugin.json`, finds the previous semver tag, and includes
+  every newer changelog section in the release notes. This lets the next
+  release carry the accumulated `0.3.2` through `0.3.8` updates instead of
+  only the top entry.
+
+### Changed
+
+- Bumped plugin metadata to `0.3.8` (both manifests).
+
 ## [0.3.7] - 2026-07-06
 
 Field feedback from two Codex runs: a scoped plan-document audit

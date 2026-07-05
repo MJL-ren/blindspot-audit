@@ -77,6 +77,12 @@ python .\scripts\verify-codex-plugin.py
 python3 scripts/verify-codex-plugin.py
 ```
 
+On `main`, GitHub Actions publishes the GitHub Release automatically after
+CI passes when the current `.claude-plugin/plugin.json` version does not
+already have a release. Release notes are generated from `CHANGELOG.md`
+entries newer than the previous semver tag, and
+`dist/blindspot-audit.skill` is attached as the app-user asset.
+
 ## If README.md Changes
 
 The four translations (`README.ko.md`, `README.ja.md`, `README.zh.md`,
