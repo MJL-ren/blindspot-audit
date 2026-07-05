@@ -87,6 +87,10 @@ language the owner speaks.
   store listing they have seen, a backup they already make).
 - Scale to the owner profile: a payments expert does not need "MoR" spelled
   out; a first-time indie dev does.
+- Category expectation gaps (peer expectation scan) name the peers checked
+  and phrase the cheapest check as a decision - "peers X, Y, Z all have
+  reading history; decide to add it or skip it on record" - never as a
+  feature order.
 
 Example (from a real run - a solo dev new to shipping, Unity game headed
 to Steam):

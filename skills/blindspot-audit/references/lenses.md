@@ -97,6 +97,13 @@ fits none of them cleanly, apply the frames yourself:
 - What would an experienced person in this project category ask that the current docs do not answer?
 - What quality bar does the user only recognize when shown examples?
 - What reference implementation, screenshot, existing module, dataset, or external source would reduce ambiguity?
+- What do USERS of this category take for granted? Pick 2-3 representative
+  peers and walk their user-visible surface: which features/elements do all
+  of them have that this project lacks? (Table stakes only - see the peer
+  expectation scan in SKILL.md; differentiator ideas are not findings.)
+- Is the absence a decision the owner made, or an expectation they never
+  knew existed? The prescription is "decide to meet it or skip it on
+  record", not "build it".
 
 ## External Change Lens
 

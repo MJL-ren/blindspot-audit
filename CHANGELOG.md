@@ -2,6 +2,33 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.9] - 2026-07-06
+
+Owner feedback after five real-project ledgers: findings clustered in
+safety/legal/regulation/plumbing, because file absence is easy evidence
+while category expectation gaps need an outside reference - so the audit
+under-asked "do I know how good this category normally is?".
+
+### Added
+
+- Peer expectation scan (SKILL.md fresh-eyes step): pick 2-3 representative
+  peers of the project's specific category and walk their user-visible
+  surface. A gap is a finding only if it passes three table-stakes tests:
+  all peers have it; users would notice and be disappointed; it fits the
+  current stage. The prescription is a decision ("meet the expectation or
+  skip it on record"), never a feature order - a recorded skip becomes a
+  positioning statement.
+- Guardrail: this audit is not a feature brainstorm - differentiator ideas,
+  trends, and nice-to-haves are dropped entirely, not even watchlisted.
+- Domain Fit lens gains "what do users of this category take for granted"
+  probes; archetypes.md now explains that its lists skew toward operations
+  on purpose and category expectations are derived at audit time;
+  report-template requires naming the peers checked.
+
+### Changed
+
+- Bumped plugin metadata to `0.3.9` (both manifests).
+
 ## [0.3.8] - 2026-07-06
 
 Release automation and catch-up publishing for the post-`0.3.1` changes.

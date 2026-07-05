@@ -335,6 +335,28 @@ they cannot be verified, drop them or park them in the watchlist labeled
 "community-reported, unverified". Never mix the tiers in one unlabeled
 citation list - unsorted sources make the report noisy and cost trust.
 
+**Peer expectation scan.** Question 1 is not only about infrastructure -
+it includes what USERS of this category take for granted. Audits naturally
+drift toward safety/legal/plumbing findings because file absence is easy
+evidence; category expectation gaps need an outside reference, so build
+one: pick 2-3 representative peers of this project's category (a tarot
+reading service, a gallery manager, a roguelike) and walk their
+user-visible surface. A gap qualifies as a finding only if it passes all
+three tests:
+
+1. All chosen peers have it (table stakes, not a differentiator).
+2. Users would notice its absence and be disappointed - it breaks an
+   expectation, not a wish.
+3. It fits the project's current stage (a prototype fails this test for
+   most polish-level expectations).
+
+The prescription for an expectation gap is a DECISION, not an
+implementation order: "peers all do X - meet the expectation, or skip it
+deliberately and record why." A recorded skip becomes a positioning
+statement in the ledger's skip list. Weight expectation gaps toward the
+owner's non-expert areas (owner-inverse) - that is where "I didn't know
+this genre always has X" lives.
+
 ### 6. Convert Blind Spots Into Checks
 
 For every finding, include:
@@ -393,6 +415,10 @@ per `references/report-template.md`.
 
 - Do not present generic best practices as findings unless the project
   evidence makes them relevant.
+- This audit is not a feature brainstorm. Category expectation gaps that
+  pass the three table-stakes tests (all peers have it, absence disappoints
+  users, stage-appropriate) are findings; differentiator ideas, trends, and
+  nice-to-haves are not - drop them, do not even watchlist them.
 - Do not re-report items that already exist in the ledger or the project's
   own tracking docs.
 - Do not require heavy process for personal experiments or early prototypes.
