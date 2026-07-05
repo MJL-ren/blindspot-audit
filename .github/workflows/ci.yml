@@ -20,11 +20,14 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Verify committed Claude desktop skill package contents
+        run: python scripts/verify-skill-package.py
+
       - name: Rebuild Claude desktop skill package
         run: python scripts/build-skill-package.py
 
-      - name: Verify dist package is committed
-        run: git diff --exit-code -- dist/blindspot-audit.skill
+      - name: Verify rebuilt Claude desktop skill package contents
+        run: python scripts/verify-skill-package.py
 
       - name: Validate Bash script syntax
         run: bash -n scripts/*.sh
