@@ -9,8 +9,9 @@ they prevent the next audit from rescanning settled ground.
 ```markdown
 **Blindspot Audit**
 
-Scope: <project/path + mode + what was inspected + whether the fresh-eyes
-web scan ran>
+Scope: <project/path + mode + what was inspected + scans applied this run
+(external-change / peer expectation / context intake) + any coverage debt
+cleared (scans that had never run on this project before)>
 Project shape: <archetype(s), stage, owner profile, assumptions>
 Ledger: <created path | read path | proposed path only> + <new/changed/confirmed/downgraded/resolved counts>
 

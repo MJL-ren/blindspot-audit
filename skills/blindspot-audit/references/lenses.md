@@ -120,3 +120,8 @@ workflow. These cannot be answered from the repo alone:
 - Is any research or provider comparison in the project's docs older than a
   few months in a fast-moving area? The document's conclusion may be stale
   even if its method was sound.
+- Did a platform or tool the project ALREADY uses ship a capability that
+  would cheaply dissolve an open finding, watchlist item, or documented
+  friction? Anchor this to the ledger - for each open item ask "did the
+  world just make this cheaper?" A dissolved-friction opportunity is a
+  finding; a free-floating feature idea is not.

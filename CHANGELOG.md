@@ -2,6 +2,43 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.4.3] - 2026-07-06
+
+Field run on a commercial web project (Opus via Claude Code, diff run)
+confirmed 0.4.2's choice-tool and zero-delta rules working, and exposed
+three refinements: obvious context was inferred but never persisted,
+coverage debt went undetected on a ledger with no scan records, and
+audits stay defensively risk-only unless opportunity findings are
+anchored to something mechanical.
+
+### Added
+
+- Context inference ladder (SKILL.md intake + ledger template): context
+  readable from the files is recorded WITHOUT asking as
+  `inferred (evidence: <path>)` with an interview line for corrections;
+  uncertain context proceeds as a labeled assumption with one folded-in
+  confirmation; only context absent from the files gets asked. Personal
+  attributes are recorded only as generalized strong/weak areas, and the
+  resulting `Project Context` section must be written to the ledger
+  whatever the path - inferred-but-unpersisted context forces every
+  future run to re-infer it.
+- Coverage-debt bootstrap (Ledger And Diff Runs rule 8): a ledger whose
+  audit log carries no scan notes (older audit versions) treats EVERY
+  scan as never-run; reusing a previous run's scan results never covers
+  scans that did not run. The report scope line now states scans applied
+  and coverage debt cleared.
+- Opportunity probe (fresh-eyes Question 2, External Change lens,
+  guardrails): walk the ledger's open findings, watchlist, and documented
+  frictions asking "did a platform or tool this project already uses
+  ship a capability that dissolves this cheaply?" A tracked friction
+  whose solution became cheap is a stale assumption and a legitimate
+  finding - the anchor to an already-documented problem is what keeps it
+  out of feature-brainstorm territory; the prescription stays a decision.
+
+### Changed
+
+- Bumped plugin metadata to `0.4.3` (both manifests).
+
 ## [0.4.2] - 2026-07-06
 
 Two field runs on the same knowledge-base project - a diff run (Opus) and

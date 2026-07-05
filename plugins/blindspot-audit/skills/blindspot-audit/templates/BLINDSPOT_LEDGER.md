@@ -29,11 +29,14 @@ and awareness values in English so runs stay diffable.
 
 ## Project Context (verified <YYYY-MM-DD>)
 
-Collected once on the first run, then read instead of re-asked. The owner
-may skip any item - record `skipped (assumption: <working assumption>)`
-and respect it on later runs. If this ledger can reach a public surface,
-keep entries coarse and impersonal (see the sensitive-findings rule in
-`references/ledger-lifecycle.md`).
+Collected once on the first run, then read instead of re-asked. Entries
+the audit read directly from the project files carry
+`inferred (evidence: <path>)` and are recorded without asking - the owner
+can correct them at any interview, which upgrades them to `confirmed`.
+The owner may skip any item - record `skipped (assumption: <working
+assumption>)` and respect it on later runs. If this ledger can reach a
+public surface, keep entries coarse and impersonal (see the
+sensitive-findings rule in `references/ledger-lifecycle.md`).
 
 - Intent: <private hobby / public non-commercial / commercial / undecided>
 - Target users and regions: <who it is for, where they are>

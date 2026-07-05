@@ -255,7 +255,11 @@ When a project already has a blindspot ledger:
    this project (peer expectation scan, context intake, external-change
    scan) is FIRST-RUN work in this run - a zero project delta does not
    satisfy a scan that never happened. Ledgers created by older audit
-   versions may predate these scans entirely.
+   versions may predate these scans entirely - if the audit log carries
+   no scan notes at all, treat EVERY scan as never-run for this project
+   and say so in the report's scope line. Reusing yesterday's scan
+   results is fine for scans that ran; it never covers scans that did
+   not.
 9. When the project delta is near zero, say so plainly and do not invent
    findings to fill space. A zero-delta run still earns its keep by:
    verifying past remediations actually landed, re-verifying
@@ -321,18 +325,33 @@ files rarely state, so collect it before running lenses - but never twice.
 If the ledger already has a `Project Context` section, read it and
 re-verify only entries that look stale; do not re-interview. If the
 section is missing - a true first run, OR a re-run on a ledger created
-before this section existed - collect it now, once: gather the minimum
-that changes the audit: public/private/commercial intent, target users
-and regions, stage and deadline, owner strong and weak areas, and any
-web-search privacy rule. On choice-capable hosts this
-is the natural FIRST interview - one or two compact questions before
-evidence gathering, always including a "prefer not to say / just infer
-it" option. On no-choice hosts, never block: continue with labeled
-assumptions and add a numbered `Context check` beside the awareness check
-(see `references/host-surfaces.md`). A skipped question is recorded as
-`skipped (assumption: ...)` in the ledger and is not re-asked on later
-runs unless the owner reopens it. Store the answers in the ledger's
-Project Context section, dated.
+before this section existed - collect the minimum that changes the audit
+(public/private/commercial intent, target users and regions, stage and
+deadline, owner strong and weak areas, any web-search privacy rule) once,
+using this ladder:
+
+1. Readable from the files - a commerce checkout, a storefront config, a
+   client-deliverables folder: record it WITHOUT asking, labeled
+   `inferred (evidence: <path>)`. Do not ask the owner to confirm the
+   obvious; instead give the interview one line where a wrong inference
+   can be corrected, and upgrade the label to `confirmed` once the owner
+   has engaged with it.
+2. Guessable but uncertain: proceed under a labeled assumption and fold
+   ONE confirmation into the interview instead of blocking on it.
+3. Not in the files (deadlines, regions, strengths, privacy rules): ask -
+   one or two compact questions BEFORE evidence gathering on
+   choice-capable hosts, always with a "prefer not to say / just infer
+   it" option; on no-choice hosts never block - continue with labeled
+   assumptions and add a numbered `Context check` beside the awareness
+   check (see `references/host-surfaces.md`).
+
+Record personal attributes only as generalized strong/weak areas (what
+the audit actually needs), never as identity detail, and apply the
+ledger's public/private rule to inferred context too. A skipped question
+is recorded as `skipped (assumption: ...)` and never re-asked unless the
+owner reopens it. Whatever the path, WRITE the resulting `Project
+Context` section into the ledger (dated) before finishing - context that
+was inferred but never persisted forces every future run to re-infer it.
 
 ### 2. Gather Evidence
 
@@ -367,6 +386,15 @@ When the host has web access, do time-boxed research on two questions:
 2. What changed in the last 6-12 months - regulation, platform policy,
    market or genre conventions, tooling - that this project's documents
    could not possibly contain?
+
+Question 2 cuts both ways: it finds new RISKS, and it finds dissolved
+frictions. Walk the ledger's open findings, watchlist items, and the
+project's documented frictions and ask for each: did a platform or tool
+this project ALREADY uses ship a capability that makes this problem
+cheap to solve? A tracked friction whose solution became cheap is a
+stale assumption, and reporting it is not feature brainstorming
+precisely because it attaches to an already-documented problem. The
+prescription is still a decision - adopt it, or skip it on record.
 
 Question 2 is disproportionately valuable: time-dependent changes are
 structurally invisible to both the repo and the owner's memory. (Field data:
@@ -480,7 +508,12 @@ per `references/report-template.md`.
 - This audit is not a feature brainstorm. Category expectation gaps that
   pass the three table-stakes tests (all peers have it, absence disappoints
   users, stage-appropriate) are findings; differentiator ideas, trends, and
-  nice-to-haves are not - drop them, do not even watchlist them.
+  nice-to-haves are not - drop them, do not even watchlist them. One more
+  bounded exception: an external capability that cheaply dissolves an
+  ALREADY-TRACKED finding, watchlist item, or documented friction is a
+  finding (a stale assumption), not a feature idea - the anchor to an
+  existing tracked problem is exactly what keeps it out of brainstorm
+  territory.
 - Do not re-report items that already exist in the ledger or the project's
   own tracking docs.
 - Do not require heavy process for personal experiments or early prototypes.
