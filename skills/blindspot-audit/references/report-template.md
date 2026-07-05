@@ -16,7 +16,12 @@ Ledger: <created path | read path | proposed path only> + <new/changed/confirmed
 
 Top blind spots (3-7):
 
-1. <finding title>
+1. <finding title - everyday words for what can happen, not the technical
+   term for it>
+   - In plain terms: <one or two sentences a newcomer to this domain would
+     understand: what the thing IS, anchored to something familiar. Include
+     whenever the finding sits outside the owner's expert areas; omit for
+     findings squarely inside their expertise>
    - Why it matters: <project-specific consequence, not a generic rule>
    - Evidence: <observed | absent | inferred | question> <file/path or note;
      source links for external claims>
@@ -67,6 +72,46 @@ Ledger delta:
 - Stop at the current decision point. Do not force implementation unless
   asked.
 
+## Writing Findings The Owner Can Actually Recognize
+
+Unknown-unknown findings are, by definition, about things the owner may
+never have encountered. A jargon title does not convert the unknown - it
+just renames it, and the owner cannot even classify it in the interview.
+The test for every finding: could the owner retell it to a friend after one
+read? This principle is language-independent - apply it in whatever
+language the owner speaks.
+
+- Title = the everyday-words consequence, not the mechanism's proper name.
+- First use of an unavoidable term gets a one-line "which is..." definition.
+- Anchor to something the owner already knows (a familiar checkbox form, a
+  store listing they have seen, a backup they already make).
+- Scale to the owner profile: a payments expert does not need "MoR" spelled
+  out; a first-time indie dev does.
+
+Example (from a real run - a solo dev new to shipping, Unity game headed
+to Steam):
+
+Weak - renamed unknown, owner cannot classify it:
+
+```markdown
+1. No Steam AI content disclosure matrix for the local-embedding pipeline.
+```
+
+Strong - same finding, recognizable on first read:
+
+```markdown
+1. Steam will ask "did you use AI to make this game?" and we have no
+   prepared answer
+   - In plain terms: when you submit a game, Steam shows a short required
+     form asking whether AI was used to create content players see, and how.
+     Your store page displays part of the answer. It is a set of checkboxes,
+     not a legal document - but a wrong or missing answer can delay review.
+   - Why it matters: this project generates some player-visible content
+     with a local AI model, which is exactly what the form asks about.
+   - Cheapest check: read Steam's AI disclosure questions once (5 minutes)
+     and note the intended answers in the GDD.
+```
+
 ## No Structured Choice UI
 
 When the host cannot present a choice question, do not stop the audit just
@@ -87,7 +132,8 @@ newly surfaced by this audit.
 Examples: `1, 3` or `I already knew 1 and 3`
 
 Optional: say `2 is already in docs`, `4 is intentionally deferred`, or
-`5 is wrong` when that applies.
+`5 is wrong` when that applies. If a finding is unclear, reply with its
+number and a question mark (`3?`) and I will re-explain it more simply.
 ```
 
 Suggested Korean prompt:
@@ -99,10 +145,14 @@ Suggested Korean prompt:
 예: `1번, 3번 알고 있어`
 
 특수한 경우: `2번은 문서에 있음`, `4번은 일부러 보류`, `5번은 아님`
+이해가 안 되는 항목은 `3번?`처럼 물음표를 붙여주시면 더 쉽게 다시 설명해 드립니다.
 ```
 
 Interpret number-only replies as `unknown_known`, omitted numbers as
 `unknown_unknown`, documented/tracked replies as `known_known` or
 downgraded/resolved, intentional deferrals as `deliberate_skip`, and wrong
-items as rejected/resolved. If the owner later replies, update the ledger
-statuses/awareness values and report only that delta.
+items as rejected/resolved. A number with a question mark (`3?`, `3번?`,
+"what is 3") means the finding was not understood: re-explain it more
+simply (Ground Rule 6), keep it `unconfirmed`, and only classify after the
+owner responds to the plainer version. If the owner later replies, update
+the ledger statuses/awareness values and report only that delta.

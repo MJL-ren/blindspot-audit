@@ -32,6 +32,11 @@ Use the tool sparingly:
    workflow, or risk - plus the owner-awareness interview (one multi-select
    question listing the top findings works well).
 2. Offer 2-3 clear options, with the recommended option first.
+   Option labels and descriptions follow the same plain-language rule as
+   findings (SKILL.md Ground Rule 6): a label like "Steam AI disclosure
+   matrix" is unclassifiable for an owner who has never seen the term -
+   label by the everyday consequence ("Steam's AI question - no answer
+   yet") and put the one-line explanation in the option description.
 3. Mind the option cap: structured choice tools usually limit options per
    question (Claude Code's `AskUserQuestion` caps at 4, plus a built-in
    "Other"). With 5-7 findings, never silently drop the overflow - either
@@ -126,6 +131,11 @@ Interpret replies generously:
 - Intentionally deferred/skipped/postponed -> `deliberate_skip` with the
   stated reason or trigger.
 - Wrong/not true/not applicable -> rejected/resolved with a correction note.
+- Number plus question mark (`3?`, `3번?`, "what is 3") -> the owner did not
+  understand the finding. Re-explain it in plainer terms (SKILL.md Ground
+  Rule 6), keep awareness `unconfirmed`, and classify only after they
+  respond to the plainer version. Do not count "I don't understand it" as
+  "I didn't know about it".
 
 If the owner replies with classifications, update the ledger and report only
 the delta. Do not rerun the whole audit unless the reply changes scope or

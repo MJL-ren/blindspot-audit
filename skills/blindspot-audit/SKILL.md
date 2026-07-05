@@ -64,6 +64,16 @@ it is becoming a generic checklist nag that gets ignored.
 5. **Hedge regulated domains.** For legal, tax, or regulatory findings, state
    what you found and its source, then say plainly that a professional must
    confirm it. You are a scout, not a lawyer or accountant.
+6. **A finding the owner cannot understand is still an unknown unknown -
+   just renamed.** The audit only succeeds when the gap becomes a KNOWN
+   unknown in the owner's head, and by definition unknown-unknown findings
+   involve things the owner has never encountered. So write each finding at
+   the owner's level (use the Phase 1 owner profile): title it by what can
+   happen in everyday words, not by the technical term for it; define any
+   unavoidable jargon in one line at first use; anchor it to something the
+   owner already knows when possible. This applies in every language. For
+   findings inside the owner's expert areas, stay concise - over-explaining
+   an expert is noise. See `references/report-template.md` for the shape.
 
 ## Modes
 
@@ -311,8 +321,13 @@ Drop candidates that appear in the project's own tracking docs (Ground Rule
 ### 7. Interview The Owner
 
 Present the findings, then ask which ones the owner already knew about (a
-single multi-select question works well on choice-capable hosts). Classify
-each finding:
+single multi-select question works well on choice-capable hosts). The
+interview only measures awareness if the owner UNDERSTOOD each finding
+first (Ground Rule 6) - "I don't know what this means" and "I didn't know
+about this" are different answers, and conflating them corrupts the
+classification. Invite the owner to flag findings they did not understand
+(e.g. replying with the number plus a question mark) and re-explain those
+more simply before classifying. Classify each finding:
 
 | Awareness | Meaning | Prescription |
 |---|---|---|

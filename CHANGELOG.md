@@ -2,6 +2,37 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.6] - 2026-07-05
+
+Owner feedback after a Codex run: of five findings, a beginner owner could
+understand only one. A finding the owner cannot understand is still an
+unknown unknown - just renamed - and it corrupts the awareness interview
+("I don't know what this means" is not "I didn't know about this").
+
+### Added
+
+- Ground Rule 6 (SKILL.md): write every finding at the owner's level -
+  title by the everyday-words consequence rather than the technical term,
+  define unavoidable jargon in one line at first use, anchor to something
+  familiar, stay concise inside the owner's expert areas. Language-
+  independent by design.
+- "In plain terms" field in the report finding shape, included whenever a
+  finding sits outside the owner's expert areas, plus a weak-vs-strong
+  finding example from a real run (Steam's AI disclosure question) in
+  `references/report-template.md`.
+- Number-plus-question-mark path (`3?`, `3번?`): owners can flag findings
+  they did not understand; the auditor re-explains more simply, keeps
+  awareness `unconfirmed`, and never counts "didn't understand" as "didn't
+  know". Added to the awareness prompts, interpretation rules, and the
+  interview workflow step.
+- Plain-language rule extended to structured-choice option labels in
+  `references/host-surfaces.md` (label by consequence, explain in the
+  option description).
+
+### Changed
+
+- Bumped plugin metadata to `0.3.6` (both manifests).
+
 ## [0.3.5] - 2026-07-05
 
 Field feedback from a Codex run on a Unity workspace (nested repo, 70k+
