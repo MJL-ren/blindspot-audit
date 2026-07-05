@@ -2,6 +2,24 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.3.0] - 2026-07-05
+
+### Added
+
+- Codex plugin marketplace support:
+  `codex plugin marketplace add MJL-ren/blindspot-audit --ref main`, then
+  `codex plugin add blindspot-audit@blindspot-audit`.
+- Codex plugin bundle under `plugins/blindspot-audit/`, with a validated
+  `.codex-plugin/plugin.json` and a synced skill copy.
+- `sync-codex-plugin` and `verify-codex-plugin` scripts, plus CI coverage for
+  the Codex plugin marketplace and skill-copy consistency.
+
+### Changed
+
+- Bumped plugin metadata to `0.3.0`.
+- Updated all READMEs and `AGENTS.md` with Codex plugin install and maintenance
+  instructions.
+
 ## [0.2.0] - 2026-07-05
 
 ### Added

@@ -11,12 +11,16 @@ Use the scripts when possible:
 .\scripts\install-claude-user.ps1                                  # Claude Code personal (~/.claude/skills) — also read by OpenCode
 .\scripts\install-claude-project.ps1 -ProjectRoot "C:\path\to\project"
 .\scripts\install-codex.ps1
+codex plugin marketplace add MJL-ren/blindspot-audit --ref main
+codex plugin add blindspot-audit@blindspot-audit
 ```
 
 ```bash
 ./scripts/install-claude-user.sh          # Claude Code personal (~/.claude/skills) — also read by OpenCode
 ./scripts/install-claude-project.sh /path/to/project
 ./scripts/install-codex.sh
+codex plugin marketplace add MJL-ren/blindspot-audit --ref main
+codex plugin add blindspot-audit@blindspot-audit
 ```
 
 Manual install — copy `skills/blindspot-audit` to one of:
@@ -24,6 +28,7 @@ Manual install — copy `skills/blindspot-audit` to one of:
 - Claude Code personal: `~/.claude/skills/blindspot-audit` (OpenCode reads this too)
 - Claude Code project: `<project>/.claude/skills/blindspot-audit` (OpenCode reads this too)
 - Codex: `$CODEX_HOME/skills/blindspot-audit`, or `~/.codex/skills/blindspot-audit` when `CODEX_HOME` is unset
+- Codex plugin marketplace: `codex plugin marketplace add MJL-ren/blindspot-audit --ref main`, then `codex plugin add blindspot-audit@blindspot-audit`
 - OpenCode native: `<project>/.opencode/skills/blindspot-audit` or `~/.config/opencode/skills/blindspot-audit`
 - Claude desktop app / Cowork: use `dist/blindspot-audit.skill` (Save skill button)
 
@@ -58,6 +63,18 @@ ledger first and report the delta.
 
 ```bash
 ./scripts/build-skill-package.sh
+```
+
+3. Sync and verify the Codex plugin copy:
+
+```powershell
+.\scripts\sync-codex-plugin.ps1
+python .\scripts\verify-codex-plugin.py
+```
+
+```bash
+./scripts/sync-codex-plugin.sh
+python3 scripts/verify-codex-plugin.py
 ```
 
 ## If README.md Changes

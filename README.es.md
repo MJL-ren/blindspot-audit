@@ -18,7 +18,7 @@ la skill para el host o proyecto actual.
 ```text
 Install the Blindspot Audit skill from https://github.com/MJL-ren/blindspot-audit.
 
-Please read the repository README and AGENTS.md first, detect whether this environment is Codex, Claude Code, OpenCode, Claude desktop/Cowork, or a plain project folder, then install skills/blindspot-audit using the provided installer script or a safe manual copy.
+Please read the repository README and AGENTS.md first, detect whether this environment is Codex, Claude Code, OpenCode, Claude desktop/Cowork, or a plain project folder, then prefer the documented marketplace/plugin install when this host supports it. Otherwise install skills/blindspot-audit using the provided installer script or a safe manual copy.
 
 Do not modify unrelated project files. If this is a project-local install, use the appropriate project skill folder. If this is a user/global install, use the documented user skill folder. After installation, tell me the installed path and the exact prompt I can use to run a deep blindspot audit.
 ```
@@ -44,6 +44,8 @@ No es una checklist genérica de calidad. La pregunta que responde es:
 
 ```text
 blindspot-audit/
+  .agents/
+    plugins/marketplace.json     # marketplace de plugins de Codex
   .claude-plugin/
     marketplace.json / plugin.json  # marketplace de plugins de Claude Code
   AGENTS.md
@@ -63,6 +65,12 @@ blindspot-audit/
     install-claude-user.ps1 / .sh
     install-claude-project.ps1 / .sh
     install-codex.ps1 / .sh
+    sync-codex-plugin.py / .ps1 / .sh
+    verify-codex-plugin.py
+  plugins/
+    blindspot-audit/
+      .codex-plugin/plugin.json  # manifest del plugin de Codex
+      skills/blindspot-audit/
   skills/
     blindspot-audit/
       SKILL.md
@@ -93,6 +101,24 @@ Dentro de Claude Code ejecuta:
 
 No hace falta clonar el repositorio, y recibes actualizaciones con `/plugin marketplace update blindspot-audit`.
 
+### Codex — marketplace de plugins
+
+Dentro de Codex, añade el Git marketplace e instala el plugin:
+
+```bash
+codex plugin marketplace add MJL-ren/blindspot-audit --ref main
+codex plugin add blindspot-audit@blindspot-audit
+```
+
+Para actualizar más adelante:
+
+```bash
+codex plugin marketplace upgrade blindspot-audit
+codex plugin add blindspot-audit@blindspot-audit
+```
+
+Después de instalar o actualizar, abre un nuevo hilo de Codex para que se carguen las skills del plugin.
+
 ### Claude Code — instalación personal (recomendada; también cubre OpenCode)
 
 Instala en `~/.claude/skills`, una ruta que leen Claude Code y OpenCode. Una instalación sirve para ambos hosts.
@@ -117,7 +143,7 @@ Instala en `<project>/.claude/skills`, que OpenCode también lee dentro de ese p
 ./scripts/install-claude-project.sh /path/to/your-project
 ```
 
-### Codex
+### Codex — instalación manual de la skill
 
 Instala en `$CODEX_HOME/skills` si `CODEX_HOME` existe; si no, en `~/.codex/skills`.
 También puedes pasar una ruta personalizada como argumento.
@@ -175,6 +201,18 @@ Después de cambiar `skills/blindspot-audit`, reconstruye el paquete para la app
 
 ```bash
 ./scripts/build-skill-package.sh
+```
+
+Después sincroniza y verifica la copia del plugin de Codex:
+
+```powershell
+.\scripts\sync-codex-plugin.ps1
+python .\scripts\verify-codex-plugin.py
+```
+
+```bash
+./scripts/sync-codex-plugin.sh
+python3 scripts/verify-codex-plugin.py
 ```
 
 ## Cómo se adapta a cada host

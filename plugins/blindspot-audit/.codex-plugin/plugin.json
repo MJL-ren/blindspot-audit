@@ -1,0 +1,42 @@
+{
+  "name": "blindspot-audit",
+  "version": "0.3.0",
+  "description": "Find project unknown unknowns, hidden risks, stale assumptions, and missing decisions with a durable BLINDSPOT_LEDGER.md.",
+  "author": {
+    "name": "MJL-ren",
+    "url": "https://github.com/MJL-ren"
+  },
+  "homepage": "https://github.com/MJL-ren/blindspot-audit",
+  "repository": "https://github.com/MJL-ren/blindspot-audit",
+  "license": "MIT",
+  "keywords": [
+    "blindspot-audit",
+    "unknown-unknowns",
+    "project-audit",
+    "agent-skills",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Blindspot Audit",
+    "shortDescription": "Find hidden project gaps and keep repeat audits focused",
+    "longDescription": "Use Blindspot Audit to scan software, creative, research, content, and business projects for unknown unknowns: hidden risks, stale assumptions, missing decisions, and unasked questions. It creates or updates BLINDSPOT_LEDGER.md so later audits compare against prior findings and report only what is new, changed, or resolved.",
+    "developerName": "MJL-ren",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/MJL-ren/blindspot-audit",
+    "privacyPolicyURL": "https://github.com/MJL-ren/blindspot-audit",
+    "termsOfServiceURL": "https://github.com/MJL-ren/blindspot-audit/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Run a deep blindspot audit on this project.",
+      "Find unknown unknowns before implementation.",
+      "Update BLINDSPOT_LEDGER.md with new gaps."
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

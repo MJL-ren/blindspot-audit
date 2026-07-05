@@ -21,7 +21,7 @@ AI 에이전트용 스킬이다. unknown unknowns, 숨은 위험, 빠진 결정,
 ```text
 Install the Blindspot Audit skill from https://github.com/MJL-ren/blindspot-audit.
 
-Please read the repository README and AGENTS.md first, detect whether this environment is Codex, Claude Code, OpenCode, Claude desktop/Cowork, or a plain project folder, then install skills/blindspot-audit using the provided installer script or a safe manual copy.
+Please read the repository README and AGENTS.md first, detect whether this environment is Codex, Claude Code, OpenCode, Claude desktop/Cowork, or a plain project folder, then prefer the documented marketplace/plugin install when this host supports it. Otherwise install skills/blindspot-audit using the provided installer script or a safe manual copy.
 
 Do not modify unrelated project files. If this is a project-local install, use the appropriate project skill folder. If this is a user/global install, use the documented user skill folder. After installation, tell me the installed path and the exact prompt I can use to run a deep blindspot audit.
 ```
@@ -57,6 +57,8 @@ Do not modify unrelated project files. If this is a project-local install, use t
 
 ```text
 blindspot-audit/
+  .agents/
+    plugins/marketplace.json     # Codex 플러그인 마켓플레이스
   .claude-plugin/
     marketplace.json / plugin.json  # Claude Code 플러그인 마켓플레이스
   AGENTS.md
@@ -76,6 +78,12 @@ blindspot-audit/
     install-claude-user.ps1 / .sh
     install-claude-project.ps1 / .sh
     install-codex.ps1 / .sh
+    sync-codex-plugin.py / .ps1 / .sh
+    verify-codex-plugin.py
+  plugins/
+    blindspot-audit/
+      .codex-plugin/plugin.json  # Codex 플러그인 manifest
+      skills/blindspot-audit/
   skills/
     blindspot-audit/
       SKILL.md
@@ -107,6 +115,24 @@ Claude Code 안에서 이렇게 실행한다.
 
 클론이 필요 없고, `/plugin marketplace update blindspot-audit`로 업데이트를 받는다.
 
+### Codex — 플러그인 마켓플레이스
+
+Codex 안에서 Git 마켓플레이스를 추가하고 플러그인을 설치한다.
+
+```bash
+codex plugin marketplace add MJL-ren/blindspot-audit --ref main
+codex plugin add blindspot-audit@blindspot-audit
+```
+
+나중에 업데이트하려면 이렇게 실행한다.
+
+```bash
+codex plugin marketplace upgrade blindspot-audit
+codex plugin add blindspot-audit@blindspot-audit
+```
+
+설치나 업데이트 뒤에는 새 Codex 스레드를 열어야 플러그인 스킬이 로드된다.
+
 ### Claude Code — 개인 설치 (추천, OpenCode까지 한 번에)
 
 `~/.claude/skills`에 설치된다. 이 경로는 Claude Code와 OpenCode가 둘 다 읽기
@@ -132,7 +158,7 @@ Claude Code 안에서 이렇게 실행한다.
 ./scripts/install-claude-project.sh /path/to/your-project
 ```
 
-### Codex
+### Codex — 수동 스킬 설치
 
 `CODEX_HOME`이 있으면 `$CODEX_HOME/skills`, 없으면 `~/.codex/skills`에
 설치된다. 원하는 위치를 인자로 넘길 수도 있다.
@@ -193,6 +219,18 @@ Use $blindspot-audit in deep mode on this project. Create or update the BLINDSPO
 
 ```bash
 ./scripts/build-skill-package.sh
+```
+
+그 다음 Codex 플러그인 복사본도 동기화하고 검증한다.
+
+```powershell
+.\scripts\sync-codex-plugin.ps1
+python .\scripts\verify-codex-plugin.py
+```
+
+```bash
+./scripts/sync-codex-plugin.sh
+python3 scripts/verify-codex-plugin.py
 ```
 
 ## 도구별 동작 차이

@@ -29,6 +29,9 @@ jobs:
       - name: Verify rebuilt Claude desktop skill package contents
         run: python scripts/verify-skill-package.py
 
+      - name: Verify Codex plugin marketplace and skill copy
+        run: python scripts/verify-codex-plugin.py
+
       - name: Validate Bash script syntax
         run: bash -n scripts/*.sh
 

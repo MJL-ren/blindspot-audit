@@ -1,0 +1,20 @@
+{
+  "name": "blindspot-audit",
+  "interface": {
+    "displayName": "Blindspot Audit"
+  },
+  "plugins": [
+    {
+      "name": "blindspot-audit",
+      "source": {
+        "source": "local",
+        "path": "./plugins/blindspot-audit"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
