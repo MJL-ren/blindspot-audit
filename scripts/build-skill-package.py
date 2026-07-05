@@ -11,6 +11,7 @@ from pathlib import Path
 SKILL_NAME = "blindspot-audit"
 EXCLUDED_DIRS = {"__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache"}
 EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
+ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 
 def should_include(path: Path) -> bool:
@@ -34,7 +35,11 @@ def build_package(repo_root: Path) -> Path:
         for path in sorted(source.rglob("*")):
             if not should_include(path):
                 continue
-            archive.write(path, Path(SKILL_NAME) / path.relative_to(source))
+            archive_path = f"{SKILL_NAME}/{path.relative_to(source).as_posix()}"
+            info = zipfile.ZipInfo(archive_path, date_time=ZIP_TIMESTAMP)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = (0o644 & 0xFFFF) << 16
+            archive.writestr(info, path.read_bytes())
 
     return output
 
@@ -56,4 +61,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
