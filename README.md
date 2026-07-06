@@ -13,6 +13,10 @@ writing, research, content, business plans — and runs on Claude Code, Codex,
 OpenCode, the Claude desktop app, and plain chat. The audit core is shared;
 each host only adapts how it asks questions and writes results.
 
+It is especially useful for AI-assisted and vibe-coded projects where the
+owner moved fast, shipped ideas quickly, and now needs a calm pass over what
+may have been missed.
+
 ## Quick AI Install
 
 Copy this prompt into Codex, Claude Code, OpenCode, or another coding agent.
@@ -150,7 +154,8 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-To refresh later:
+To refresh later in the Codex app, fully quit and reopen the app. If you
+use the CLI or want to force a refresh, run:
 
 ```bash
 codex plugin marketplace upgrade blindspot-audit
@@ -205,9 +210,9 @@ chat) and click **Save skill**. No terminal needed — this is the easiest
 route for non-developers.
 
 If you installed it as a marketplace **plugin** inside the desktop app
-instead, plugin updates are not automatic by default: run the plugin's
-update check from the app's plugin management screen, or connect your
-GitHub account there to enable automatic sync with this repository.
+instead, restarting the app is not enough to update it. Open the plugin
+management screen and click **Update**, or run `/plugin marketplace update
+blindspot-audit` from Claude Code or another compatible plugin CLI.
 
 ### Manual install
 
@@ -222,6 +227,38 @@ Copy the `skills/blindspot-audit` folder into any of:
 ```
 
 Then start a new agent session (or refresh) so the skill is picked up.
+
+## Update
+
+Use the same route you installed with:
+
+- Claude Code plugin marketplace: run `/plugin marketplace update
+  blindspot-audit`, then start a new Claude Code session.
+- Codex app plugin marketplace: fully quit Codex and reopen it; the app
+  refreshes the installed plugin on restart. If you use the CLI or want to
+  force a refresh, run `codex plugin marketplace upgrade blindspot-audit`,
+  then `codex plugin add blindspot-audit@blindspot-audit`.
+- Claude desktop app marketplace plugin: click **Update** in the app's
+  plugin management screen; restarting the app alone does not update it.
+  The compatible CLI route is `/plugin marketplace update blindspot-audit`.
+- Script installs: pull the latest repo, then re-run the same installer you
+  used. The scripts replace the installed `blindspot-audit` folder instead
+  of merging, so renamed or deleted files do not linger.
+- Claude desktop app `.skill`: get the latest `dist/blindspot-audit.skill`
+  and save it again in the app.
+- Manual installs: replace the whole `skills/blindspot-audit` folder. Do
+  not copy only `SKILL.md`; this skill also needs `references/`, `scripts/`,
+  and `templates/`.
+
+```bash
+git pull
+./scripts/install-claude-user.sh      # or the installer you used before
+```
+
+```powershell
+git pull
+.\scripts\install-claude-user.ps1     # or the installer you used before
+```
 
 ## Using It
 

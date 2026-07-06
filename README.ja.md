@@ -136,7 +136,8 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-後で更新する場合:
+Codex アプリでは、後で更新するときはアプリを完全に終了してから開き直します。CLI を使う場合や、
+強制的に更新したい場合は次を実行します。
 
 ```bash
 codex plugin marketplace upgrade blindspot-audit
@@ -188,9 +189,9 @@ codex plugin add blindspot-audit@blindspot-audit
 `dist/blindspot-audit.skill` を Claude デスクトップアプリのチャットに添付し、**Save skill** を
 押します。ターミナルは不要なので、開発者でない人には一番簡単です。
 
-デスクトップアプリ内でマーケットプレイスの**プラグイン**として入れた場合、更新は既定では自動では
-ありません。アプリのプラグイン管理画面から更新チェックを手動で実行するか、GitHub アカウントを
-連携してこのリポジトリとの自動同期を有効にしてください。
+デスクトップアプリ内でマーケットプレイスの**プラグイン**として入れた場合、アプリを再起動するだけでは
+更新されません。プラグイン管理画面で **Update** ボタンを押すか、Claude Code などの互換プラグイン
+CLI から `/plugin marketplace update blindspot-audit` を実行します。
 
 ### 手動インストール
 
@@ -205,6 +206,39 @@ codex plugin add blindspot-audit@blindspot-audit
 ```
 
 その後、新しいエージェントセッションを開くか更新すると、スキルが読み込まれます。
+
+## アップデート
+
+インストールしたときと同じ経路で更新します。
+
+- Claude Code プラグインマーケットプレイス: `/plugin marketplace update
+  blindspot-audit` を実行し、新しい Claude Code セッションを開きます。
+- Codex アプリのプラグインマーケットプレイス: Codex を完全に終了してから開き直すと、
+  インストール済みプラグインが更新されます。CLI を使う場合や強制的に更新したい場合は
+  `codex plugin marketplace upgrade blindspot-audit` を実行し、続けて
+  `codex plugin add blindspot-audit@blindspot-audit` を実行します。
+- Claude デスクトップアプリのマーケットプレイスプラグイン: アプリのプラグイン管理画面で
+  **Update** ボタンを押します。アプリを再起動するだけでは更新されません。互換 CLI での経路は
+  `/plugin marketplace update blindspot-audit` です。
+- スクリプトでインストールした場合: リポジトリを `git pull` で最新にし、最初に使った
+  インストーラーをもう一度実行します。スクリプトはインストール済みの
+  `blindspot-audit` フォルダをマージせず丸ごと置き換えるため、名前が変わったファイルや
+  削除されたファイルが残りません。
+- Claude デスクトップアプリの `.skill`: 最新の `dist/blindspot-audit.skill` を取得し、
+  アプリで保存し直します。
+- 手動インストール: `skills/blindspot-audit` フォルダ全体を置き換えます。`SKILL.md`
+  だけをコピーしないでください。このスキルは `references/`, `scripts/`, `templates/`
+  も必要です。
+
+```bash
+git pull
+./scripts/install-claude-user.sh      # または最初に使ったインストーラー
+```
+
+```powershell
+git pull
+.\scripts\install-claude-user.ps1     # または最初に使ったインストーラー
+```
 
 ## 使い方
 

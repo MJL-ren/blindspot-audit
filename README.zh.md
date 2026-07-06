@@ -129,7 +129,7 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-之后如需更新：
+在 Codex 应用中，之后更新时完全退出应用再重新打开即可。如果你使用 CLI，或想强制刷新，请运行：
 
 ```bash
 codex plugin marketplace upgrade blindspot-audit
@@ -180,8 +180,8 @@ codex plugin add blindspot-audit@blindspot-audit
 在 Claude 桌面应用里打开 `dist/blindspot-audit.skill`（把它附加到聊天中），然后点击
 **Save skill**。不需要终端，这是非开发者最简单的方式。
 
-如果你是在桌面应用内以市场**插件**方式安装的，插件默认不会自动更新：请在应用的插件管理界面手动执行
-更新检查，或在其中关联 GitHub 账号以启用与本仓库的自动同步。
+如果你是在桌面应用内以市场**插件**方式安装的，仅重启应用不会完成更新。请在插件管理界面点击
+**Update**，或在 Claude Code 等兼容插件 CLI 中运行 `/plugin marketplace update blindspot-audit`。
 
 ### 手动安装
 
@@ -196,6 +196,33 @@ codex plugin add blindspot-audit@blindspot-audit
 ```
 
 然后开启新的 agent 会话，或刷新当前环境，让技能被加载。
+
+## 更新
+
+按你最初安装时使用的同一路径更新：
+
+- Claude Code 插件市场：运行 `/plugin marketplace update blindspot-audit`，
+  然后打开新的 Claude Code 会话。
+- Codex 应用插件市场：完全退出 Codex 后重新打开，应用会刷新已安装的插件。如果你使用 CLI，
+  或想强制刷新，请运行 `codex plugin marketplace upgrade blindspot-audit`，再运行
+  `codex plugin add blindspot-audit@blindspot-audit`。
+- Claude 桌面应用市场插件：在应用的插件管理界面点击 **Update**；仅重启应用不会更新。
+  兼容 CLI 路径是 `/plugin marketplace update blindspot-audit`。
+- 脚本安装：先在仓库里 `git pull`，再重新运行你之前使用的同一个安装脚本。脚本会替换整个
+  已安装的 `blindspot-audit` 文件夹，而不是合并复制，所以改名或删除过的旧文件不会继续残留。
+- Claude 桌面应用 `.skill`：获取最新的 `dist/blindspot-audit.skill`，然后在应用里重新保存。
+- 手动安装：替换整个 `skills/blindspot-audit` 文件夹。不要只复制 `SKILL.md`；这个技能还需要
+  `references/`、`scripts/` 和 `templates/`。
+
+```bash
+git pull
+./scripts/install-claude-user.sh      # 或者你之前使用的安装脚本
+```
+
+```powershell
+git pull
+.\scripts\install-claude-user.ps1     # 或者你之前使用的安装脚本
+```
 
 ## 使用方式
 

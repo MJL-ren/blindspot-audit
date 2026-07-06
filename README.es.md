@@ -131,7 +131,8 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-Para actualizar más adelante:
+En la app de Codex, para actualizar más adelante, cierra Codex por completo y vuelve a abrirlo.
+Si usas la CLI o quieres forzar la actualización, ejecuta:
 
 ```bash
 codex plugin marketplace upgrade blindspot-audit
@@ -182,9 +183,9 @@ También puedes pasar una ruta personalizada como argumento.
 Abre `dist/blindspot-audit.skill` en la app de escritorio de Claude, adjúntalo en el chat y pulsa **Save skill**.
 No hace falta usar terminal; es la ruta más fácil para personas no desarrolladoras.
 
-Si en cambio lo instalaste como **plugin** del marketplace dentro de la app de escritorio, las actualizaciones no son automáticas
-por defecto: ejecuta la comprobación de actualizaciones desde la pantalla de gestión de plugins, o conecta ahí tu cuenta de GitHub
-para activar la sincronización automática con este repositorio.
+Si en cambio lo instalaste como **plugin** del marketplace dentro de la app de escritorio, reiniciar la app no basta para actualizarlo.
+Pulsa **Update** en la pantalla de gestión de plugins, o ejecuta `/plugin marketplace update blindspot-audit` desde Claude Code
+u otra CLI de plugins compatible.
 
 ### Instalación manual
 
@@ -199,6 +200,40 @@ Copia la carpeta `skills/blindspot-audit` en cualquiera de estas ubicaciones:
 ```
 
 Luego abre una nueva sesión del agente, o refresca la actual, para que cargue la skill.
+
+## Actualización
+
+Actualiza usando la misma ruta con la que instalaste:
+
+- Marketplace de plugins de Claude Code: ejecuta `/plugin marketplace update
+  blindspot-audit` y abre una nueva sesión de Claude Code.
+- Marketplace de plugins de la app de Codex: cierra Codex por completo y
+  vuelve a abrirlo; la app refresca el plugin instalado al arrancar. Si usas
+  la CLI o quieres forzar la actualización, ejecuta `codex plugin marketplace
+  upgrade blindspot-audit`, luego `codex plugin add
+  blindspot-audit@blindspot-audit`.
+- Plugin del marketplace en la app de escritorio de Claude: pulsa **Update**
+  en la pantalla de gestión de plugins; reiniciar la app no lo actualiza. La
+  ruta CLI compatible es `/plugin marketplace update blindspot-audit`.
+- Instalaciones con script: actualiza el repo con `git pull` y vuelve a ejecutar
+  el mismo instalador que usaste. Los scripts reemplazan la carpeta instalada
+  `blindspot-audit` en vez de mezclar archivos, así que los archivos renombrados
+  o eliminados no quedan vivos.
+- App de escritorio de Claude `.skill`: consigue el último
+  `dist/blindspot-audit.skill` y guárdalo otra vez en la app.
+- Instalaciones manuales: reemplaza toda la carpeta `skills/blindspot-audit`.
+  No copies solo `SKILL.md`; esta skill también necesita `references/`,
+  `scripts/` y `templates/`.
+
+```bash
+git pull
+./scripts/install-claude-user.sh      # o el instalador que usaste antes
+```
+
+```powershell
+git pull
+.\scripts\install-claude-user.ps1     # o el instalador que usaste antes
+```
 
 ## Uso
 
