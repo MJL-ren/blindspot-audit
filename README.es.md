@@ -45,6 +45,15 @@ Do not modify unrelated project files. After installation, tell me which route y
   Y cuando nada cambió, la ejecución desciende un nivel (paquetes sin ejecutar, revisión de la lista de vigilancia,
   el subsistema menos inspeccionado) en vez de volver con las manos vacías.
 
+## Focus: UX/UI
+
+`focus: ux-ui` sirve para proyectos con pantallas reales para usuarios, donde una auditoría amplia solo miraría la
+interfaz por encima. Recorre pantallas, flujos, estados, entradas, accesibilidad y feedback como preguntas de punto ciego:
+qué nunca se decidió, dónde puede quedarse bloqueado el usuario y qué comprobación barata haría visible la brecha.
+
+Úsalo cuando una auditoría completa marque UX/UI como deuda de cobertura, o cuando la persona dueña sea fuerte en otras áreas
+y quiera una pasada más profunda sobre la superficie de usuario.
+
 No es una checklist genérica de calidad. La pregunta que responde es:
 
 > Dado este proyecto específico, ¿qué es probable que todavía no estemos viendo?

@@ -61,6 +61,18 @@ Do not modify unrelated project files. After installation, tell me which route y
 
 ![Blindspot Audit audit flow](./docs/assets/readme/en/audit-flow.png)
 
+## Focus: UX/UI
+
+![Blindspot Audit UX/UI focus](./docs/assets/readme/en/ux-ui-focus.png)
+
+`focus: ux-ui` is for projects with real user-facing screens where a broad
+audit would only skim the interface. It walks screens, flows, states, inputs,
+accessibility, and feedback as blind-spot questions: what was never decided,
+where users may get stuck, and what cheap check would make the gap visible.
+
+Use it when a full audit flags UX/UI as coverage debt, or when the owner is
+strong elsewhere and wants a deeper pass on the user surface.
+
 This is not a generic quality checklist. The question it answers is:
 "Given this specific project, what are we probably not seeing yet?"
 

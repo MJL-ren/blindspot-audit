@@ -58,6 +58,17 @@ Do not modify unrelated project files. After installation, tell me which route y
 
 ![Blindspot Audit 감사 흐름](./docs/assets/readme/ko/audit-flow.png)
 
+## Focus: UX/UI
+
+![Blindspot Audit UX/UI 포커스](./docs/assets/readme/ko/ux-ui-focus.png)
+
+`focus: ux-ui`는 사용자 화면이 있는 프로젝트에서, 전체 감사가 훑고 지나가기 쉬운
+UI/UX 표면만 좁고 깊게 보는 모드다. 화면, 입력, 상태, 이동 흐름, 접근성,
+피드백을 "아직 결정하지 못한 구멍"으로 보고 가장 싼 확인 방법까지 남긴다.
+
+전체 감사가 UX/UI 커버리지 부채를 짚었거나, 주인이 다른 영역은 강하지만 사용자
+표면은 약하다고 느낄 때 쓰면 된다.
+
 이건 일반적인 품질 체크리스트가 아니다. 핵심 질문은 이거다.
 
 > 이 프로젝트의 현재 상태를 보면, 우리가 아직 못 보고 있는 중요한 구멍은
