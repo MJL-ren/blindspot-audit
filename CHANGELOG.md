@@ -2,6 +2,33 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.5.2] - 2026-07-06
+
+Second field run of the focus machinery (an artist portfolio +
+commission site, focus/ux-ui diff run, Opus via Claude Code) confirmed
+all three 0.5.1 fixes working - the named peer walk even prevented a
+false pricing finding by proving "inquire-only" is peer-normal - and
+exposed one new drift: the run helpfully copied the owner profile into
+host-local memory after writing the ledger.
+
+### Fixed
+
+- Context-canon rule (SKILL.md context intake): the ledger's `Project
+  Context` section is the canonical and only home for project context
+  and owner profile. Do not fork it into host-local memory (CLAUDE.md
+  notes, host memory features) uninvited - a second copy drifts across
+  sessions and hosts, the exact surface-alignment failure the AI And
+  Agent lens flags in audited projects. If host conventions call for a
+  memory note, write a pointer to the ledger, never a restatement.
+
+### Added
+
+- Second field-run row in `evals/RUNS.md` (category-only naming).
+
+### Changed
+
+- Bumped plugin metadata to `0.5.2` (both manifests).
+
 ## [0.5.1] - 2026-07-06
 
 First field run of the 0.5.0 focus machinery (a commercial

@@ -391,6 +391,17 @@ owner reopens it. Whatever the path, WRITE the resulting `Project
 Context` section into the ledger (dated) before finishing - context that
 was inferred but never persisted forces every future run to re-infer it.
 
+The ledger is the CANONICAL and only home for this context. Do not fork
+it into host-local memory (a CLAUDE.md note, a host memory feature)
+uninvited - a second copy drifts across sessions AND across hosts, which
+is exactly the surface-alignment failure the AI And Agent lens flags in
+audited projects. If the host's conventions call for a memory note,
+write a pointer to the ledger's Project Context section, never a
+restatement. (Field data: a run helpfully copied the owner profile into
+host memory after writing the ledger - only that one host would ever
+read the copy, and it would silently go stale on the next context
+change.)
+
 ### 2. Gather Evidence
 
 Use the inventory helper plus targeted reads. Read the project's
