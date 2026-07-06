@@ -130,6 +130,15 @@ menu, or form of this category is expected to DO (keyboard behavior,
 focus handling, states). The question stays table-stakes: "every peer's
 dialog closes on Escape - does this one? did anyone decide?"
 
+The peer walk itself is not delegable to aggregators: NAME the 2-3 real
+peers compared (the report template requires it) and walk their
+user-visible surface directly. Listicles, "best apps" roundups, and
+agency blogs are leads for CHOOSING peers, never the evidence behind a
+table-stakes claim - a category-expectation finding backed only by an
+aggregator link fails the source-tier rule (SKILL.md fresh-eyes scan).
+(Field data: the pack's first run cited two roundup links and named no
+peers - the conclusion happened to hold, but the evidence form did not.)
+
 ## Cheapest Next Checks (propose, never run uninvited)
 
 Audits observe (SKILL.md Guardrails). Offer these as the finding's

@@ -2,6 +2,41 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.5.1] - 2026-07-06
+
+First field run of the 0.5.0 focus machinery (a commercial
+symbolic-reading web app, focus/ux-ui diff run, Opus via Claude Code):
+focus targeting, pack probes, coverage-debt clearing, credit sections,
+and the interview split all worked. Three compliance drifts appeared,
+all of the known "rule exists but is not marked mandatory" shape.
+
+### Fixed
+
+- Peer walk made explicitly non-delegable (`packs/ux-ui.md`): name the
+  2-3 real peers compared; listicles and agency blogs are leads for
+  choosing peers, never the evidence behind a table-stakes claim (the
+  run backed a category-expectation finding with two roundup links and
+  named no peers).
+- New Canonical Values section in `references/report-template.md` plus a
+  matching line in SKILL.md workflow step 6: priority/confidence/
+  awareness are single English enum values even in non-English reports
+  (the run emitted `now~next` ranges and a localized awareness
+  placeholder), and awareness stays `unconfirmed` until the interview
+  happens - a pre-filled guess anchored wrong in the field (a finding
+  pre-labeled `unknown_known` was `unknown_unknown` at interview).
+- `evals/fixtures/frontend-ux-gap/EXPECTED.md` Run B fail criteria now
+  catch aggregator-only category claims, unlabeled source-tier mixing,
+  non-canonical values, and pre-interview awareness guesses.
+
+### Added
+
+- `evals/RUNS.md` started with the first recorded field run
+  (category-only naming per the AGENTS.md privacy rule).
+
+### Changed
+
+- Bumped plugin metadata to `0.5.1` (both manifests).
+
 ## [0.5.0] - 2026-07-06
 
 Owner field feedback from two web-project audits plus repeated

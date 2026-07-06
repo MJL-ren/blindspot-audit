@@ -516,6 +516,11 @@ For every finding, include:
 - priority: now, next, later, or watch.
 - confidence: high, medium, low.
 
+Priority, confidence, and awareness are single English enum values - no
+ranges, no localized placeholders - even when the report is written in
+another language, and awareness stays `unconfirmed` until the interview
+actually happens (see `references/report-template.md`, Canonical Values).
+
 Drop candidates that appear in the project's own tracking docs (Ground Rule
 1), keep the top 3-7, and move the rest to the watchlist or ledger.
 

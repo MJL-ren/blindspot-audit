@@ -75,6 +75,23 @@ Ledger delta:
 - downgraded/resolved: <ids/titles>
 ```
 
+## Canonical Values
+
+`Priority`, `Confidence`, and `Awareness` take exactly the listed values,
+in English, whatever language the rest of the report is written in - one
+value per finding, never ranges and never localized placeholders. (Field
+data: a run emitted `now~next` and a localized "will ask" awareness
+value; both break ledger diffing across sessions and languages.)
+
+Before the awareness interview has actually happened, `Awareness` is
+always `unconfirmed`. Do not pre-fill guesses on choice-capable hosts -
+a wrong pre-label anchors the owner (field data: a finding pre-labeled
+`unknown_known` turned out to be `unknown_unknown` at interview).
+
+External sources cited in the report keep the source tiers separated
+(primary sources vs community leads - SKILL.md fresh-eyes scan), and
+category-expectation findings name the actual peers walked.
+
 ## Tone
 
 - Be direct and calm. The audit should leave the owner calmer, not more

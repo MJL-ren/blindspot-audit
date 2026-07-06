@@ -63,4 +63,10 @@ is untracked. This fixture is graded in two runs.
   cheapest checks.
 - Running heavy tooling uninvited (the pack proposes axe/Lighthouse as
   the owner's checks; it does not run them).
+- Category-expectation claims backed only by aggregator/listicle links
+  without naming 2-3 peers actually compared, or an unlabeled citation
+  list mixing primary sources with community leads.
+- Non-canonical priority/awareness values (ranges like `now~next`,
+  localized placeholders), or awareness values pre-filled with guesses
+  before any interview happened.
 - Reading this EXPECTED.md and citing it as project evidence.
