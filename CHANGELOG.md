@@ -59,6 +59,15 @@ dedicated triage mode and a no-choice-host decision board.
 
 - Host adapters now route decision-heavy no-choice ledger triage through
   the HTML board instead of a giant numbered reply.
+- Ledger-triage host precedence is now explicit: on hosts with a structured
+  choice tool (Cowork, Claude Code), collect decisions through that tool
+  using a bundle-first batching scheme (one multiSelect per cleanup group,
+  one question per decision bundle, priority-ordered rounds) so the 4-option
+  cap rarely bites; the HTML board is the fallback for file-writing hosts
+  with no choice tool, and a numbered reply is for read-only/chat-only
+  hosts. The Cowork adapter now warns that the isolated sandbox cannot serve
+  a reachable `localhost` and the owner's Downloads are unmounted, so
+  `AskUserQuestion` is strongly preferred there over the board.
 - Ledger triage is now explicitly consent-gated: "clean up" or "organize"
   means prepare recommendations and collect owner choices, not apply
   `accepted` / `deferred` / archive decisions from the agent's own

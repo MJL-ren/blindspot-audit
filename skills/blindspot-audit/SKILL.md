@@ -251,13 +251,16 @@ plain chat. Only the interaction style changes. See
   questions. Continue with the safest reversible assumption, mark it as an
   assumption, and include a compact numbered awareness check plus any
   `Decision packet` items so the owner can answer in one later message.
-  Mark awareness values `unconfirmed` until they answer. In
-  `mode: ledger-triage`, never treat "clean up", "organize", "proceed",
-  or equivalent wording as permission to choose ledger outcomes yourself.
-  If the host can write project files and there is any meaningful ledger
-  decision to apply, create the temporary HTML decision board described in
-  `references/ledger-triage.md`; for read-only/chat-only hosts, return a
-  numbered decision packet and wait for the owner reply before editing.
+  Mark awareness values `unconfirmed` until they answer.
+- `mode: ledger-triage` decision routing (all hosts): never treat "clean
+  up", "organize", "proceed", or equivalent wording as permission to choose
+  ledger outcomes yourself. Collect the owner's choices first, preferring
+  the host's own UI in this order: if a structured choice tool exists
+  (Cowork, Claude Code), use it and group findings so a few questions cover
+  many rows; else if the host can write project files, create the temporary
+  HTML decision board; else return a numbered decision packet. See
+  `references/ledger-triage.md`. Leave the ledger unchanged until the owner
+  answers.
 - Hosts without web access: skip the fresh-eyes external scan, say so
   explicitly in the report, and flag time-sensitive domains (regulation,
   platform policy, pricing) as unverified rather than asserting them from

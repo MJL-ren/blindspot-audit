@@ -133,20 +133,60 @@ description" over "ARIA"; and "movement-reduction setting" over
 
 ## Host Behavior
 
+Prefer the host's native decision UI in this precedence order: a structured
+choice tool first (Cowork and Claude Code both have one - it is the
+least-effort surface for the owner); then, on a file-writing host with no
+choice tool, the HTML decision board; then a numbered reply for
+read-only/chat-only hosts or when the owner asked for no temporary files.
+The board is a fallback, not the default on hosts that can ask directly.
+
 ### Structured Choice Hosts
 
-Use the host's choice tool for decisions before editing the ledger. Split
-questions rather than exceeding the host's option cap. Record choices in
-the ledger's audit log and update only selected rows after the owner
-answers.
+Use the host's choice tool (for example `AskUserQuestion`) for decisions
+before editing the ledger. Triage is bundle-first, not row-first: group the
+ledger before asking, so the host's small per-question option cap (Cowork
+and Claude Code cap at 4 options plus a built-in "Other") rarely bites. Good
+grouping collapses a 20-row ledger into roughly 4-7 questions - one or two
+question rounds - not 20.
+
+- `quick_cleanup` and `safe_accept`: one multiSelect question each -
+  "Which of these should I apply? (recommended: all)", one option per row,
+  the owner unchecks any to skip. Many rows become one question.
+- `decision_bundle`: one single-select question per bundle, since the rows
+  share one decision. Recommended action first, then 1-2 alternatives.
+- `needs_owner_detail`: one question per row, but there are usually few.
+  Recommended action first plus 1-2 alternatives; "I don't understand this
+  one" arrives through the built-in Other path and becomes `needs_reexplain`.
+- `needs_external_confirmation`: one multiSelect - "OK to mark these as
+  waiting on outside confirmation?"
+- `needs_reexplain`: not a question. Re-explain in chat, leave awareness
+  `unconfirmed`.
+
+Per row you never need all six actions as options: show the recommended
+action first, 1-2 alternatives, and let Other carry the rest. When a single
+group still exceeds the option cap, split it across question rounds rather
+than dropping the overflow, and run rounds in priority order (blocking or
+highest-impact decisions first).
+
+If, after grouping, there are still more independent decisions than a couple
+of rounds can hold comfortably, do not silently drop any and do not switch
+to a board on your own. Ask the owner: "there are a lot of separate
+decisions here - keep going in batches, or should I build a one-page board
+you fill in at once?" Only build a board on a choice-capable host if the
+owner chooses it.
+
+Record choices in the ledger's audit log and update only selected rows after
+the owner answers.
 
 ### No-Choice File-Writing Hosts
 
-When the host can write files but cannot present a structured choice UI,
-create an HTML decision board with `scripts/ledger_triage_board.py` whenever
-there is any meaningful ledger decision to apply. Use the board even for
-small "obvious" cleanup unless the owner explicitly asked for chat-only or
-read-only output.
+This is the fallback for surfaces with no structured choice tool (for
+example Codex); on a host that has a choice tool, use the section above
+instead. When the host can write files but cannot present a structured
+choice UI, create an HTML decision board with
+`scripts/ledger_triage_board.py` whenever there is any meaningful ledger
+decision to apply. Use the board even for small "obvious" cleanup unless the
+owner explicitly asked for chat-only or read-only output.
 
 Default flow:
 

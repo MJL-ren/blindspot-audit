@@ -75,8 +75,16 @@ interview, ledger updates that preserve IDs and status language.
 ## Cowork (Claude Desktop App) Adapter
 
 Cowork runs the same interactive flow as the structured choice adapter
-(`AskUserQuestion` is available; use it the same way). Two environment
-quirks change HOW to gather evidence:
+(`AskUserQuestion` is available; use it the same way). In
+`mode: ledger-triage`, use `AskUserQuestion` with the batching scheme in
+`references/ledger-triage.md` and strongly prefer it over the HTML board:
+the board fits Cowork poorly because the shell sandbox cannot serve a
+`localhost` the owner's browser can reach, and the owner's Downloads are not
+mounted. If a board is truly unavoidable, present the HTML with the file
+view (`present_files`) so it opens on the owner's machine, then have them
+drop the response JSON into the mounted `.blindspot-tmp` before `validate`.
+
+Two environment quirks change HOW to gather evidence:
 
 - The installed plugin folder is usually NOT reachable from the shell
   sandbox. To run `scripts/project_inventory.py`, copy the script into the
@@ -188,10 +196,13 @@ evidence.
 
 ### Ledger-Triage Decision Boards
 
-In `mode: ledger-triage`, a long numbered reply can become too much for the
-owner. When the host can write files and there is any meaningful ledger
-decision to apply, create a temporary HTML decision board instead of editing
-the ledger from the agent's own judgment:
+In `mode: ledger-triage`, decisions go through the host's native UI in
+precedence order: a structured choice tool first (Cowork, Claude Code - see
+the Structured Choice Tool Adapter above and the batching scheme in
+`references/ledger-triage.md`); then, on a file-writing host with no choice
+tool, a temporary HTML decision board; then a numbered reply for
+read-only/chat-only hosts. The rules below apply when the board is the
+chosen surface. Never edit the ledger from the agent's own judgment:
 
 - Put it under `<project-root>/.blindspot-tmp/ledger-triage-*`, never in
   docs and never in commit scope.
