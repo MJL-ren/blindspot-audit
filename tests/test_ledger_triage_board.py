@@ -123,6 +123,7 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertIn("주요 안내 버튼", html)
         self.assertIn("미확인", html)
         self.assertIn("선택 후 처리", html)
+        self.assertIn("확인 근거 메모가 필요합니다", html)
 
         board_data = json.loads((board_dir / "board-data.json").read_text(encoding="utf-8"))
         item = board_data["groups"][0]["items"][0]
@@ -168,6 +169,65 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertIn("보조 안내 버튼", option["label"])
         self.assertIn("페이지를 떠나지 않고 문의를 보내는 방식", option["tradeoff"])
         self.assertIn("화면읽기 프로그램용 설명", option["tradeoff"])
+
+    def test_option_id_disambiguates_same_action_options(self):
+        custom = self.board_data()
+        item = custom["groups"][0]["items"][0]
+        item["recommendedAction"] = "accept"
+        item["options"] = [
+            {
+                "optionId": "accept-minimal",
+                "action": "accept",
+                "label": "최소 고지로 처리",
+                "tradeoff": "원장에 최소 처리로 남깁니다.",
+                "status": "accepted",
+                "intentDetail": "minimal",
+            },
+            {
+                "optionId": "accept-full",
+                "action": "accept",
+                "label": "전체 작업으로 처리",
+                "tradeoff": "원장에 전체 작업으로 남깁니다.",
+                "status": "accepted",
+                "intentDetail": "full",
+                "recommended": True,
+            },
+        ]
+        self.data.write_text(json.dumps(custom, ensure_ascii=False), encoding="utf-8")
+
+        board_dir = self.create_board()
+        self.write_response(
+            board_dir,
+            decisions=[
+                {
+                    "ledgerId": "BS-1",
+                    "optionId": "accept-full",
+                    "action": "accept",
+                    "awareness": "unconfirmed",
+                    "status": "accepted",
+                    "intentDetail": "full",
+                    "note": "",
+                }
+            ],
+        )
+        _marker, response = ledger_triage_board.validate_response(board_dir)
+        self.assertEqual("accept-full", response["decisions"][0]["optionId"])
+
+        self.write_response(
+            board_dir,
+            decisions=[
+                {
+                    "ledgerId": "BS-1",
+                    "action": "accept",
+                    "awareness": "unconfirmed",
+                    "status": "accepted",
+                    "intentDetail": "full",
+                    "note": "",
+                }
+            ],
+        )
+        with self.assertRaises(SystemExit):
+            ledger_triage_board.validate_response(board_dir)
 
     def test_create_requires_ledger_summary(self):
         missing = self.board_data()
@@ -589,6 +649,77 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertEqual("cheap_verification", secret_item["executionKind"])
         self.assertIn("Git history", secret_item["implementationHint"])
 
+    def test_draft_from_korean_ledger_sections_and_headers(self):
+        self.ledger.write_text(
+            "\n".join(
+                [
+                    "# 렛저",
+                    "",
+                    "## 발견 항목",
+                    "",
+                    "| ID | 항목 | 위험도 | 인지 분류 | 결정 | 후속 제안 |",
+                    "| --- | --- | --- | --- | --- | --- |",
+                    "| BS-20260709-01 | 문의폼 성공 화면이 사이트 안에 없어 사용자가 제출 결과를 놓칠 수 있음 | next | unknown_known | 대기 | 닫아도 됨 |",
+                    "",
+                    "## 감사 이력",
+                    "",
+                    "| 날짜 | 호스트 | 모드 | 결과 |",
+                    "| --- | --- | --- | --- |",
+                    "| 2026-07-09 | Codex | deep | BS-20260709-01 발견 |",
+                    "",
+                    "## Resolved Archive",
+                    "",
+                    "| ID | Finding | Awareness | Status |",
+                    "| --- | --- | --- | --- |",
+                    "| BS-20260709-02 | Already done | unknown_known | resolved |",
+                    "",
+                    "## 결정 묶음",
+                    "",
+                    "| ID | 결정 | 추천 | 선택지 | 왜 중요한가 | 상태 |",
+                    "| --- | --- | --- | --- | --- | --- |",
+                    "| DP-20260709-01 | 공개 전 안내 문구 결정 | 비공개 베타 | 비공개 베타 / 공개 베타 | 공개 범위가 흔들리지 않게 함 | 대기 |",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        out = self.project / "triage-draft-ko.json"
+
+        ledger_triage_board.command_draft(
+            SimpleNamespace(
+                project_root=self.project,
+                ledger=self.ledger,
+                out=out,
+                language="ko",
+                board_id="korean-draft",
+                project_name="",
+                title="",
+            )
+        )
+
+        data = json.loads(out.read_text(encoding="utf-8"))
+        item_ids = [
+            item["ledgerId"]
+            for group in data["groups"]
+            for item in group["items"]
+        ]
+        self.assertIn("BS-20260709-01", item_ids)
+        self.assertIn("DP-20260709-01", item_ids)
+        self.assertNotIn("BS-20260709-02", item_ids)
+        item = next(
+            item
+            for group in data["groups"]
+            for item in group["items"]
+            if item["ledgerId"] == "BS-20260709-01"
+        )
+        self.assertEqual("Findings", item["ledgerSection"])
+        self.assertEqual("대기", item["currentStatus"])
+        self.assertEqual("unknown_known", item["currentAwareness"])
+        self.assertEqual("resolved_candidate", item["recommendedAction"])
+        self.assertIn("문의폼 성공 화면", item["ledgerSummary"])
+        self.assertIn("문의폼 성공 화면", item["plainExplanation"])
+        self.assertIn("닫아도 됨", item["whyItMatters"])
+
     def test_create_refuses_draft_only_scaffold_without_override(self):
         self.ledger.write_text(
             "\n".join(
@@ -688,7 +819,56 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertIn("Git history", plan_text)
         self.assertIn("Do not mark resolved", plan_text)
 
+    def test_write_plan_marks_ledger_only_without_file_todo(self):
+        two_items = self.board_data()
+        implementation = dict(two_items["groups"][0]["items"][0])
+        implementation["ledgerId"] = "BS-2"
+        implementation["shortTitle"] = "Implementation row"
+        implementation["ledgerSummary"] = "A docs change is needed."
+        implementation["executionKind"] = "implementation_plan"
+        implementation["implementationHint"] = "Update docs/contact.md."
+        implementation["recommendedAction"] = "accept"
+        implementation["status"] = "accepted"
+        implementation["intentDetail"] = "docs"
+        two_items["groups"][0]["items"].append(implementation)
+        self.data.write_text(json.dumps(two_items, ensure_ascii=False), encoding="utf-8")
+
+        board_dir = self.create_board()
+        self.write_response(
+            board_dir,
+            decisions=[
+                {
+                    "ledgerId": "BS-1",
+                    "action": "keep_pending",
+                    "awareness": "unconfirmed",
+                    "status": "",
+                    "intentDetail": "",
+                    "note": "학습 제외 처리해 놨으니 신경 안 써도 됨",
+                },
+                {
+                    "ledgerId": "BS-2",
+                    "action": "accept",
+                    "awareness": "unconfirmed",
+                    "status": "accepted",
+                    "intentDetail": "docs",
+                    "note": "",
+                },
+            ],
+        )
+        stream = io.StringIO()
+        with redirect_stdout(stream):
+            ledger_triage_board.command_validate(SimpleNamespace(board_dir=board_dir, write_plan=True))
+        output = stream.getvalue()
+        plan_text = (board_dir / ledger_triage_board.PLAN_NAME).read_text(encoding="utf-8")
+        self.assertIn("Owner notes that may justify ledger-only closure or deferral:", output)
+        self.assertIn("학습 제외 처리", output)
+        self.assertIn("BS-1: ledger only; no project file change expected.", plan_text)
+        self.assertIn("BS-2: Update docs/contact.md.", plan_text)
+
     def test_cleanup_prints_audit_log_suggestion(self):
+        english = self.board_data()
+        english["language"] = "en"
+        self.data.write_text(json.dumps(english, ensure_ascii=False), encoding="utf-8")
         board_dir = self.create_board()
         self.write_response(board_dir)
 
@@ -699,6 +879,18 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertIn("Audit Log suggestion:", output)
         self.assertIn("temp cleanup completed", output)
         self.assertFalse(board_dir.exists())
+
+    def test_cleanup_prints_korean_audit_log_suggestion_for_korean_board(self):
+        board_dir = self.create_board()
+        self.write_response(board_dir)
+
+        stream = io.StringIO()
+        with redirect_stdout(stream):
+            ledger_triage_board.command_cleanup(SimpleNamespace(board_dir=board_dir, confirm_applied=True))
+        output = stream.getvalue()
+        self.assertIn("<호스트>", output)
+        self.assertIn("선택 1건", output)
+        self.assertIn("임시 선택판 정리 완료", output)
 
 
 if __name__ == "__main__":

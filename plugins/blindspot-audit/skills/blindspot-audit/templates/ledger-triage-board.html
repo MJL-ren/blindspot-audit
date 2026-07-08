@@ -237,6 +237,10 @@
       font: inherit;
       background: #fff;
     }
+    .item.needs-note textarea {
+      border-color: var(--warn);
+      box-shadow: 0 0 0 3px rgba(180, 90, 22, 0.12);
+    }
     .submit-panel {
       padding: 16px;
       margin-top: 22px;
@@ -317,6 +321,8 @@
         whyLabel: "지금 신경 써야 하는 이유",
         decisionQuestionLabel: "지금 고를 선택",
         notePlaceholder: "선택 이유나 남기고 싶은 메모가 있으면 적어주세요. 없어도 괜찮습니다.",
+        resolvedNotePlaceholder: "해결 후보로 보려면 확인 근거를 짧게 적어주세요. 예: 내가 확인했고 닫아도 됨",
+        resolvedNoteRequired: "해결 후보로 고른 항목은 확인 근거 메모가 필요합니다: {ids}",
         submitTitle: "선택한 결정 제출",
         selectedLabel: "개 선택됨",
         partialHint: "선택하지 않은 항목은 응답 JSON에 포함되지 않고 ledger에서도 그대로 남습니다.",
@@ -374,6 +380,8 @@
         whyLabel: "Why to care now",
         decisionQuestionLabel: "Choice to make",
         notePlaceholder: "Add a note if the choice needs context. You can leave this blank.",
+        resolvedNotePlaceholder: "Likely resolved choices need evidence. Example: I checked this and it can be closed.",
+        resolvedNoteRequired: "Likely resolved items need an evidence note before submit: {ids}",
         submitTitle: "Submit selected decisions",
         selectedLabel: "selected",
         partialHint: "Unselected items are not included in the response JSON and remain unchanged in the ledger.",
@@ -431,6 +439,8 @@
         whyLabel: "今気にする理由",
         decisionQuestionLabel: "今選ぶこと",
         notePlaceholder: "理由やメモがあれば書いてください。空でも構いません。",
+        resolvedNotePlaceholder: "解決候補にする場合は、確認根拠を短く書いてください。",
+        resolvedNoteRequired: "解決候補には確認メモが必要です: {ids}",
         submitTitle: "選択した決定を送信",
         selectedLabel: "件選択",
         partialHint: "未選択の項目は response JSON に入らず、台帳でも変更されません。",
@@ -481,6 +491,8 @@
         whyLabel: "现在需要注意的原因",
         decisionQuestionLabel: "现在要选择的事",
         notePlaceholder: "如有理由或备注可写在这里，也可以留空。",
+        resolvedNotePlaceholder: "选择可能已解决时，请简短写下确认依据。",
+        resolvedNoteRequired: "可能已解决的项目需要确认备注: {ids}",
         submitTitle: "提交已选择决定",
         selectedLabel: "项已选择",
         partialHint: "未选择项目不会进入 response JSON，台账中也保持不变。",
@@ -531,6 +543,8 @@
         whyLabel: "Por qué importa ahora",
         decisionQuestionLabel: "Decisión a tomar",
         notePlaceholder: "Agrega una nota si hace falta contexto. Puedes dejarlo vacío.",
+        resolvedNotePlaceholder: "Si parece resuelto, escribe una evidencia breve antes de enviar.",
+        resolvedNoteRequired: "Los elementos que parecen resueltos necesitan una nota de evidencia: {ids}",
         submitTitle: "Enviar decisiones seleccionadas",
         selectedLabel: "seleccionados",
         partialHint: "Los elementos no seleccionados no entran al response JSON y quedan igual en el ledger.",
@@ -599,14 +613,74 @@
     function optionList(item) { return Array.isArray(item.options) ? item.options : []; }
     function allItems() { return (data.groups || []).flatMap(group => group.items || []); }
     function selectedOption(item) {
-      const action = selected.get(item.ledgerId);
-      return optionList(item).find(opt => opt.action === action) || null;
+      const optionId = selected.get(item.ledgerId);
+      return optionList(item).find(opt => opt.optionId === optionId) || null;
+    }
+    function recommendedOptionId(item) {
+      const recommended = optionList(item).find(opt => opt.recommended)
+        || optionList(item).find(opt => opt.action === (item.recommendedAction || "keep_pending"))
+        || optionList(item)[0];
+      return recommended ? recommended.optionId : "";
     }
     function optionEffectKind(item, action) {
       if (action === "accept") return item.executionKind || "ledger_only";
       if (action === "resolved_candidate") return "cheap_verification";
       if (action === "needs_reexplain") return "owner_followup";
       return "ledger_only";
+    }
+    function noteElement(item) {
+      return document.querySelector(`textarea[data-note="${CSS.escape(item.ledgerId)}"]`);
+    }
+    function noteText(item) {
+      const el = noteElement(item);
+      return el ? el.value.trim() : "";
+    }
+    function missingResolvedNotes() {
+      return allItems().filter(item => {
+        if (!selected.has(item.ledgerId)) return false;
+        const option = selectedOption(item);
+        return option && option.action === "resolved_candidate" && !noteText(item);
+      });
+    }
+    function showMissingResolvedNotes(items) {
+      const ids = items.map(item => item.ledgerId).join(", ");
+      const status = document.getElementById("submit-status");
+      status.textContent = copy.resolvedNoteRequired.replace("{ids}", ids);
+      status.className = "status bad";
+      const first = items[0];
+      if (first) {
+        const el = noteElement(first);
+        if (el) {
+          el.focus();
+          el.scrollIntoView({ block: "center" });
+        }
+      }
+    }
+    function ensureCanBuildPayload() {
+      if (selected.size === 0) {
+        document.getElementById("submit-status").textContent = copy.missing;
+        document.getElementById("submit-status").className = "status bad";
+        return false;
+      }
+      const missingNotes = missingResolvedNotes();
+      if (missingNotes.length) {
+        showMissingResolvedNotes(missingNotes);
+        return false;
+      }
+      return true;
+    }
+    function refreshNoteState() {
+      document.querySelectorAll(".item").forEach(article => {
+        const note = article.querySelector("textarea[data-note]");
+        if (!note) return;
+        const articleLedgerId = note.dataset.note;
+        const articleItem = allItems().find(entry => entry.ledgerId === articleLedgerId);
+        const option = articleItem ? selectedOption(articleItem) : null;
+        article.classList.toggle(
+          "needs-note",
+          Boolean(option && option.action === "resolved_candidate" && !note.value.trim())
+        );
+      });
     }
 
     function render() {
@@ -661,7 +735,8 @@
         const group = (data.groups || []).find(entry => entry.groupId === btn.dataset.applyGroup);
         if (!group) return;
         for (const item of group.items || []) {
-          setChoice(item.ledgerId, item.recommendedAction || "keep_pending", true);
+          const optionId = recommendedOptionId(item);
+          if (optionId) setChoice(item.ledgerId, optionId, true);
         }
         updateProgress();
       });
@@ -691,25 +766,28 @@
         <textarea data-note="${esc(item.ledgerId)}" placeholder="${esc(copy.notePlaceholder)}"></textarea>
       `;
       const wrap = article.querySelector(".options");
+      const textarea = article.querySelector("textarea");
+      if (textarea) textarea.addEventListener("input", updateProgress);
       for (const opt of opts) {
         const action = opt.action;
-        const id = `${item.ledgerId}-${action}`;
+        const optionId = opt.optionId || action;
+        const id = `${item.ledgerId}-${optionId}`;
         const label = opt.label || actionLabel(action);
         const tradeoff = opt.tradeoff || "";
         const effect = executionKindLabel(optionEffectKind(item, action));
         const row = document.createElement("label");
         row.className = "option";
         row.dataset.ledgerId = item.ledgerId;
-        row.dataset.action = action;
+        row.dataset.optionId = optionId;
         row.innerHTML = `
-          <input type="radio" name="${esc(item.ledgerId)}" id="${esc(id)}" value="${esc(action)}">
+          <input type="radio" name="${esc(item.ledgerId)}" id="${esc(id)}" value="${esc(optionId)}">
           <span>
             <span class="option-title">${esc(label)}${opt.recommended ? ` <span class="recommended-pill">${esc(copy.recommended)}</span>` : ""}<span class="effect-pill">${esc(copy.effectLabel)}: ${esc(effect)}</span></span>
             <p>${esc(tradeoff)}</p>
           </span>
         `;
         row.addEventListener("click", () => {
-          setChoice(item.ledgerId, action, false);
+          setChoice(item.ledgerId, optionId, false);
           updateProgress();
         });
         wrap.appendChild(row);
@@ -717,16 +795,25 @@
       return article;
     }
 
-    function setChoice(ledgerId, action, updateRadio) {
-      selected.set(ledgerId, action);
+    function setChoice(ledgerId, optionId, updateRadio) {
+      selected.set(ledgerId, optionId);
+      const item = allItems().find(entry => entry.ledgerId === ledgerId);
+      const selectedOptionForItem = item ? optionList(item).find(opt => opt.optionId === optionId) : null;
+      const noteEl = item ? noteElement(item) : null;
+      if (noteEl) {
+        const needsNote = selectedOptionForItem && selectedOptionForItem.action === "resolved_candidate";
+        noteEl.required = Boolean(needsNote);
+        noteEl.placeholder = needsNote ? copy.resolvedNotePlaceholder : copy.notePlaceholder;
+      }
       document.querySelectorAll(`.option[data-ledger-id="${CSS.escape(ledgerId)}"]`).forEach(el => {
-        const isSelected = el.dataset.action === action;
+        const isSelected = el.dataset.optionId === optionId;
         el.classList.toggle("selected", isSelected);
         if (updateRadio) {
           const input = el.querySelector("input");
           if (input) input.checked = isSelected;
         }
       });
+      refreshNoteState();
     }
 
     function buildPayload() {
@@ -737,7 +824,8 @@
           const option = selectedOption(item) || {};
           return {
             ledgerId: item.ledgerId,
-            action: selected.get(item.ledgerId),
+            optionId: option.optionId || selected.get(item.ledgerId),
+            action: option.action || "",
             awareness: item.responseAwareness || item.currentAwareness || "unconfirmed",
             status: option.status || "",
             intentDetail: option.intentDetail || "",
@@ -760,12 +848,17 @@
     }
 
     function updateProgress() {
+      refreshNoteState();
       const total = allItems().length;
       const done = selected.size;
       document.getElementById("progress-text").textContent = `${done} / ${total} ${copy.selectedLabel}`;
       document.getElementById("progress-fill").style.width = total ? `${(done / total) * 100}%` : "0%";
       const status = document.getElementById("submit-status");
-      if (done > 0) {
+      const missingNotes = missingResolvedNotes();
+      if (done > 0 && missingNotes.length) {
+        status.textContent = copy.resolvedNoteRequired.replace("{ids}", missingNotes.map(item => item.ledgerId).join(", "));
+        status.className = "status bad";
+      } else if (done > 0) {
         status.textContent = copy.ready;
         status.className = "status good";
       } else {
@@ -775,11 +868,7 @@
     }
 
     async function submitResponse() {
-      if (selected.size === 0) {
-        document.getElementById("submit-status").textContent = copy.missing;
-        document.getElementById("submit-status").className = "status bad";
-        return;
-      }
+      if (!ensureCanBuildPayload()) return;
       const json = JSON.stringify(buildPayload(), null, 2);
       try {
         const res = await fetch("/api/triage-response", {
@@ -804,6 +893,7 @@
     }
 
     async function copyResponse() {
+      if (!ensureCanBuildPayload()) return;
       const json = JSON.stringify(buildPayload(), null, 2);
       try {
         await navigator.clipboard.writeText(json);
@@ -820,6 +910,7 @@
     document.getElementById("submit-button").addEventListener("click", submitResponse);
     document.getElementById("copy-button").addEventListener("click", copyResponse);
     document.getElementById("show-button").addEventListener("click", () => {
+      if (!ensureCanBuildPayload()) return;
       const pre = document.getElementById("response-preview");
       pre.textContent = JSON.stringify(buildPayload(), null, 2);
       pre.style.display = pre.style.display === "block" ? "none" : "block";

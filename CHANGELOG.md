@@ -54,6 +54,12 @@ dedicated triage mode and a no-choice-host decision board.
   or secret terms in exposure contexts, so normal phrases such as password
   reset copy, API docs, and token budgets do not trigger Git-history secret
   scan guidance.
+- `draft` now handles localized ledger tables such as Korean `발견 항목`,
+  `결정 묶음`, and `감사 이력`, with Unicode-aware header matching so
+  Korean `상태`, `인지 상태`, and `항목` columns are parsed correctly.
+- `draft` now also uses Korean `결정`, `인지 분류`, and `후속 제안`
+  columns to seed current status, awareness, follow-up explanation, and
+  close/reject/defer recommendation hints.
 
 ### Changed
 
@@ -98,6 +104,16 @@ dedicated triage mode and a no-choice-host decision board.
   `intentDetail`, while older `statusIntent` inputs remain a compatibility
   path. Secret/token-related closure paths now surface current-tree and Git
   history checks before a row is treated as resolved.
+- Decision responses now include `optionId` so multiple choices with the
+  same action, such as two different `accept` paths, validate against the
+  exact selected option instead of collapsing by action alone.
+- Temporary application plans now label ledger-only choices as ledger-only
+  instead of inventing file-edit TODOs, and validation highlights owner
+  notes that may justify a ledger-only closure or deferral.
+- `serve` can write its localhost URL to a file with `--write-url`, and
+  cleanup prints a localized Audit Log suggestion for localized boards.
+- The HTML board now blocks `resolved_candidate` submission, copied JSON,
+  and preview JSON until the owner enters a short evidence note.
 - Ledger triage board directory names preserve a longer readable board id
   token so multiple temporary boards are easier to distinguish.
 - Ledger lifecycle and ledger template now document that triage boards are

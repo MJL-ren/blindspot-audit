@@ -417,6 +417,7 @@ def normalize_option(
     language: str,
     inherited_status: str = "",
     inherited_intent_detail: str = "",
+    index: int = 0,
 ) -> dict[str, Any]:
     action = option.get("action")
     if action not in ALLOWED_ACTIONS:
@@ -428,7 +429,25 @@ def normalize_option(
         )
     else:
         status, intent_detail = normalize_status_detail(option, str(action))
+    raw_option_id = str(option.get("optionId") or option.get("id") or "").strip()
+    if raw_option_id:
+        option_id = safe_path_token(raw_option_id)
+    else:
+        option_id = safe_path_token(
+            "-".join(
+                str(part)
+                for part in (
+                    action,
+                    status,
+                    intent_detail,
+                    option.get("label") or fallback.get("label") or "",
+                    index + 1,
+                )
+                if part
+            )
+        )
     normalized = {
+        "optionId": option_id,
         "action": action,
         "label": owner_facing_text(language, option.get("label") or fallback.get("label") or action),
         "tradeoff": owner_facing_text(
@@ -605,29 +624,38 @@ def normalize_board_data(raw: dict[str, Any], root: Path, ledger: Path) -> dict[
             if not isinstance(raw_options, list) or not raw_options:
                 raw_options = default_options_for_language(language)
             options = []
-            for option in raw_options:
+            option_ids: set[str] = set()
+            for option_index, option in enumerate(raw_options):
                 if not isinstance(option, dict):
                     raise SystemExit(f"Item {ledger_id} has a non-object option")
-                options.append(
-                    normalize_option(
-                        option,
-                        recommended,
-                        language,
-                        item_status,
-                        item_intent_detail,
+                normalized_option = normalize_option(
+                    option,
+                    recommended,
+                    language,
+                    item_status,
+                    item_intent_detail,
+                    option_index,
+                )
+                if normalized_option["optionId"] in option_ids:
+                    raise SystemExit(
+                        f"Item {ledger_id} has duplicate optionId: {normalized_option['optionId']}"
                     )
-                )
+                option_ids.add(normalized_option["optionId"])
+                options.append(normalized_option)
             if recommended not in {option["action"] for option in options}:
-                options.insert(
-                    0,
-                    normalize_option(
-                        {"action": recommended, "recommended": True},
-                        recommended,
-                        language,
-                        item_status,
-                        item_intent_detail,
-                    ),
+                normalized_option = normalize_option(
+                    {"action": recommended, "recommended": True},
+                    recommended,
+                    language,
+                    item_status,
+                    item_intent_detail,
+                    -1,
                 )
+                if normalized_option["optionId"] in option_ids:
+                    raise SystemExit(
+                        f"Item {ledger_id} has duplicate optionId: {normalized_option['optionId']}"
+                    )
+                options.insert(0, normalized_option)
             ledger_summary = str(
                 item.get("ledgerSummary")
                 or item.get("ledgerText")
@@ -745,7 +773,7 @@ def is_markdown_separator(cells: list[str]) -> bool:
 
 
 def normalize_header(value: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "", value.lower())
+    return "".join(ch for ch in value.lower() if ch.isalnum())
 
 
 def table_value(row: dict[str, str], *names: str) -> str:
@@ -761,6 +789,37 @@ def slugify_group_id(value: str) -> str:
     return token or "ledger-items"
 
 
+def canonical_ledger_section(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    lowered = text.lower()
+    normalized = normalize_header(text)
+    if lowered in {"findings", "finding"} or normalized in {"발견항목", "발견", "점검항목"}:
+        return "Findings"
+    if lowered in {"decision packet", "decisions"} or normalized in {
+        "결정묶음",
+        "결정패킷",
+        "결정항목",
+        "결정대기",
+    }:
+        return "Decision Packet"
+    if lowered in {"resolved archive", "resolved"} or normalized in {
+        "해결된항목보관함",
+        "해결항목",
+        "해결됨",
+        "해결보관함",
+    }:
+        return "Resolved Archive"
+    if lowered in {"skipped for now", "skipped"} or normalized in {
+        "일단건너뜀",
+        "나중에보기",
+        "보류항목",
+    }:
+        return "Skipped For Now"
+    if lowered in {"audit log", "audit history"} or normalized in {"감사이력", "점검이력", "기록"}:
+        return "Audit Log"
+    return text
+
+
 def first_sentence(value: str, limit: int = 80) -> str:
     text = re.sub(r"\s+", " ", value or "").strip()
     if not text:
@@ -769,6 +828,34 @@ def first_sentence(value: str, limit: int = 80) -> str:
     if len(sentence) <= limit:
         return sentence
     return sentence[: limit - 1].rstrip() + "..."
+
+
+def close_cue_present(value: str) -> bool:
+    text = re.sub(r"\s+", " ", str(value or "")).strip().lower()
+    if not text:
+        return False
+    return bool(
+        re.search(
+            r"(닫아도\s*됨|닫아도\s*됩니다|닫기|해결\s*처리|해결됨|이미\s*해결|"
+            r"완료|신경\s*안\s*써도|학습\s*제외|확인했으니\s*해결|"
+            r"can\s*close|close\s*this|already\s*resolved|resolved|done)",
+            text,
+        )
+    )
+
+
+def reject_cue_present(value: str) -> bool:
+    text = re.sub(r"\s+", " ", str(value or "")).strip().lower()
+    if not text:
+        return False
+    return bool(re.search(r"(해당\s*없|하지\s*않|안\s*함|거절|제외|not\s*applicable|reject)", text))
+
+
+def defer_cue_present(value: str) -> bool:
+    text = re.sub(r"\s+", " ", str(value or "")).strip().lower()
+    if not text:
+        return False
+    return bool(re.search(r"(보류|나중|추후|다음에|defer|later)", text))
 
 
 def status_is_open(value: str) -> bool:
@@ -793,16 +880,62 @@ def classify_draft_item(section: str, text: str, status: str) -> tuple[str, str]
     return "decision_bundle", "ledger_only"
 
 
-def draft_explanation(language: str) -> tuple[str, str, str]:
+def infer_draft_status(row: dict[str, str], section: str) -> str:
+    status = table_value(row, "Status", "상태", "처리 상태", "상태값")
+    if not status and section != "Decision Packet":
+        status = table_value(row, "결정", "처리")
+    return status
+
+
+def infer_draft_recommendation(status: str, awareness: str, ledger_summary: str, followup: str) -> str:
+    combined = " ".join(str(part or "") for part in (status, awareness, ledger_summary, followup))
+    if close_cue_present(combined):
+        return "resolved_candidate"
+    if reject_cue_present(combined):
+        return "reject"
+    if defer_cue_present(combined):
+        return "defer"
+    lowered_status = status.lower()
+    if lowered_status in {"accepted", "수용됨", "승인", "승인됨"}:
+        return "accept"
+    if lowered_status in {"deferred", "보류", "보류됨"}:
+        return "defer"
+    return "keep_pending"
+
+
+def draft_explanation(language: str, ledger_summary: str = "", followup: str = "") -> tuple[str, str, str]:
+    summary = first_sentence(ledger_summary, 120)
+    followup_text = first_sentence(followup, 120)
     if language_key(language) == "ko":
+        explanation = (
+            f"원장에 적힌 핵심 내용은 '{summary}'입니다. 이 항목을 계속 열어 둘지, "
+            "확인 후 해결 후보로 볼지, 하지 않기로 기록할지 정하면 됩니다."
+            if summary != "Ledger item"
+            else "이 항목은 기존 원장에 열려 있는 항목입니다. 계속 추적할지, 확인 후 닫을지, 하지 않기로 기록할지 정하면 됩니다."
+        )
+        why = (
+            f"원장에 적힌 후속 제안은 '{followup_text}'입니다. 방향을 정해두면 다음 점검에서 같은 질문을 반복하지 않습니다."
+            if followup_text != "Ledger item"
+            else "이 항목을 그대로 두면 다음 점검에서도 계속 다시 보게 됩니다. 지금 방향만 정해도 원장이 훨씬 읽기 쉬워집니다."
+        )
         return (
-            "이 항목은 기존 원장에 열려 있는 항목입니다. 내용을 확인한 뒤 계속 추적할지, 나중으로 미룰지, 하지 않기로 할지, 확인 후 해결 처리할지 고르면 됩니다.",
-            "이 항목을 그대로 두면 다음 점검에서도 계속 다시 보게 됩니다. 지금 방향만 정해도 원장이 훨씬 읽기 쉬워집니다.",
+            explanation,
+            why,
             "이 항목을 이번에 어떻게 처리할까요?",
         )
+    explanation = (
+        f"The ledger item says: '{summary}'. Decide whether to keep tracking it, defer it, reject it, or treat it as resolved after verification."
+        if summary != "Ledger item"
+        else "This is an open item from the existing ledger. Decide whether to keep tracking it, defer it, reject it, or treat it as resolved after verification."
+    )
+    why = (
+        f"The ledger's suggested next step is: '{followup_text}'. Recording a direction prevents the next audit from asking the same question again."
+        if followup_text != "Ledger item"
+        else "If this stays open without a decision, future audits will keep surfacing it. Even a small owner choice can make the ledger easier to use."
+    )
     return (
-        "This is an open item from the existing ledger. Decide whether to keep tracking it, defer it, reject it, or treat it as resolved after verification.",
-        "If this stays open without a decision, future audits will keep surfacing it. Even a small owner choice can make the ledger easier to use.",
+        explanation,
+        why,
         "How should this item be handled now?",
     )
 
@@ -810,12 +943,14 @@ def draft_explanation(language: str) -> tuple[str, str, str]:
 def parse_ledger_tables(ledger: Path) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     section = ""
+    raw_section = ""
     headers: list[str] | None = None
     pending_header: list[str] | None = None
     for raw_line in ledger.read_text(encoding="utf-8").splitlines():
         heading = re.match(r"^##+\s+(.+?)\s*$", raw_line)
         if heading:
-            section = heading.group(1).strip()
+            raw_section = heading.group(1).strip()
+            section = canonical_ledger_section(raw_section)
             headers = None
             pending_header = None
             continue
@@ -834,25 +969,44 @@ def parse_ledger_tables(ledger: Path) -> list[dict[str, str]]:
         padded = cells + [""] * max(0, len(headers) - len(cells))
         row = dict(zip(headers, padded[: len(headers)]))
         row["_section"] = section
+        row["_sectionRaw"] = raw_section
         rows.append(row)
     return rows
 
 
 def draft_item_from_row(row: dict[str, str], language: str) -> dict[str, Any] | None:
     section = row.get("_section", "")
-    ledger_id = table_value(row, "ID", "Id")
+    if section in {"Audit Log", "Resolved Archive", "Skipped For Now"}:
+        return None
+    ledger_id = table_value(row, "ID", "Id", "식별자", "항목 ID", "항목ID")
     if not ledger_id:
         return None
     if not re.match(r"^(BS|DP)-\d{8}-\d+", ledger_id):
         return None
-    status = table_value(row, "Status", "상태")
+    status = infer_draft_status(row, section)
     if not status_is_open(status):
         return None
     if section == "Decision Packet":
-        summary = table_value(row, "Decision", "Finding", "What")
-        recommended_text = table_value(row, "Recommended option", "Recommended", "Recommendation")
-        options_text = table_value(row, "Options", "Choices")
-        why = table_value(row, "Why it matters", "Why")
+        summary = table_value(row, "Decision", "Finding", "What", "결정", "항목", "내용", "요약")
+        recommended_text = table_value(
+            row, "Recommended option", "Recommended", "Recommendation", "추천", "권장 선택", "권장안"
+        )
+        options_text = table_value(row, "Options", "Choices", "선택지", "옵션")
+        why = table_value(row, "Why it matters", "Why", "왜 중요한가", "이유")
+        followup = table_value(
+            row,
+            "Next check / owner",
+            "Next check",
+            "Owner",
+            "Follow-up",
+            "Followup",
+            "후속 제안",
+            "후속제안",
+            "다음 확인",
+            "다음확인",
+            "확인",
+            "제안",
+        )
         ledger_summary = summary
         if recommended_text:
             ledger_summary += f" Recommended: {recommended_text}."
@@ -860,15 +1014,54 @@ def draft_item_from_row(row: dict[str, str], language: str) -> dict[str, Any] | 
             ledger_summary += f" Options: {options_text}."
         if why:
             ledger_summary += f" Why: {why}."
+        if followup:
+            ledger_summary += f" Next: {followup}."
     else:
-        summary = table_value(row, "Finding", "Decision", "Item")
+        summary = table_value(
+            row,
+            "Finding",
+            "Decision",
+            "Item",
+            "항목",
+            "발견",
+            "내용",
+            "문제",
+            "요약",
+            "사각지대",
+        )
+        followup = table_value(
+            row,
+            "Next check / owner",
+            "Next check",
+            "Owner",
+            "Follow-up",
+            "Followup",
+            "후속 제안",
+            "후속제안",
+            "다음 확인",
+            "다음확인",
+            "확인",
+            "제안",
+        )
         ledger_summary = summary
+        if followup:
+            ledger_summary += f" Next: {followup}."
     if not ledger_summary.strip():
         return None
-    awareness = table_value(row, "Awareness", "인지 상태") or "unconfirmed"
-    priority = table_value(row, "Priority", "Risk", "우선순위")
+    awareness = table_value(
+        row,
+        "Awareness",
+        "인지 상태",
+        "인지",
+        "인식 상태",
+        "인지 분류",
+        "인지분류",
+        "Awareness classification",
+    ) or "unconfirmed"
+    priority = table_value(row, "Priority", "Risk", "우선순위", "위험도", "중요도")
     category, execution_kind = classify_draft_item(section, ledger_summary, status)
-    explanation, why_it_matters, decision_question = draft_explanation(language)
+    recommended_action = infer_draft_recommendation(status, awareness, ledger_summary, followup)
+    explanation, why_it_matters, decision_question = draft_explanation(language, summary or ledger_summary, followup)
     item = {
         "ledgerId": ledger_id,
         "shortTitle": first_sentence(summary or ledger_summary),
@@ -880,11 +1073,13 @@ def draft_item_from_row(row: dict[str, str], language: str) -> dict[str, Any] | 
         "executionKind": execution_kind,
         "currentStatus": status,
         "currentAwareness": awareness,
-        "recommendedAction": "keep_pending",
+        "recommendedAction": recommended_action,
         "risk": priority,
     }
     if looks_like_exposed_secret(ledger_summary):
         item["implementationHint"] = "Before closing, verify both current files and Git history for exposed secrets."
+    elif followup and execution_kind in {"implementation_plan", "external_confirmation", "owner_followup", "cheap_verification"}:
+        item["implementationHint"] = followup
     return {"category": category, "item": item}
 
 
@@ -1035,7 +1230,13 @@ def command_serve(args: argparse.Namespace) -> int:
 
     with Server(("127.0.0.1", args.port), handler) as server:
         host, port = server.server_address
-        print(f"Open http://{host}:{port}/")
+        url = f"http://{host}:{port}/"
+        print(f"Open {url}")
+        if getattr(args, "write_url", None):
+            url_path = args.write_url.resolve()
+            url_path.parent.mkdir(parents=True, exist_ok=True)
+            url_path.write_text(url + "\n", encoding="utf-8")
+            print(f"Wrote board URL: {url_path}")
         print("Press Ctrl+C after the owner submits the response.")
         try:
             server.serve_forever()
@@ -1196,7 +1397,8 @@ def validate_response(board_dir: Path, *, check_current_ledger_hash: bool = True
         raise SystemExit("Response decisions must be a list")
     if not decisions:
         raise SystemExit("Response decisions must include at least one selected item")
-    option_map: dict[str, dict[str, dict[str, Any]]] = {}
+    option_by_id: dict[str, dict[str, dict[str, Any]]] = {}
+    options_by_action: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for group in board_data.get("groups") or []:
         if not isinstance(group, dict):
             continue
@@ -1204,10 +1406,15 @@ def validate_response(board_dir: Path, *, check_current_ledger_hash: bool = True
             if not isinstance(item, dict):
                 continue
             ledger_id = str(item.get("ledgerId") or "")
-            option_map[ledger_id] = {}
+            option_by_id[ledger_id] = {}
+            options_by_action[ledger_id] = {}
             for option in item.get("options") or []:
                 if isinstance(option, dict):
-                    option_map[ledger_id][str(option.get("action") or "")] = option
+                    option_id = str(option.get("optionId") or "")
+                    action = str(option.get("action") or "")
+                    if option_id:
+                        option_by_id[ledger_id][option_id] = option
+                    options_by_action[ledger_id].setdefault(action, []).append(option)
     seen_decisions = set()
     for decision in decisions:
         if not isinstance(decision, dict):
@@ -1221,7 +1428,23 @@ def validate_response(board_dir: Path, *, check_current_ledger_hash: bool = True
         action = decision.get("action")
         if action not in ALLOWED_ACTIONS:
             raise SystemExit(f"Response includes unknown action for {ledger_id}: {action!r}")
-        option = option_map.get(str(ledger_id), {}).get(str(action))
+        option_id = str(decision.get("optionId") or "").strip()
+        if option_id:
+            option = option_by_id.get(str(ledger_id), {}).get(option_id)
+            if not option:
+                raise SystemExit(f"Response optionId {option_id!r} is not an offered option for {ledger_id}")
+            if option.get("action") != action:
+                raise SystemExit(
+                    f"Response optionId {option_id!r} action mismatch for {ledger_id}: "
+                    f"expected {option.get('action')!r}, got {action!r}"
+                )
+        else:
+            action_options = options_by_action.get(str(ledger_id), {}).get(str(action), [])
+            if len(action_options) > 1:
+                raise SystemExit(
+                    f"Response for {ledger_id} action {action!r} is ambiguous; include optionId"
+                )
+            option = action_options[0] if action_options else None
         if not option:
             raise SystemExit(f"Response action {action!r} is not an offered option for {ledger_id}")
         awareness = decision.get("awareness")
@@ -1280,6 +1503,7 @@ def response_application_review(board_dir: Path, response: dict[str, Any]) -> di
     }
     decision_summaries = []
     note_constraints = []
+    closure_notes = []
     secret_checks = []
     for decision in response.get("decisions") or []:
         ledger_id = str(decision.get("ledgerId"))
@@ -1314,6 +1538,8 @@ def response_application_review(board_dir: Path, response: dict[str, Any]) -> di
         decision_summaries.append(summary)
         if note and bucket in {"implementation_plan", "external_confirmation", "owner_followup"}:
             note_constraints.append(summary)
+        if note and bucket == "ledger_only" and action in {"defer", "reject", "keep_pending"}:
+            closure_notes.append(summary)
         if summary["secretChecklist"] and action in {"accept", "resolved_candidate"}:
             secret_checks.append(summary)
 
@@ -1327,11 +1553,13 @@ def response_application_review(board_dir: Path, response: dict[str, Any]) -> di
     return {
         "schema": "blindspot-triage-application-review.v1",
         "boardId": response.get("boardId"),
+        "language": str(board_data.get("language") or "en"),
         "workflow": workflow,
         "buckets": buckets,
         "selectedCount": len(response.get("decisions") or []),
         "decisions": decision_summaries,
         "noteConstraints": note_constraints,
+        "closureNotes": closure_notes,
         "secretChecks": secret_checks,
     }
 
@@ -1345,6 +1573,19 @@ def format_decision_line(decision: dict[str, Any]) -> str:
         f"action={decision['action']}; bucket={decision['bucket']}; "
         f"status={status}; intentDetail={detail}; executionKind={decision['executionKind']}.{note}"
     )
+
+
+def target_area_line(decision: dict[str, Any]) -> str:
+    if decision["bucket"] == "ledger_only":
+        return f"- {decision['ledgerId']}: ledger only; no project file change expected."
+    if decision["bucket"] == "cheap_verification":
+        return f"- {decision['ledgerId']}: read-only verification before ledger cleanup."
+    if decision["bucket"] == "external_confirmation":
+        return f"- {decision['ledgerId']}: external/provider/account confirmation; no local file target yet."
+    if decision["bucket"] == "owner_followup":
+        return f"- {decision['ledgerId']}: owner detail needed before file targets are known."
+    hint = decision.get("implementationHint") or "TODO: identify files or project areas before editing."
+    return f"- {decision['ledgerId']}: {hint}"
 
 
 def write_application_plan(board_dir: Path, marker: dict[str, Any], review: dict[str, Any]) -> Path:
@@ -1366,14 +1607,19 @@ def write_application_plan(board_dir: Path, marker: dict[str, Any], review: dict
         lines.append(f"- {bucket}: {', '.join(ids) if ids else '-'}")
     lines.extend(["", "## Target Files Or Areas", ""])
     for decision in review["decisions"]:
-        hint = decision.get("implementationHint") or "TODO: identify files or project areas before editing."
-        lines.append(f"- {decision['ledgerId']}: {hint}")
+        lines.append(target_area_line(decision))
     lines.extend(["", "## Owner Notes As Constraints", ""])
     if review["noteConstraints"]:
         for decision in review["noteConstraints"]:
             lines.append(f"- {decision['ledgerId']}: {decision['note']}")
     else:
         lines.append("- No owner note constraints were submitted.")
+    lines.extend(["", "## Ledger-Only Owner Notes", ""])
+    if review["closureNotes"]:
+        for decision in review["closureNotes"]:
+            lines.append(f"- {decision['ledgerId']}: {decision['note']}")
+    else:
+        lines.append("- No ledger-only closure notes were submitted.")
     lines.extend(["", "## Secret Handling Checklist", ""])
     if review["secretChecks"]:
         for decision in review["secretChecks"]:
@@ -1416,9 +1662,19 @@ def write_application_plan(board_dir: Path, marker: dict[str, Any], review: dict
     return plan_path
 
 
-def audit_log_suggestion(marker: dict[str, Any], selected_count: int, plan_existed: bool) -> str:
+def audit_log_suggestion(
+    marker: dict[str, Any], selected_count: int, plan_existed: bool, language: str = "en"
+) -> str:
     today = datetime.now().strftime("%Y-%m-%d")
-    plan_note = "temporary plan existed; confirm deleted or outcome recorded" if plan_existed else "no temporary plan remaining"
+    if language_key(language) == "ko":
+        plan_note = "임시 계획이 있었음; 삭제 또는 결과 기록 확인 필요" if plan_existed else "남은 임시 계획 없음"
+        return (
+            f"{today} | <호스트> | ledger-triage | <범위> | board {marker.get('boardId')}; "
+            f"선택 {selected_count}건 적용 또는 안전 기록; 임시 선택판 정리 완료; {plan_note}."
+        )
+    plan_note = (
+        "temporary plan existed; confirm deleted or outcome recorded" if plan_existed else "no temporary plan remaining"
+    )
     return (
         f"{today} | <host> | ledger-triage | <scope> | board {marker.get('boardId')}; "
         f"{selected_count} selected decision(s) applied or safely recorded; "
@@ -1458,6 +1714,10 @@ def command_validate(args: argparse.Namespace) -> int:
         print("Plan/external constraints from owner notes:")
         for decision in review["noteConstraints"]:
             print(f"- {decision['ledgerId']}: {decision['note']}")
+    if review["closureNotes"]:
+        print("Owner notes that may justify ledger-only closure or deferral:")
+        for decision in review["closureNotes"]:
+            print(f"- {decision['ledgerId']}: {decision['note']}")
     if review["secretChecks"]:
         print("Secret cleanup checks before closure:")
         for decision in review["secretChecks"]:
@@ -1492,7 +1752,7 @@ def command_cleanup(args: argparse.Namespace) -> int:
     shutil.rmtree(board_dir)
     print(f"Deleted temporary ledger triage board: {board_dir}")
     print("Audit Log suggestion:")
-    print(audit_log_suggestion(marker, review["selectedCount"], plan_existed))
+    print(audit_log_suggestion(marker, review["selectedCount"], plan_existed, review.get("language", "en")))
     return 0
 
 
@@ -1524,6 +1784,7 @@ def main() -> int:
     serve = sub.add_parser("serve", help="Serve a board on localhost so submit can save response JSON")
     serve.add_argument("--board-dir", type=Path, required=True)
     serve.add_argument("--port", type=int, default=0)
+    serve.add_argument("--write-url", type=Path, help="Write the served URL to this file for detached hosts")
     serve.set_defaults(func=command_serve)
 
     validate = sub.add_parser("validate", help="Validate response JSON against marker and ledger hash")
