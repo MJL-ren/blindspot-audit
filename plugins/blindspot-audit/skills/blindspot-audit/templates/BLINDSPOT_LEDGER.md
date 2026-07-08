@@ -26,6 +26,7 @@ and awareness values in English so runs stay diffable.
 - Keep the Findings table for open items only; move `resolved`/`rejected` rows to the Resolved Archive as one-liners (IDs never renumber).
 - Findings from the external/web scan keep their source URL in the row so the next audit re-verifies instead of re-searching.
 - Read Project Context before asking the owner anything; refresh only stale entries, and never re-ask items marked `skipped`.
+- Use `mode: ledger-triage` to group and apply decisions from existing rows; temporary HTML decision boards live under `.blindspot-tmp/` and are deleted after their validated decisions are applied.
 
 ## Project Context (verified <YYYY-MM-DD>)
 
@@ -50,7 +51,7 @@ sensitive-findings rule in `references/ledger-lifecycle.md`).
 
 | Date | Host | Mode | Scope | Notes |
 | --- | --- | --- | --- | --- |
-| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation, + focus/<domain> when narrowed> | <project/path or boundary> | <inspected surfaces, scans applied (external-change / peer expectation / context intake), focus packs run or standing pack debt, descent step taken on a zero-delta run, limits - future diff runs read this to spot never-run scans and continue the descent> |
+| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation/ledger-triage, + focus/<domain> when narrowed> | <project/path or boundary> | <inspected surfaces, scans applied (external-change / peer expectation / context intake), focus packs run or standing pack debt, descent step taken on a zero-delta run, or ledger-triage board id / decisions applied / temp cleanup result; limits - future diff runs read this to spot never-run scans and continue the descent> |
 
 ## Findings
 

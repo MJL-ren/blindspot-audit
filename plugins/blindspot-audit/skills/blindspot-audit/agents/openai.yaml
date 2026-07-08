@@ -1,4 +1,4 @@
 interface:
   display_name: "Blindspot Audit"
-  short_description: "Find hidden project gaps before work goes sideways."
+  short_description: "Find hidden project gaps and triage the project ledger."
   default_prompt: "Use $blindspot-audit to run a blindspot pass on this project and surface the important unknown unknowns."

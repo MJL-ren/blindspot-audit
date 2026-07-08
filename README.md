@@ -80,6 +80,20 @@ strong elsewhere and wants a deeper pass on the user surface.
 This is not a generic quality checklist. The question it answers is:
 "Given this specific project, what are we probably not seeing yet?"
 
+## Ledger Triage
+
+`mode: ledger-triage` is for a project that already has a busy
+`BLINDSPOT_LEDGER.md`. It does not run a new audit. It reads the existing
+ledger, groups open rows into quick cleanup, safe accepts, bundled
+decisions, owner-detail questions, external confirmations, and items that
+need a simpler explanation.
+
+On hosts without a structured choice UI, large triage batches can use a
+temporary self-contained HTML decision board under `.blindspot-tmp/`. The
+owner selects answers in the browser, the agent validates the response JSON,
+applies only the chosen ledger updates, then deletes the temporary board.
+Recommendations in the board are not applied until the owner chooses them.
+
 ## Repository Layout
 
 ```text

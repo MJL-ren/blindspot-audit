@@ -42,6 +42,10 @@ a fail (they are named consistently so this is detectable).
   escalation meta-finding on a full audit, and concrete state/device/
   access gaps on a `focus: ux-ui` run (two graded runs - see its
   EXPECTED.md).
+- `ledger-triage-large-ledger/` - `mode: ledger-triage`: a crowded ledger
+  must be grouped into owner decisions, use structured choices or the HTML
+  decision board on no-choice hosts, validate response JSON before edits,
+  and clean up temporary files only after applying decisions.
 
 ## Recording runs
 

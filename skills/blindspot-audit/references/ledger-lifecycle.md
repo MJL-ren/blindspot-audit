@@ -154,6 +154,12 @@ On later runs:
   (`focus: <domain>`) append their delta rows to this project ledger with
   the scope noted in the audit log - they do not get their own ledger
   file.
+- Ledger triage (`mode: ledger-triage`) does not add new audit findings.
+  It groups existing open rows, skipped/deferred items, resolved candidates,
+  and decision packets into owner choices. It may recommend status changes
+  but must not apply them from agent judgment. Apply only owner-selected
+  and validated decisions, preserve the ledger's local status language, and
+  record the board id or structured-choice path in the audit log.
 - Mark changed status instead of rewriting history (date the change in the
   status cell).
 - Keep local labels and decision terms.
@@ -184,6 +190,14 @@ only items that still need attention (`pending`, `accepted`, `deferred`).
 - Same-session remediation: when a finding is fixed while the session is
   still open, set it to `resolved` with the date before finishing. The
   final report and the ledger must not disagree.
+- Temporary ledger-triage decision boards are not ledger history. They live
+  under `.blindspot-tmp/ledger-triage-*`, are validated before applying
+  decisions, and are deleted after the ledger has the final result. Do not
+  route, commit, or cite the HTML board as the durable artifact.
+- Cheap checks during triage are evidence for a recommendation, not
+  permission to close or downgrade a row. `accepted`, `deferred`,
+  `resolved`, `rejected`, archive moves, and awareness rewrites require an
+  owner choice first.
 - Compress, do not delete: move `resolved` and `rejected` rows out of the
   findings table into a "Resolved archive" section, one line each
   (`ID - title - resolved <date>: <one-line resolution>`). Keep the reason

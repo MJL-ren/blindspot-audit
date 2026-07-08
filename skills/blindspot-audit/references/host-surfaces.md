@@ -17,6 +17,10 @@ All hosts should do the same core work:
 - Interview the owner about awareness when the host allows it.
 - When the host cannot present a structured choice UI, finish the audit
   anyway and include a numbered awareness check the owner can answer later.
+- When running `mode: ledger-triage`, collect decisions through the host's
+  structured choice UI when available; otherwise use a temporary HTML
+  decision board before applying ledger changes. Never treat a cleanup
+  request as permission for the agent to choose statuses itself.
 - Keep a durable ledger when the host can write files and the user has not
   requested read-only/chat-only output.
 
@@ -181,6 +185,37 @@ Interpret replies generously:
 If the owner replies with classifications, update the ledger and report only
 the delta. Do not rerun the whole audit unless the reply changes scope or
 evidence.
+
+### Ledger-Triage Decision Boards
+
+In `mode: ledger-triage`, a long numbered reply can become too much for the
+owner. When the host can write files and there is any meaningful ledger
+decision to apply, create a temporary HTML decision board instead of editing
+the ledger from the agent's own judgment:
+
+- Put it under `<project-root>/.blindspot-tmp/ledger-triage-*`, never in
+  docs and never in commit scope.
+- Generate it with `scripts/ledger_triage_board.py create`; serve it on
+  `127.0.0.1` with the helper when localhost is available.
+- If serving is impossible, the static HTML downloads or displays
+  `blindspot-triage-response.json`. Do not ask the owner to move files by
+  hand; have them leave the downloaded JSON in Downloads or the browser's
+  chosen folder, then run `validate --collect-response`, `validate
+  --response <path>`, or `collect-response` as described in
+  `references/ledger-triage.md`.
+- Present recommendations in the board. A recommended option is not
+  authorization to apply it.
+- Run the helper's `validate` command before applying any ledger change.
+- Apply only the touched rows, preserving the ledger's local status labels.
+- Add one Audit Log row noting `mode: ledger-triage`, board id, decisions
+  applied, and cleanup result.
+- Delete the board directory only with the helper's `cleanup
+  --confirm-applied` after decisions were applied.
+
+Use the normal numbered reply fallback only for read-only/chat-only hosts,
+or when the owner explicitly asks not to create temporary HTML files. In
+that fallback, do not edit the ledger until the owner replies with the
+chosen numbers/options.
 
 When project context is missing or stale (no usable `Project Context`
 section in the ledger), append a compact numbered Context check after the

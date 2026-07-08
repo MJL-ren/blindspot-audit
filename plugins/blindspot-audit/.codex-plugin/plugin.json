@@ -1,7 +1,7 @@
 {
   "name": "blindspot-audit",
-  "version": "0.5.2",
-  "description": "Find project unknown unknowns, hidden risks, stale assumptions, and missing decisions with a durable BLINDSPOT_LEDGER.md.",
+  "version": "0.6.0",
+  "description": "Find project unknown unknowns, hidden risks, stale assumptions, and missing decisions with a durable, triageable BLINDSPOT_LEDGER.md.",
   "author": {
     "name": "MJL-ren",
     "url": "https://github.com/MJL-ren"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Blindspot Audit",
     "shortDescription": "Find hidden project gaps and keep repeat audits focused",
-    "longDescription": "Use Blindspot Audit to scan software, creative, research, content, and business projects for unknown unknowns: hidden risks, stale assumptions, missing decisions, and unasked questions. It creates or updates BLINDSPOT_LEDGER.md so later audits compare against prior findings and report only what is new, changed, or resolved.",
+    "longDescription": "Use Blindspot Audit to scan software, creative, research, content, and business projects for unknown unknowns: hidden risks, stale assumptions, missing decisions, and unasked questions. It creates, updates, and triages BLINDSPOT_LEDGER.md so later audits compare against prior findings and ledger cleanup can collect owner decisions without re-running a full audit.",
     "developerName": "MJL-ren",
     "category": "Productivity",
     "capabilities": [
@@ -34,7 +34,8 @@
     "defaultPrompt": [
       "Run a deep blindspot audit on this project.",
       "Find unknown unknowns before implementation.",
-      "Update BLINDSPOT_LEDGER.md with new gaps."
+      "Update BLINDSPOT_LEDGER.md with new gaps.",
+      "Run mode: ledger-triage on the existing ledger."
     ],
     "brandColor": "#0F766E",
     "screenshots": []

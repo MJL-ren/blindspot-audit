@@ -1,0 +1,407 @@
+# Ledger Triage
+
+Use this reference for `mode: ledger-triage`: a post-audit maintenance mode
+that turns a growing `BLINDSPOT_LEDGER.md` into a small set of owner
+decisions and safe cleanup actions. It is not a new blindspot audit.
+
+## Purpose
+
+Ledger triage exists because a good ledger can still become too heavy for
+the owner to act on. The mode reads existing findings, decision packets,
+skipped items, and archives, then groups them by the kind of action needed.
+It should reduce cognitive load, not discover more work.
+
+The mode succeeds when the owner can handle many ledger rows in one pass:
+approve easy cleanup, make a few bundled decisions, ask for simpler
+explanations where needed, and leave only the real unresolved choices open.
+
+## Consent Gate
+
+Ledger triage is a decision collection workflow. It is NOT permission for
+the agent to decide outcomes.
+
+Do not interpret requests like "clean up the ledger", "organize the ledger",
+"proceed with ledger decisions", or localized equivalents as permission to
+mark rows `accepted`, `deferred`, `resolved`, `rejected`, move rows to the
+archive, rewrite awareness values, or close decision-packet items.
+
+The agent may inspect, group, run cheap read-only checks, and recommend an
+action. It must not apply a ledger decision until one of these exists:
+
+- a structured choice-tool answer from the owner.
+- a validated `blindspot-triage-response.json` from the HTML decision board.
+- an explicit owner reply that names the row or option to apply.
+
+If there is no owner response yet, the correct end state is "decision board
+created" or "decision packet waiting", with the ledger unchanged except for
+temporary-board files outside docs. This protects users who want to approve
+every AI-recommended decision, even small cleanup.
+
+## Mode Boundary
+
+- Do not run the normal fresh-eyes scan.
+- Do not create new blindspot findings unless the ledger itself is broken
+  in a way that blocks triage (for example, unreadable rows or no stable
+  IDs). Report those as triage blockers, not project findings.
+- Do not make implementation changes to the target project.
+- Do not mass-normalize local status language. Preserve the ledger's
+  existing style and only update rows the owner selected.
+- Do not treat `safe_accept`, `quick_cleanup`, or a cheap verification as
+  authorization. They mean "safe to recommend to the owner", not "safe for
+  the agent to apply."
+- Do not delete the ledger's history. Compress resolved/rejected rows per
+  `ledger-lifecycle.md`.
+
+## Inputs To Read
+
+Read the existing ledger first, including:
+
+- `Project Context`
+- `Audit Log`
+- open `Findings`
+- `Resolved Archive`
+- `Skipped For Now`
+- `Decision Packet`
+
+Then, when a row looks stale or likely resolved, do the cheapest
+repo-local verification needed to avoid applying a wrong cleanup. Do not
+run builds, tests, network scans, or expensive checks only for triage; put
+those in the decision board as owner-confirmation or next checks.
+
+## Triage Categories
+
+Use these categories in the decision board or structured-choice prompts:
+
+- `quick_cleanup`: already resolved, duplicated, rejected, or stale enough
+  to archive after a cheap verification.
+- `safe_accept`: low-risk tracking or documentation follow-up that the
+  owner can approve with one click.
+- `decision_bundle`: several rows depend on one product, operations,
+  release, or positioning decision.
+- `needs_owner_detail`: the right action depends on the owner's preference,
+  audience, budget, timing, or appetite for scope.
+- `needs_external_confirmation`: legal, tax, security, payment, platform,
+  provider, or regulation items that need a primary source or professional
+  confirmation before the ledger can close them.
+- `needs_reexplain`: the item is too unfamiliar or jargon-heavy for the
+  owner to classify confidently.
+
+Each group names the recommended action, but the owner must be able to pick
+a different option without rewriting prose by hand.
+
+## Plain-Language Requirement
+
+Rows marked `unknown_unknown`, `unconfirmed`, localized equivalents such as
+`미확인`, or anything in the owner's weak domain need a beginner explanation.
+Include:
+
+- what the ledger row actually says, summarized in the owner's language so
+  the owner does not need to open `BLINDSPOT_LEDGER.md` beside the board.
+- what it means, in everyday words.
+- why it matters for this project.
+- what the owner can choose.
+- which choice is recommended and why.
+
+Do not use internal labels as user-facing explanations. "Resolved
+candidate" means nothing to a beginner; say "this looks already fixed, but
+I need one quick confirmation before archiving it."
+
+The HTML board must make each item understandable on its own. Use
+`ledgerLocation` or `ledgerSection` for source position, `ledgerSummary`
+for the actual row content, `plainExplanation` for what the item means,
+`whyItMatters` for why it matters, and `decisionQuestion` for the choice
+the owner is making. Do not label the explanation "beginner explanation"
+or "explain like I am new"; just write it plainly.
+
+Keep metadata out of the readable content. Do not write `ledgerSummary` as
+"Findings has ... as BS-123 pending" or localized equivalents such as
+"Findings에는 ... BS-123이 pending으로 남아 있습니다." Put the source in
+`ledgerLocation`/`ledgerSection`; put only the issue or decision itself in
+`ledgerSummary`.
+
+Choice options also need plain tradeoffs. A good option says both what will
+happen and what will stay unchanged. Avoid showing raw enum labels such as
+`accepted`, `resolved_candidate`, `pending`, or `unknown_unknown` as the
+main user-facing text when the owner's language is not English.
+
+Write for a non-specialist owner, roughly middle-school reading level in
+the owner's language. Avoid unexplained shorthand and imported terms in
+visible text. For example, prefer "purchase/contact button" over "CTA";
+"send the form without leaving the page" over "AJAX"; "screen-reader
+description" over "ARIA"; and "movement-reduction setting" over
+`prefers-reduced-motion`.
+
+## Host Behavior
+
+### Structured Choice Hosts
+
+Use the host's choice tool for decisions before editing the ledger. Split
+questions rather than exceeding the host's option cap. Record choices in
+the ledger's audit log and update only selected rows after the owner
+answers.
+
+### No-Choice File-Writing Hosts
+
+When the host can write files but cannot present a structured choice UI,
+create an HTML decision board with `scripts/ledger_triage_board.py` whenever
+there is any meaningful ledger decision to apply. Use the board even for
+small "obvious" cleanup unless the owner explicitly asked for chat-only or
+read-only output.
+
+Default flow:
+
+1. Prepare a board input JSON from the grouped triage results. To avoid
+   writing it from scratch, draft a scaffold from the ledger first:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" draft --project-root "<project-root>" --ledger "<ledger-path>" --out "<triage-input.json>" --language "<owner-language>"
+```
+
+   The draft is only a scaffold. Review and rewrite plain explanations,
+   recommendations, options, `executionKind`, and any implementation hints
+   before creating the board. Draft output is marked `draftOnly: true`, and
+   `create` refuses it until that marker is removed after review. Use
+   `--allow-unreviewed-draft` only for explicit tests or debugging.
+2. Run:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" create --project-root "<project-root>" --ledger "<ledger-path>" --data "<triage-input.json>"
+```
+
+3. Serve the board on localhost when the host allows it. This is the
+   default because the owner should be done after pressing submit; the
+   response writes directly into the board directory.
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" serve --board-dir "<board-dir>"
+```
+
+   If localhost serving is impossible, the same HTML still works as a
+   static file. In that fallback the browser downloads a response JSON.
+   Do not ask the owner to move it by hand; collect it with the helper.
+
+4. After the owner says the response is ready, run:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>"
+```
+
+   If the response was downloaded instead of server-saved, use one of:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>" --collect-response
+python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>" --collect-response --response-dir "<downloads-or-other-folder>"
+python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>" --response "<downloaded-response-json>"
+```
+
+   `--collect-response` searches for matching
+   `blindspot-triage-response*.json` files, verifies board id, ledger path,
+   and ledger hash, chooses the newest `completedAt` when multiple matching
+   downloads exist, copies the chosen file into the board directory as
+   `blindspot-triage-response.json`, then runs normal validation. The
+   separate helper command is available for the same collection step:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" collect-response --board-dir "<board-dir>" --from "<downloads-or-other-folder>"
+```
+
+`validate` also prints the recommended next workflow:
+`reexplain_first`, `apply_directly`, or `temporary_plan_required`. It also
+summarizes each selected decision with action, execution kind, bucket,
+canonical status, intent detail, and whether an owner note is present.
+Treat owner notes on
+implementation, external-confirmation, or owner-followup items as execution
+constraints.
+
+When validate reports implementation work, ask the helper for a temporary
+plan scaffold instead of writing it from scratch:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>" --write-plan
+```
+
+The helper writes `<board-dir>/ledger-triage-application-plan.md`. Edit and
+execute that plan, then delete it after the durable ledger result is
+recorded.
+
+5. Route the validated response through the post-response workflow below.
+6. Apply decisions, implementation work, or re-explanations according to
+   that workflow.
+7. Run cleanup only after all selected decisions have been handled or
+   safely recorded:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" cleanup --board-dir "<board-dir>" --confirm-applied
+```
+
+The board directory lives under `<project-root>/.blindspot-tmp/`. It is a
+temporary workspace artifact, not documentation, and must not be committed.
+
+Do not write an Audit Log row, status change, archive move, or triage note
+before validation. The board itself is the pre-decision artifact.
+
+### Small Or Read-Only Runs
+
+If the host cannot write files, or the owner explicitly asks for no
+temporary HTML files, use a compact numbered reply format instead of HTML.
+Keep the final answer short and include exact reply examples. Do not edit
+the ledger until the owner replies.
+
+## Board Input Shape
+
+The agent prepares this JSON and passes it to the helper:
+
+```json
+{
+  "schema": "blindspot-triage-board.v1",
+  "boardId": "ledger-triage-20260708-01",
+  "createdAt": "2026-07-08T00:00:00+00:00",
+  "language": "ko",
+  "projectName": "Example",
+  "groups": [
+    {
+      "groupId": "release-decisions",
+      "category": "decision_bundle",
+      "title": "Public release decisions",
+      "plainSummary": "These rows all depend on what 'public release' means.",
+      "recommendedAction": "defer",
+      "items": [
+        {
+          "ledgerId": "BS-20260708-01",
+          "shortTitle": "Release means two different things",
+          "ledgerSection": "Findings",
+          "ledgerSummary": "The project uses one release label for both internal activation and public launch.",
+          "plainExplanation": "The ledger uses one release label for both internal activation and public launch.",
+          "whyItMatters": "Future agents may close the wrong gate if this stays blurry.",
+          "decisionQuestion": "Should this stay open until the public release plan is written?",
+          "currentStatus": "pending",
+          "currentAwareness": "unconfirmed",
+          "recommendedAction": "defer",
+          "executionKind": "ledger_only",
+          "implementationHint": "",
+          "options": [
+            {
+              "action": "defer",
+              "label": "Decide later with a release plan",
+              "tradeoff": "Keeps the row visible until the public release plan opens.",
+              "status": "deferred",
+              "intentDetail": "public_release_plan",
+              "recommended": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`projectRoot`, `ledgerPath`, and `ledgerHash` are filled or verified by the
+helper at create time.
+
+Use `executionKind` to describe what happens if the owner accepts the
+recommendation:
+
+- `ledger_only`: only ledger status, archive, wording, or next-check updates.
+- `cheap_verification`: read-only verification before ledger cleanup.
+- `implementation_plan`: code, docs, config, runbook, UI, data, or multi-step
+  project work is expected; a temporary execution plan is required.
+- `external_confirmation`: provider, legal, payment, platform, account, or
+  professional confirmation is needed before closure.
+- `owner_followup`: another owner preference/detail is needed before work can
+  be executed.
+
+Set `implementationHint` when `executionKind` is `implementation_plan` so the
+later temporary plan starts from the right work surface. Keep it short and
+owner-facing.
+
+Put canonical `status` and free-form `intentDetail` on the specific option
+that should carry them, not on the item as a general default. Allowed
+status values are `pending`, `accepted`, `deferred`, `rejected`,
+`resolved`, or empty. Use `intentDetail` for details such as
+`korea_included`, `minimum_privacy_notice`, or `secret-cleanup`. Older
+`statusIntent` inputs are accepted only as a compatibility path and split
+into `status` + `intentDetail` when possible. `keep_pending` and
+`needs_reexplain` must always submit empty `status` and `intentDetail`.
+Validation fails if a response action carries the wrong status/detail pair
+for the selected option.
+
+For secret, token, API key, PAT, credential, or private-key findings, do not
+close on "current file looks fixed" alone. The helper adds a secret
+checklist to board data and temporary plans: scan the current working tree,
+scan Git history or old commits, and leave the row open or blocked if
+rotation/history cleanup is not confirmed.
+
+## Response Interpretation
+
+The helper validates `blindspot-triage-response.json`; only then may the
+agent apply it. Treat response actions as owner choices, not agent
+judgment.
+
+The response may include only selected rows. Rows omitted from `decisions[]`
+are not errors; they mean "do not touch this row yet." Leave omitted rows
+unchanged and do not count them as applied decisions.
+
+### Post-Response Workflow
+
+After validation, classify selected decisions before touching the ledger.
+The owner already made choices; this step decides how to execute those
+choices safely.
+
+1. If any selected decision has action `needs_reexplain`, handle those
+   first. Do not apply the other selected decisions yet, do not cleanup the
+   board directory, and do not edit the ledger except for an owner-requested
+   clarification note. The other selected choices remain saved in the
+   validated response JSON. Explain the unclear items in simpler words and
+   wait for the owner to either update the board or say to continue with the
+   saved choices.
+2. If all selected decisions are simple ledger maintenance, apply them
+   directly after any required cheap verification. Simple work means status
+   changes, archive moves, clearer next-check wording, rejected/skipped
+   records, or recording an external-confirmation wait state. It does not
+   touch project implementation files.
+3. If any selected decision requires implementation or multi-step work
+   outside the ledger, create a temporary execution plan before changing
+   implementation files. Use the board directory:
+   `<board-dir>/ledger-triage-application-plan.md`. The plan is a temporary
+   work surface, not project documentation and not commit scope.
+
+The temporary execution plan must include:
+
+- board id and selected ledger IDs.
+- the owner choices being executed.
+- work buckets: ledger-only, cheap verification, implementation,
+  external/owner blocked.
+- files or project areas expected to change.
+- ordered steps, stop conditions, and verification.
+- the exact ledger result to record after the work.
+- cleanup checklist for the temporary plan and board directory.
+
+After implementation is complete, delete the temporary plan. Preserve the
+durable result only in `BLINDSPOT_LEDGER.md`: selected choices, actual
+changes made, verification outcome, unresolved blockers, and cleanup result.
+If implementation is blocked by missing account access, provider/legal
+confirmation, or owner detail, delete the temporary plan after recording the
+blocker and next trigger in the ledger. Do not leave temporary planning files
+behind unless the owner explicitly asks to keep them.
+
+### Action Meanings
+
+Allowed actions:
+
+- `accept`: mark accepted, document the approved next step, or execute the
+  accepted implementation through the workflow above.
+- `defer`: mark deferred with the owner's reason or trigger.
+- `resolved_candidate`: verify cheaply, then move to `Resolved Archive`;
+  if verification is not possible, leave pending and record the note.
+- `reject`: move to rejected/archive with the reason.
+- `keep_pending`: leave open, optionally improving the next-check wording.
+- `needs_reexplain`: do not change the ledger status; answer the owner in
+  simpler words and keep awareness `unconfirmed`.
+
+After applying decisions, add an `Audit Log` row for `mode: ledger-triage`
+with board id, number of decisions applied, whether temporary files were
+cleaned up, and whether a temporary execution plan was created and deleted.
+The helper's `cleanup --confirm-applied` prints an Audit Log suggestion;
+adapt that line to the ledger's local wording instead of inventing it from
+memory.

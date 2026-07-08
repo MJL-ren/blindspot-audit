@@ -58,6 +58,21 @@ No es una checklist genérica de calidad. La pregunta que responde es:
 
 > Dado este proyecto específico, ¿qué es probable que todavía no estemos viendo?
 
+## Ledger Triage
+
+`mode: ledger-triage` sirve para proyectos que ya tienen un
+`BLINDSPOT_LEDGER.md` cargado. No ejecuta una auditoría nueva. Lee el ledger
+existente y agrupa filas abiertas en limpieza rápida, aceptaciones seguras,
+decisiones agrupadas, preguntas que necesitan detalle de la persona dueña,
+confirmaciones externas y elementos que necesitan una explicación más simple.
+
+En hosts sin una UI de selección estructurada, los lotes grandes pueden usar
+un HTML decision board temporal y autocontenido dentro de `.blindspot-tmp/`.
+La persona dueña elige en el navegador, el agente valida el response JSON,
+aplica solo las actualizaciones elegidas del ledger y después borra el board
+temporal. Las recomendaciones del board no se aplican hasta que la persona
+dueña las elige.
+
 ## Estructura del repositorio
 
 ```text

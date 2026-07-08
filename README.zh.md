@@ -56,6 +56,16 @@ Do not modify unrelated project files. After installation, tell me which route y
 
 > 针对这个具体项目，我们现在最可能还没有看到什么？
 
+## Ledger Triage
+
+`mode: ledger-triage` 用于整理已经积累了较多内容的 `BLINDSPOT_LEDGER.md`。
+它不会运行新的审计，而是读取现有台账，把未处理行分成快速清理、安全接受、合并决策、
+需要负责人细节判断、需要外部确认，以及需要更简单解释的项目。
+
+在没有结构化选择 UI 的宿主中，如果要处理的决策很多，可以在 `.blindspot-tmp/` 下生成一个临时的
+self-contained HTML decision board。负责人在浏览器里完成选择后，agent 验证 response JSON，
+只应用被选择的台账更新，然后删除这个临时 board。board 里的推荐选项在负责人选择前不会被应用。
+
 ## 仓库结构
 
 ```text

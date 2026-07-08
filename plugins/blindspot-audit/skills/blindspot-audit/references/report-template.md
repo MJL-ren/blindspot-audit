@@ -92,6 +92,42 @@ External sources cited in the report keep the source tiers separated
 (primary sources vs community leads - SKILL.md fresh-eyes scan), and
 category-expectation findings name the actual peers walked.
 
+## Ledger-Triage Output
+
+Use this compact shape for `mode: ledger-triage` instead of the normal
+blindspot report. Do not include top new findings. Before owner choices are
+collected, report the decision board or packet and state that the ledger has
+not been changed.
+
+```markdown
+**Ledger Triage**
+
+Ledger: <path>
+Mode: ledger-triage
+Decision collection: <structured choice | HTML board path/id | numbered reply>
+Ledger edits: <none yet - waiting for owner choices | applied after validated response>
+
+Grouped items:
+- quick_cleanup: <count + IDs>
+- safe_accept: <count + IDs>
+- decision_bundle: <count + IDs>
+- needs_owner_detail: <count + IDs>
+- needs_external_confirmation: <count + IDs>
+- needs_reexplain: <count + IDs>
+
+Recommended decisions waiting for owner:
+- <ID>: recommended <action> - <plain tradeoff>
+
+Applied decisions:
+- <only after owner choice/validated response: ID -> action/status result>
+
+Needs simpler explanation:
+- <ID>: <plain-language follow-up, status unchanged>
+
+Temp cleanup:
+- <not used | cleaned <board id> | kept because <reason>>
+```
+
 ## Tone
 
 - Be direct and calm. The audit should leave the owner calmer, not more

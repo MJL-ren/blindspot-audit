@@ -2,6 +2,103 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.6.0] - 2026-07-08
+
+Ledger growth became its own maintenance problem: once a good
+`BLINDSPOT_LEDGER.md` accumulates many open rows, asking the owner to
+classify them one by one in chat becomes too slow. This release adds a
+dedicated triage mode and a no-choice-host decision board.
+
+### Added
+
+- `mode: ledger-triage`: a maintenance mode that reads an existing ledger
+  and groups open findings, skipped/deferred rows, resolved candidates, and
+  decision packets into quick cleanup, safe accept, decision bundle,
+  owner-detail, external-confirmation, and needs-reexplain categories. It
+  does not run a new blindspot audit or create new project findings.
+- `references/ledger-triage.md`: the triage workflow, category definitions,
+  beginner-explanation rules for `unknown_unknown` / `unconfirmed` /
+  localized unknown rows, host routing, board input shape, response
+  interpretation, and ledger update rules.
+- Temporary HTML decision board for no-choice hosts:
+  `templates/ledger-triage-board.html` plus
+  `scripts/ledger_triage_board.py`. The helper creates
+  `.blindspot-tmp/ledger-triage-*`, optionally serves it on localhost,
+  validates `blindspot-triage-response.json`, and safely deletes temporary
+  files only after decisions were applied.
+- Helper automation for repeat ledger triage: `draft` scaffolds board input
+  JSON from existing ledger tables, `validate --write-plan` writes a
+  temporary application-plan skeleton, and cleanup prints an Audit Log
+  suggestion after deleting the temporary board.
+- Response collection helpers for static-board fallbacks: `validate
+  --response`, `validate --collect-response`, and `collect-response` import
+  downloaded response JSONs from a known path or Downloads-like folder,
+  choose the newest matching `completedAt` when duplicates exist, and then
+  run the same board/ledger validation path.
+- Unit checks for the ledger-triage helper, including self-contained HTML,
+  response validation failures, hash mismatch, marker/path safety, and
+  cleanup refusal without `--confirm-applied`.
+- `evals/fixtures/ledger-triage-large-ledger/`: a 20+ row synthetic ledger
+  fixture that requires grouped triage, beginner explanations, structured
+  choice routing, HTML-board routing on no-choice hosts, validated response
+  application, and safe cleanup.
+- `evals/RUNS.md` now records a 0.6.0 self-run of the ledger-triage HTML
+  board flow, including validation and temporary-plan routing.
+
+### Fixed
+
+- `draft` output is now marked `draftOnly: true`, and `create` refuses that
+  unreviewed scaffold unless the marker is removed after review or
+  `--allow-unreviewed-draft` is passed explicitly for tests/debugging.
+- Secret cleanup detection is now limited to concrete secret-value patterns
+  or secret terms in exposure contexts, so normal phrases such as password
+  reset copy, API docs, and token budgets do not trigger Git-history secret
+  scan guidance.
+
+### Changed
+
+- Host adapters now route decision-heavy no-choice ledger triage through
+  the HTML board instead of a giant numbered reply.
+- Ledger triage is now explicitly consent-gated: "clean up" or "organize"
+  means prepare recommendations and collect owner choices, not apply
+  `accepted` / `deferred` / archive decisions from the agent's own
+  judgment.
+- Ledger-triage mode inference now covers natural follow-up requests to
+  organize, close, process, handle, decide, or go through existing ledger
+  findings/items/rows after an audit, even when the owner does not know the
+  internal mode name.
+- The HTML decision board now embeds a plain ledger-row summary for every
+  item, uses localized status/action labels, presents options as
+  scan-friendly rows with tradeoffs, and allows partial submission so
+  unselected rows remain unchanged.
+- Ledger decision boards now separate row metadata from readable content
+  (`Findings/ID/status` stays small while the main text contains only the
+  issue), and Korean boards rewrite common specialist shorthand such as
+  CTA, AJAX, ARIA, and `prefers-reduced-motion` into plainer owner-facing
+  wording.
+- Post-response triage now routes validated choices before applying work:
+  any `needs_reexplain` choice pauses other saved decisions for explanation,
+  simple ledger-only choices apply directly, and implementation-heavy choices
+  require a temporary execution plan that is deleted after the outcome is
+  recorded in the ledger.
+- HTML board submit now treats localhost server-save as the normal path.
+  If a host blocks server save, the fallback download uses a board-specific
+  filename and tells the owner to leave it in Downloads so the helper can
+  collect it instead of asking the owner to move files around.
+- Decision responses now separate canonical `status` from free-form
+  `intentDetail`, while older `statusIntent` inputs remain a compatibility
+  path. Secret/token-related closure paths now surface current-tree and Git
+  history checks before a row is treated as resolved.
+- Ledger triage board directory names preserve a longer readable board id
+  token so multiple temporary boards are easier to distinguish.
+- Ledger lifecycle and ledger template now document that triage boards are
+  temporary collection surfaces, not durable project artifacts.
+- All five READMEs and prompt examples mention `mode: ledger-triage`.
+- The skill description now front-loads `BLINDSPOT_LEDGER.md` triage and
+  ledger-cleanup trigger language while keeping cross-host, cross-domain
+  audit triggers intact.
+- Bumped plugin metadata to `0.6.0` (both manifests).
+
 ## [0.5.2] - 2026-07-06
 
 Second field run of the focus machinery (an artist portfolio +

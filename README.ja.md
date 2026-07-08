@@ -63,6 +63,19 @@ Do not modify unrelated project files. After installation, tell me which route y
 
 > このプロジェクトの今の状態から見て、私たちがまだ見落としていそうな重要な穴は何か？
 
+## Ledger Triage
+
+`mode: ledger-triage` は、すでに `BLINDSPOT_LEDGER.md` が大きくなっている
+プロジェクトを整理するためのモードです。新しい監査は行いません。既存の台帳を読み、
+未処理の行を、すぐ片づけられるもの、安全に承認できるもの、まとめて決めるもの、
+持ち主の細かい判断が必要なもの、外部確認が必要なもの、もっと簡単な説明が必要なものに
+分けます。
+
+選択 UI がないホストでは、決める項目が多いときに `.blindspot-tmp/` の下へ一時的な
+self-contained HTML decision board を作れます。持ち主がブラウザで選択を終えると、
+エージェントが response JSON を検証し、選ばれた台帳更新だけを適用してから一時 board を
+削除します。board の推奨選択は、持ち主が選ぶまで適用されません。
+
 ## リポジトリ構成
 
 ```text

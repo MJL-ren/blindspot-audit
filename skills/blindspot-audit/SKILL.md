@@ -1,6 +1,6 @@
 ---
 name: blindspot-audit
-description: "Project-level blind spot audit that finds what the owner is missing without knowing it: unknown unknowns, hidden risks, missing decisions, stale assumptions, and questions the user did not know to ask. Works on any kind of project - software, games, novels and creative writing, research, content, business plans. Use when the user asks for a blindspot pass, unknown unknowns audit, what they may be missing, a readiness/gap/health check beyond their own checklist, cross-project sanity checks, unfamiliar-domain planning, or post-implementation review. Also use for equivalent non-English requests about missed gaps, blind spots, or overlooked launch/project risks. Trigger even when the user never says audit. Do not trigger for routine bug fixes, ordinary code review, formatting, or implementation-only requests, unless the user also asks what they may be missing, risking, or overlooking."
+description: "Project-level blind spot audit and BLINDSPOT_LEDGER.md triage. Use for ledger-triage or ledger cleanup after an audit: organize, close, process, decide, handle, or go through existing ledger findings/items/rows, including equivalent non-English requests. Also use for blindspot passes, unknown-unknown audits, hidden risks, missing decisions, stale assumptions, readiness/gap/health checks beyond the owner's own checklist, unfamiliar-domain planning, cross-project sanity checks, and post-implementation review. Works across software, games, writing, research, content, and business plans. Ledger triage is consent-gated: collect owner choices before applying status, awareness, archive, or decision-packet edits. Do not trigger for routine bug fixes, ordinary code review, formatting, or implementation-only requests unless the user also asks what they may be missing, risking, overlooking, or cleaning up in the blindspot ledger."
 ---
 
 # Blindspot Audit
@@ -107,6 +107,16 @@ it is becoming a generic checklist nag that gets ignored.
   grade.
 - `planning`: before implementation, surface decisions likely to change data
   models, interfaces, UX flows, operations, or verification.
+- `ledger-triage`: maintain an existing `BLINDSPOT_LEDGER.md` without
+  running a new audit. Read open findings, skipped/deferred/resolved
+  candidates, and decision packets; group them into owner decisions,
+  cleanup candidates, and items needing simpler explanation. This mode is
+  consent-gated: it may recommend ledger changes, but must not apply status,
+  awareness, archive, or decision-packet changes until the owner chooses
+  through a structured choice UI, a validated HTML decision-board response,
+  or an explicit reply. Do not create new blindspot findings except triage
+  blockers in the ledger itself. Read `references/ledger-triage.md` before
+  acting.
 
 Modes compose with an optional **focus** (for example `focus: ux-ui`): the
 audit keeps its mode behavior but narrows to a single domain and loads that
@@ -116,8 +126,24 @@ prescribes (see Workflow step 4). A focus run follows the scoped-audit
 rules in Audit Scope - the "target" is the domain's entire surface across
 the project.
 
+`ledger-triage` is a maintenance mode, not an audit mode. It does not compose
+with `focus`, does not run the fresh-eyes scan, and does not use the normal
+3-7 new-finding ranking. Its first output is a decision collection surface,
+not automatic cleanup. Ledger updates happen only after owner choices have
+been collected and validated, then routed through the ledger-triage
+post-response workflow: re-explain unclear choices first, apply simple ledger
+maintenance directly, and create a temporary execution plan before any
+multi-step implementation work.
+
 Infer the mode from the user's wording. If the user asks to run it now, do
 not ask mode questions unless the audit boundary is impossible to infer.
+After a blindspot audit, if the owner asks to organize, close, process,
+handle, decide, or go through existing findings/items/rows, and a
+`BLINDSPOT_LEDGER.md` exists or the current context is an existing ledger,
+infer `mode: ledger-triage` even if the owner never names the mode. If the
+owner asks to handle only part of the ledger, run `ledger-triage` scoped to
+those rows/items; when multiple meaningful decisions are present, prefer the
+triage decision collection flow over manually walking one item at a time.
 
 ## Audit Scope
 
@@ -152,6 +178,10 @@ did not cover the rest of the project.
 ## Quick Start
 
 1. Identify the project root and audit boundary.
+   - If the mode is `ledger-triage`, read `references/ledger-triage.md`
+     now, then read the existing ledger and follow that reference instead
+     of the normal audit workflow. Use the inventory helper only for cheap
+     evidence checks on specific stale/resolved candidates.
 2. Run the inventory helper when a filesystem project is available. The
    script lives in this skill's own folder - resolve it relative to this
    SKILL.md. If the exact skill path is unknown, locate it with the host's
@@ -187,6 +217,8 @@ manual directory listing. See `references/host-surfaces.md`.
      choice-capable, no-choice, file-mirrored, CLI, or chat-only surfaces.
    - `references/ledger-lifecycle.md`: discover, create, route, or update a
      durable blindspot ledger.
+   - `references/ledger-triage.md`: ONLY for `mode: ledger-triage`, when
+     maintaining an existing ledger and collecting many owner decisions.
    - `references/report-template.md`: format the result.
 4. Discover or initialize the blindspot ledger:
    - If a prior ledger exists, read it before searching (diff-run rules
@@ -219,7 +251,13 @@ plain chat. Only the interaction style changes. See
   questions. Continue with the safest reversible assumption, mark it as an
   assumption, and include a compact numbered awareness check plus any
   `Decision packet` items so the owner can answer in one later message.
-  Mark awareness values `unconfirmed` until they answer.
+  Mark awareness values `unconfirmed` until they answer. In
+  `mode: ledger-triage`, never treat "clean up", "organize", "proceed",
+  or equivalent wording as permission to choose ledger outcomes yourself.
+  If the host can write project files and there is any meaningful ledger
+  decision to apply, create the temporary HTML decision board described in
+  `references/ledger-triage.md`; for read-only/chat-only hosts, return a
+  numbered decision packet and wait for the owner reply before editing.
 - Hosts without web access: skip the fresh-eyes external scan, say so
   explicitly in the report, and flag time-sensitive domains (regulation,
   platform policy, pricing) as unverified rather than asserting them from
