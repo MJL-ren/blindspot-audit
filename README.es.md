@@ -2,6 +2,8 @@
 
 [English](./README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [Español](./README.es.md)
 
+![Imagen principal de Blindspot Audit](./docs/assets/readme/en/hero.png)
+
 Blindspot Audit es una skill portátil para agentes de IA que ayuda a encontrar lo que la persona dueña de un proyecto
 todavía no sabe que está pasando por alto: unknown unknowns, riesgos ocultos, decisiones pendientes, supuestos viejos
 y preguntas que nadie pensó hacer. Deja el resultado en `BLINDSPOT_LEDGER.md`.
@@ -10,21 +12,30 @@ Funciona con cualquier tipo de proyecto: software, juegos, novelas y escritura c
 de negocio. Puede usarse en Claude Code, Codex, OpenCode, la app de escritorio de Claude y chats normales. El núcleo de la
 auditoría es el mismo; cada host solo adapta cómo pregunta y cómo guarda los resultados.
 
-## Instalación rápida con IA
+## Instalación en 60 segundos
 
-Copia este prompt en Codex, Claude Code, OpenCode u otro agente de programación. El agente leerá este repositorio e instalará
-la skill para el host o proyecto actual.
+| Qué usas | Una línea |
+| --- | --- |
+| Cualquier agente de programación — Claude Code, Codex, OpenCode, Cursor, ~70 hosts | `npx skills add MJL-ren/blindspot-audit` |
+| Claude Code, con actualizaciones gestionadas | `/plugin marketplace add MJL-ren/blindspot-audit` y luego `/plugin install blindspot-audit@blindspot-audit` |
+| App de escritorio de Claude / Cowork — sin terminal | Descarga [blindspot-audit.skill](https://github.com/MJL-ren/blindspot-audit/releases/latest/download/blindspot-audit.skill), adjúntalo en el chat y pulsa **Save skill** |
+
+Después prueba tu primer prompt:
 
 ```text
-Install and configure Blindspot Audit for this agent environment:
-https://github.com/MJL-ren/blindspot-audit
-
-Read the repository README.md and AGENTS.md first, then install using the documented skill route that fits this host and scope: the installer script, the Claude desktop .skill, or a safe manual copy. If a permission or safety guard blocks writing the skill into the agent's config directory, don't silently stop - ask me to approve the permission, or offer the plugin marketplace route as a managed fallback.
-
-Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
+Run a blindspot audit on this project. What am I missing that I don't even know to ask about?
 ```
 
+La ruta `npx` usa [vercel-labs/skills](https://github.com/vercel-labs/skills):
+instala la carpeta completa de la skill y envía telemetría anónima de
+instalación (se desactiva con `DISABLE_TELEMETRY=1`). La skill en sí nunca
+toca la red por su cuenta — ver [SECURITY.md](./SECURITY.md). El resto de
+rutas — instalación por proyecto, marketplace de Codex, scripts sin conexión,
+dejar que tu agente lo haga — están en [Instalación](#instalación).
+
 ## Qué hace
+
+![Marco de los cuatro tipos de desconocimiento](./docs/assets/readme/en/four-unknowns.png)
 
 - Perfila el proyecto: tipo, etapa, experiencia de la persona dueña, si es hobby o comercial. Primero lee los documentos que el
   proyecto ya usa para seguirse a sí mismo, como TODOs, checklists y roadmaps. **Todo lo que ya esté rastreado se filtra y no se
@@ -41,11 +52,69 @@ Do not modify unrelated project files. After installation, tell me which route y
 - Se enfoca cuando hace falta: una ejecución `focus: ux-ui` carga un paquete de sondas profundas para ese dominio,
   y la auditoría completa no pasa en silencio por las superficies de los dominios débiles del dueño
   (la UI de un ingeniero, las operaciones de un diseñador): lo reporta como hallazgo. Habrá más paquetes con el tiempo.
-- Mantiene un `BLINDSPOT_LEDGER.md` duradero. Las siguientes ejecuciones comparan contra ese archivo y reportan solo lo nuevo o cambiado.
+- Mantiene un `BLINDSPOT_LEDGER.md` duradero (el cuaderno que la auditoría deja en tu proyecto). Las siguientes ejecuciones comparan contra ese archivo y reportan solo lo nuevo o cambiado.
   Y cuando nada cambió, la ejecución desciende un nivel (paquetes sin ejecutar, revisión de la lista de vigilancia,
   el subsistema menos inspeccionado) en vez de volver con las manos vacías.
 
+![Flujo de auditoría de Blindspot Audit](./docs/assets/readme/en/audit-flow.png)
+
+## Cómo se ve un hallazgo
+
+Una auditoría débil dice «Falta el aviso de privacidad del artículo 13 del
+RGPD». Esta skill está construida para decirlo de forma que puedas
+reconocerlo y actuar:
+
+```markdown
+1. The site collects email addresses but never tells people what happens
+   to them
+   - In plain terms: when a site stores personal data like emails, most
+     regions require a short public note (a "privacy policy") saying what
+     is collected and how to get it deleted. It is a page, not a lawsuit -
+     but its absence can become one.
+   - Why it matters: the signup form is live and EU visitors can reach it;
+     this is the kind of gap that is cheap now and expensive after launch.
+   - Cheapest check: read one privacy-policy generator's output (10 min)
+     and confirm with a professional before launch - this audit is a
+     scout, not a lawyer.
+```
+
+Hay cinco reportes sintéticos completos en
+[examples/sample-reports/](./examples/sample-reports/) — empieza por
+[weak-vs-strong.md](./examples/sample-reports/weak-vs-strong.md), que
+muestra los mismos tres hallazgos escritos para fallar y para pasar. Los
+reportes reales se escriben en el idioma en el que trabajas; solo los ID y
+los valores de status quedan en inglés.
+
+## Tu primera auditoría
+
+1. Pídela con tus palabras (hay prompts en [Uso](#uso)).
+2. En la primera ejecución hace 1–2 preguntas breves de contexto — todas
+   se pueden omitir.
+3. Recibes de 3 a 7 hallazgos priorizados, más lo que ya está bien
+   cubierto y lo que puedes omitir por ahora.
+4. Te pregunta qué hallazgos ya conocías — una brecha conocida recibe una
+   línea accionable en vez de una lección.
+5. Deja UN archivo: `BLINDSPOT_LEDGER.md`, el cuaderno de la auditoría en
+   tu proyecto. Las siguientes ejecuciones lo leen y reportan solo lo que
+   cambió. El archivo es tuyo — haz commit o añádelo a `.gitignore`.
+
+## ¿Por qué no basta con preguntar «qué me falta»?
+
+Un prompt suelto parte de cero cada vez: vuelve a «descubrir» lo que ya
+rastreas, da lecciones donde bastaría una línea accionable y lo olvida todo
+en la siguiente sesión. Esta skill filtra tus propios documentos de
+seguimiento fuera de los hallazgos, te entrevista para tratar distinto las
+brechas conocidas y los puntos ciegos reales, y compara contra el ledger
+para que cada repetición reporte progreso en vez de repetirse.
+
+Cómo saber que funciona: una repetición reporta deltas, no la misma lista
+dos veces; cada hallazgo trae una consecuencia concreta y la comprobación
+más barata, nunca una buena práctica genérica; y cada versión se califica
+con ejecuciones reales — ver [evals/RUNS.md](./evals/RUNS.md).
+
 ## Focus: UX/UI
+
+![Enfoque UX/UI de Blindspot Audit](./docs/assets/readme/en/ux-ui-focus.png)
 
 `focus: ux-ui` sirve para proyectos con pantallas reales para usuarios, donde una auditoría amplia solo miraría la
 interfaz por encima. Recorre pantallas, flujos, estados, entradas, accesibilidad y feedback como preguntas de punto ciego:
@@ -117,13 +186,34 @@ blindspot-audit/
 
 ## Instalación
 
-Todos los instaladores tienen versiones PowerShell (`.ps1`) y Bash (`.sh`). En macOS/Linux usa los scripts `.sh`
-(puede que necesites ejecutar `chmod +x scripts/*.sh` una vez). En Windows usa `.ps1` desde PowerShell, o `.sh`
-desde Git Bash / WSL.
+Las tres rutas recomendadas están arriba, en
+[Instalación en 60 segundos](#instalación-en-60-segundos). Lo de abajo es el
+menú completo — ninguna ruta necesita a las demás.
+
+### Cualquier agente de programación — una línea (npx)
+
+[vercel-labs/skills](https://github.com/vercel-labs/skills) detecta los
+agentes instalados (Claude Code, Codex, OpenCode, Cursor y ~70 más) e
+instala la carpeta completa de la skill para cada uno:
 
 ```bash
-git clone https://github.com/MJL-ren/blindspot-audit.git
-cd blindspot-audit
+npx skills add MJL-ren/blindspot-audit
+```
+
+La telemetría anónima de instalación se desactiva con `DISABLE_TELEMETRY=1`.
+
+### Deja que tu agente lo instale
+
+Copia este prompt en Codex, Claude Code, OpenCode u otro agente de programación. El agente leerá este repositorio e instalará
+la skill para el host o proyecto actual.
+
+```text
+Install and configure Blindspot Audit for this agent environment:
+https://github.com/MJL-ren/blindspot-audit
+
+Read the repository README.md and AGENTS.md first, then install using the documented skill route that fits this host and scope: the installer script, the Claude desktop .skill, or a safe manual copy. If a permission or safety guard blocks writing the skill into the agent's config directory, don't silently stop - ask me to approve the permission, or offer the plugin marketplace route as a managed fallback.
+
+Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
 ```
 
 ### Claude Code — marketplace de plugins (una línea, con actualizaciones)
@@ -136,6 +226,8 @@ Dentro de Claude Code ejecuta:
 ```
 
 No hace falta clonar el repositorio, y recibes actualizaciones con `/plugin marketplace update blindspot-audit`.
+(`blindspot-audit@blindspot-audit` se lee como `<plugin>@<marketplace>` —
+aquí ambos comparten nombre por casualidad; no es una errata.)
 
 ### Codex — marketplace de plugins
 
@@ -155,6 +247,18 @@ codex plugin add blindspot-audit@blindspot-audit
 ```
 
 Después de instalar o actualizar, abre un nuevo hilo de Codex para que se carguen las skills del plugin.
+
+### Instalación con scripts (requiere clonar)
+
+Las rutas de script de abajo necesitan un clon local. Todos los instaladores
+tienen versiones PowerShell (`.ps1`) y Bash (`.sh`). En macOS/Linux usa los
+scripts `.sh` (puede que necesites ejecutar `chmod +x scripts/*.sh` una vez).
+En Windows usa `.ps1` desde PowerShell, o `.sh` desde Git Bash / WSL.
+
+```bash
+git clone https://github.com/MJL-ren/blindspot-audit.git
+cd blindspot-audit
+```
 
 ### Claude Code — instalación personal (recomendada; también cubre OpenCode)
 
@@ -195,7 +299,10 @@ También puedes pasar una ruta personalizada como argumento.
 
 ### App de escritorio de Claude / Cowork
 
-Abre `dist/blindspot-audit.skill` en la app de escritorio de Claude, adjúntalo en el chat y pulsa **Save skill**.
+Descarga el paquete más reciente directamente —
+[blindspot-audit.skill](https://github.com/MJL-ren/blindspot-audit/releases/latest/download/blindspot-audit.skill)
+(o usa `dist/blindspot-audit.skill` desde un clon) — ábrelo en la app de
+escritorio de Claude, adjúntalo en el chat y pulsa **Save skill**.
 No hace falta usar terminal; es la ruta más fácil para personas no desarrolladoras.
 
 Si en cambio lo instalaste como **plugin** del marketplace dentro de la app de escritorio, reiniciar la app no basta para actualizarlo.
@@ -266,6 +373,8 @@ Use $blindspot-audit in deep mode on this project. Create or update the BLINDSPO
 
 Hay más ejemplos en [examples/prompts.md](./examples/prompts.md).
 
+![BLINDSPOT_LEDGER y auditorías repetidas](./docs/assets/readme/en/ledger-diff.png)
+
 ## Mantenimiento
 
 Después de cambiar `skills/blindspot-audit`, reconstruye el paquete para la app de escritorio de Claude:
@@ -299,6 +408,15 @@ python3 scripts/verify-codex-plugin.py
 - Host sin acceso web: omite el escaneo de mirada fresca y lo dice claramente, en vez de afirmar conocimiento viejo sobre regulación o plataformas.
 - Host con escritura de archivos: crea o actualiza `BLINDSPOT_LEDGER.md` por defecto.
 - Host de solo lectura: devuelve un reporte portable con entradas propuestas para el ledger.
+
+## Contribuir
+
+Los reportes de bugs y las notas de ejecuciones reales son bienvenidos —
+usa el [formulario de issues](https://github.com/MJL-ren/blindspot-audit/issues/new/choose),
+que pide el host, la versión de la skill y el modo desde el principio. Los
+PR de nuevas skills, paquetes o funciones grandes en general no se aceptan:
+el núcleo de la auditoría se mantiene pequeño y validado en campo. Si crees
+que falta algo, abre primero un issue.
 
 ## Atribución
 

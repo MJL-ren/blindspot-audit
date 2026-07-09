@@ -23,6 +23,13 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
+Any-agent one-liner (installs the whole skill folder for every detected
+agent via the skills CLI):
+
+```bash
+npx skills add MJL-ren/blindspot-audit
+```
+
 Manual install — copy `skills/blindspot-audit` to one of:
 
 - Claude Code personal: `~/.claude/skills/blindspot-audit` (OpenCode reads this too)
@@ -87,7 +94,9 @@ entries newer than the previous semver tag, and
 
 The four translations (`README.ko.md`, `README.ja.md`, `README.zh.md`,
 `README.es.md`) must be updated in the same change. Keep the section
-structure identical across all five files so drift is easy to spot.
+structure identical across all five files — including image references
+(ja/zh/es may point at the `en` assets until localized images exist) — so
+drift is easy to spot.
 
 ## If The User Wants To Publish The Repo
 

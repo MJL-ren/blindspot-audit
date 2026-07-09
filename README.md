@@ -17,20 +17,26 @@ It is especially useful for AI-assisted and vibe-coded projects where the
 owner moved fast, shipped ideas quickly, and now needs a calm pass over what
 may have been missed.
 
-## Quick AI Install
+## Install in 60 seconds
 
-Copy this prompt into Codex, Claude Code, OpenCode, or another coding agent.
-The agent should read this repository and install the skill for the current
-host or project.
+| You use | One line |
+| --- | --- |
+| Any coding agent — Claude Code, Codex, OpenCode, Cursor, ~70 hosts | `npx skills add MJL-ren/blindspot-audit` |
+| Claude Code, with managed updates | `/plugin marketplace add MJL-ren/blindspot-audit` then `/plugin install blindspot-audit@blindspot-audit` |
+| Claude desktop app / Cowork — no terminal | Download [blindspot-audit.skill](https://github.com/MJL-ren/blindspot-audit/releases/latest/download/blindspot-audit.skill), attach it in chat, click **Save skill** |
+
+Then try your first prompt:
 
 ```text
-Install and configure Blindspot Audit for this agent environment:
-https://github.com/MJL-ren/blindspot-audit
-
-Read the repository README.md and AGENTS.md first, then install using the documented skill route that fits this host and scope: the installer script, the Claude desktop .skill, or a safe manual copy. If a permission or safety guard blocks writing the skill into the agent's config directory, don't silently stop - ask me to approve the permission, or offer the plugin marketplace route as a managed fallback.
-
-Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
+Run a blindspot audit on this project. What am I missing that I don't even know to ask about?
 ```
+
+The `npx` route uses [vercel-labs/skills](https://github.com/vercel-labs/skills):
+it installs the whole skill folder and sends anonymous install telemetry
+(opt out with `DISABLE_TELEMETRY=1`). The skill itself never touches the
+network on its own — see [SECURITY.md](./SECURITY.md). More routes —
+per-project installs, Codex marketplace, offline scripts, letting your
+agent do it — in [Install](#install).
 
 ## What It Does
 
@@ -57,13 +63,67 @@ Do not modify unrelated project files. After installation, tell me which route y
   one domain, and full audits flag weak-domain surfaces they only skimmed
   (an engineer-owner's UI, a designer-owner's operations) instead of
   silently passing them. More packs over time.
-- Keeps a durable `BLINDSPOT_LEDGER.md`; later runs diff against it and
+- Keeps a durable `BLINDSPOT_LEDGER.md` — the audit's notebook file in
+  your project; later runs diff against it and
   report only what's new or changed, so re-runs feel like progress instead
   of nagging - and when nothing changed, the run descends one tier deeper
   (un-run packs, watchlist re-checks, least-inspected subsystem) instead
   of coming back empty.
 
 ![Blindspot Audit audit flow](./docs/assets/readme/en/audit-flow.png)
+
+## What a finding looks like
+
+A weak audit says "No GDPR Article 13 privacy notice." This skill is built
+to say it so you can recognize and act on it:
+
+```markdown
+1. The site collects email addresses but never tells people what happens
+   to them
+   - In plain terms: when a site stores personal data like emails, most
+     regions require a short public note (a "privacy policy") saying what
+     is collected and how to get it deleted. It is a page, not a lawsuit -
+     but its absence can become one.
+   - Why it matters: the signup form is live and EU visitors can reach it;
+     this is the kind of gap that is cheap now and expensive after launch.
+   - Cheapest check: read one privacy-policy generator's output (10 min)
+     and confirm with a professional before launch - this audit is a
+     scout, not a lawyer.
+```
+
+Five full synthetic reports live in
+[examples/sample-reports/](./examples/sample-reports/) — start with
+[weak-vs-strong.md](./examples/sample-reports/weak-vs-strong.md), which
+shows the same three findings written to fail and to pass. Real reports
+are written in whatever language you work in; only IDs and status values
+stay English.
+
+## Your first audit
+
+1. Ask in plain words (prompts in [Using It](#using-it)).
+2. On a first run the skill asks 1–2 short context questions — every one
+   skippable.
+3. You get 3–7 ranked findings, plus what is already well covered and
+   what you can safely skip for now.
+4. It asks which findings you already knew about — a known gap gets a
+   checklist line instead of a lecture.
+5. It leaves ONE file behind: `BLINDSPOT_LEDGER.md`, the audit's notebook
+   in your project. Re-runs read it and report only what changed. The
+   file is yours — commit it, or add it to `.gitignore`.
+
+## Why not just ask "what am I missing?"
+
+A plain "review my project" prompt starts from zero every time: it
+re-discovers what you already track, lectures where a checklist line
+would do, and forgets everything by the next session. This skill filters
+your own tracking docs out of the findings, interviews you so known gaps
+are treated differently from real blind spots, and diffs against the
+ledger so re-runs report progress instead of repeating themselves.
+
+How to know it is working: a re-run reports deltas, not the same list
+twice; findings name a concrete consequence and the cheapest next check,
+never a generic best practice; and every release is graded against real
+field runs — see [evals/RUNS.md](./evals/RUNS.md).
 
 ## Focus: UX/UI
 
@@ -138,14 +198,35 @@ blindspot-audit/
 
 ## Install
 
-All installers have PowerShell (`.ps1`) and Bash (`.sh`) versions. On
-macOS/Linux use the `.sh` scripts (run `chmod +x scripts/*.sh` once if
-needed); on Windows use `.ps1` from PowerShell, or the `.sh` versions from
-Git Bash / WSL.
+The three recommended routes are in
+[Install in 60 seconds](#install-in-60-seconds) above. Everything below
+is the full menu — no route here requires the others.
+
+### Any coding agent — one line (npx)
+
+[vercel-labs/skills](https://github.com/vercel-labs/skills) detects your
+installed agents (Claude Code, Codex, OpenCode, Cursor, and ~70 more) and
+installs the whole skill folder for each:
 
 ```bash
-git clone https://github.com/MJL-ren/blindspot-audit.git
-cd blindspot-audit
+npx skills add MJL-ren/blindspot-audit
+```
+
+Anonymous install telemetry can be disabled with `DISABLE_TELEMETRY=1`.
+
+### Let your agent install it
+
+Copy this prompt into Codex, Claude Code, OpenCode, or another coding agent.
+The agent should read this repository and install the skill for the current
+host or project.
+
+```text
+Install and configure Blindspot Audit for this agent environment:
+https://github.com/MJL-ren/blindspot-audit
+
+Read the repository README.md and AGENTS.md first, then install using the documented skill route that fits this host and scope: the installer script, the Claude desktop .skill, or a safe manual copy. If a permission or safety guard blocks writing the skill into the agent's config directory, don't silently stop - ask me to approve the permission, or offer the plugin marketplace route as a managed fallback.
+
+Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
 ```
 
 ### Claude Code — plugin marketplace (one-liner, with updates)
@@ -158,6 +239,8 @@ Inside Claude Code, run:
 ```
 
 No clone needed, and updates arrive via `/plugin marketplace update blindspot-audit`.
+(`blindspot-audit@blindspot-audit` reads as `<plugin>@<marketplace>` —
+plugin and marketplace happen to share the name here, so it is not a typo.)
 
 ### Codex — plugin marketplace
 
@@ -177,6 +260,18 @@ codex plugin add blindspot-audit@blindspot-audit
 ```
 
 Start a new Codex thread after installing or upgrading so the plugin skills are loaded.
+
+### Script installs (clone first)
+
+The script routes below need a local clone. All installers have PowerShell
+(`.ps1`) and Bash (`.sh`) versions. On macOS/Linux use the `.sh` scripts
+(run `chmod +x scripts/*.sh` once if needed); on Windows use `.ps1` from
+PowerShell, or the `.sh` versions from Git Bash / WSL.
+
+```bash
+git clone https://github.com/MJL-ren/blindspot-audit.git
+cd blindspot-audit
+```
 
 ### Claude Code — personal (recommended; also covers OpenCode)
 
@@ -219,9 +314,11 @@ Installs to `$CODEX_HOME/skills` when `CODEX_HOME` is set, otherwise
 
 ### Claude desktop app / Cowork
 
-Open `dist/blindspot-audit.skill` in the Claude desktop app (attach it in
-chat) and click **Save skill**. No terminal needed — this is the easiest
-route for non-developers.
+Download the latest package directly —
+[blindspot-audit.skill](https://github.com/MJL-ren/blindspot-audit/releases/latest/download/blindspot-audit.skill)
+(or use `dist/blindspot-audit.skill` from a clone) — open it in the Claude
+desktop app (attach it in chat) and click **Save skill**. No terminal
+needed — this is the easiest route for non-developers.
 
 If you installed it as a marketplace **plugin** inside the desktop app
 instead, restarting the app is not enough to update it. Open the plugin
@@ -328,6 +425,15 @@ python3 scripts/verify-codex-plugin.py
   of asserting stale knowledge about regulations or platforms.
 - File-writing host: creates or updates `BLINDSPOT_LEDGER.md` by default.
 - Read-only host: returns a portable report with proposed ledger entries.
+
+## Contributing
+
+Bug reports and field-run notes are welcome — please use the
+[issue form](https://github.com/MJL-ren/blindspot-audit/issues/new/choose),
+which asks for the host, skill version, and mode up front. New skills,
+packs, or large feature PRs are generally not accepted: the audit core
+stays small and field-tested. Open an issue first if you think something
+is missing.
 
 ## Attribution
 

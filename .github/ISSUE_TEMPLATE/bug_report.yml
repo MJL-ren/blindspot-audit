@@ -1,0 +1,56 @@
+name: Bug report
+description: Something didn't work — a failed install, a skill that didn't trigger, or an audit that misbehaved
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: host
+    attributes:
+      label: Host
+      description: Where were you running the skill?
+      options:
+        - Claude Code
+        - Codex (CLI)
+        - Codex (app)
+        - OpenCode
+        - Claude desktop app / Cowork
+        - claude.ai (web)
+        - Other (say which under "What happened")
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Skill version
+      description: From CHANGELOG.md, the release tag, or your plugin list (e.g. 0.6.5). Write "unknown" if unsure.
+      placeholder: "0.6.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-route
+    attributes:
+      label: Install route
+      description: How did you install it?
+      options:
+        - npx skills add
+        - Claude Code plugin marketplace
+        - Codex plugin marketplace
+        - Installer script
+        - .skill file (desktop app / Cowork)
+        - Manual copy
+        - Not installed yet / other
+    validations:
+      required: true
+  - type: input
+    id: mode
+    attributes:
+      label: Mode or prompt
+      description: Which mode were you using (deep, quick, focus ux-ui, ledger-triage, planning...), or paste the prompt you used.
+      placeholder: "deep"
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what happened instead? Paste output snippets if you can — please remove private project names first.
+    validations:
+      required: true

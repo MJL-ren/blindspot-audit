@@ -2,6 +2,8 @@
 
 [English](./README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [Español](./README.es.md)
 
+![Blindspot Audit メイン画像](./docs/assets/readme/en/hero.png)
+
 Blindspot Audit は、プロジェクトの持ち主が「知らないことにすら気づいていない」
 部分を見つけるための、持ち運びしやすい AI エージェント向けスキルです。unknown
 unknowns、隠れたリスク、未決定の判断、古くなった前提、まだ誰も聞いていない問いを
@@ -12,21 +14,31 @@ unknowns、隠れたリスク、未決定の判断、古くなった前提、ま
 通常のチャットで動きます。監査の中核は共通で、ホストごとに変わるのは質問の仕方と結果の
 保存方法だけです。
 
-## AI に貼り付けてインストール
+## 60 秒インストール
 
-次の文を Codex、Claude Code、OpenCode などのコーディングエージェントに貼り付けると、
-このリポジトリを読んで、現在の環境に合う形でスキルをインストールできます。
+| 使っているツール | 1 行 |
+| --- | --- |
+| 任意のコーディングエージェント — Claude Code、Codex、OpenCode、Cursor など約 70 種 | `npx skills add MJL-ren/blindspot-audit` |
+| Claude Code（更新も管理される） | `/plugin marketplace add MJL-ren/blindspot-audit` のあと `/plugin install blindspot-audit@blindspot-audit` |
+| Claude デスクトップアプリ / Cowork — ターミナル不要 | [blindspot-audit.skill](https://github.com/MJL-ren/blindspot-audit/releases/latest/download/blindspot-audit.skill) をダウンロードし、チャットに添付して **Save skill** をクリック |
+
+インストールしたら、最初のプロンプト:
 
 ```text
-Install and configure Blindspot Audit for this agent environment:
-https://github.com/MJL-ren/blindspot-audit
-
-Read the repository README.md and AGENTS.md first, then install using the documented skill route that fits this host and scope: the installer script, the Claude desktop .skill, or a safe manual copy. If a permission or safety guard blocks writing the skill into the agent's config directory, don't silently stop - ask me to approve the permission, or offer the plugin marketplace route as a managed fallback.
-
-Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
+Run a blindspot audit on this project. What am I missing that I don't even know to ask about?
 ```
 
+`npx` ルートは [vercel-labs/skills](https://github.com/vercel-labs/skills) を
+使います。スキルフォルダ全体をインストールし、匿名のインストール統計を送信
+します（`DISABLE_TELEMETRY=1` で無効化できます）。スキル自体が自分から
+ネットワークに触れることはありません — [SECURITY.md](./SECURITY.md) を参照。
+プロジェクト単位のインストール、Codex マーケットプレイス、オフラインスクリプト、
+エージェントに任せる方法など、残りのルートは [インストール](#インストール)
+セクションにあります。
+
 ## 何をするか
+
+![四つの未知のフレーム](./docs/assets/readme/en/four-unknowns.png)
 
 - プロジェクトを最初に把握します。種類、段階、持ち主の専門性、趣味か商用かを見ます。
   そのうえで、TODO、チェックリスト、ロードマップなど、すでに追跡している文書を先に読み、
@@ -45,11 +57,67 @@ Do not modify unrelated project files. After installation, tell me which route y
 - 必要なときは絞って掘ります。`focus: ux-ui` 実行はそのドメイン専用の深掘りプローブパックを
   読み込み、フル監査はオーナーの弱いドメインの表面（エンジニアの UI、デザイナーの運用）を
   ざっと見ただけなら、その事実を黙って通さず発見として報告します。パックは順次増えます。
-- `BLINDSPOT_LEDGER.md` を残します。次回以降はその台帳と比較し、新しく出たもの、変わったものだけを
+- `BLINDSPOT_LEDGER.md`（監査がプロジェクトに残すノートファイル）を残します。次回以降はその台帳と比較し、新しく出たもの、変わったものだけを
   報告します。変化がなければ手ぶらで戻る代わりに一段深く降ります（未実行パック、
   ウォッチリストの再審査、最も浅くしか見ていないサブシステムの順）。
 
+![Blindspot Audit 監査フロー](./docs/assets/readme/en/audit-flow.png)
+
+## 発見はこう見える
+
+弱い監査は「GDPR 13 条のプライバシー通知がない」と書きます。このスキルは、
+持ち主が認識して動けるように書くよう作られています:
+
+```markdown
+1. The site collects email addresses but never tells people what happens
+   to them
+   - In plain terms: when a site stores personal data like emails, most
+     regions require a short public note (a "privacy policy") saying what
+     is collected and how to get it deleted. It is a page, not a lawsuit -
+     but its absence can become one.
+   - Why it matters: the signup form is live and EU visitors can reach it;
+     this is the kind of gap that is cheap now and expensive after launch.
+   - Cheapest check: read one privacy-policy generator's output (10 min)
+     and confirm with a professional before launch - this audit is a
+     scout, not a lawyer.
+```
+
+完全な合成レポート 5 本は
+[examples/sample-reports/](./examples/sample-reports/) にあります。まず
+[weak-vs-strong.md](./examples/sample-reports/weak-vs-strong.md) を読むと、
+同じ 3 つの発見を「失敗する書き方」と「通る書き方」で比べられます。実際の
+レポートはあなたが使っている言語で書かれ、ID と status 値だけが英語のまま
+になります。
+
+## はじめての監査で起きること
+
+1. 普段の言葉で頼みます（プロンプト例は [使い方](#使い方) に）。
+2. 初回は短い文脈質問が 1〜2 個 — すべてスキップできます。
+3. 順位づけされた発見 3〜7 個に加えて、すでに整っているもの、今は
+   後回しでよいものも一緒に受け取ります。
+4. どの発見をすでに知っていたかを聞かれます — 知っていた穴には長い説明
+   ではなく、短いチェック項目が処方されます。
+5. 残るファイルは 1 つだけ: `BLINDSPOT_LEDGER.md`、プロジェクト内の監査
+   ノートです。次回の実行はこれを読み、変わったものだけを報告します。
+   ファイルはあなたのものです — コミットしても、`.gitignore` に入れても
+   構いません。
+
+## 「何か見落としてない?」と聞くだけではだめ?
+
+素のプロンプトは毎回ゼロから始まります: すでに追跡しているものを再「発見」し、
+チェック 1 行で足りる場所で長い説明をし、次のセッションではすべて忘れます。
+このスキルはプロジェクト自身の追跡文書を発見から除外し、知っていた穴と本当の
+盲点をインタビューで区別して処方を変え、台帳と diff することで再実行を
+「小言」ではなく「進捗確認」にします。
+
+機能しているかの見分け方: 再実行が同じリストを繰り返さず差分だけを報告する。
+発見ごとに具体的な影響と最も安い次の確認がつき、一般論のベストプラクティスが
+ない。そしてすべてのリリースは実地の実行で採点されています —
+[evals/RUNS.md](./evals/RUNS.md) を参照。
+
 ## Focus: UX/UI
+
+![Blindspot Audit UX/UI フォーカス](./docs/assets/readme/en/ux-ui-focus.png)
 
 `focus: ux-ui` は、ユーザーが触れる画面を持つプロジェクトで、通常の広い監査では
 表面だけを見て終わりやすい UI/UX を狭く深く見るモードです。画面、入力、状態、
@@ -120,13 +188,33 @@ blindspot-audit/
 
 ## インストール
 
-すべてのインストーラーには PowerShell (`.ps1`) と Bash (`.sh`) があります。macOS/Linux では
-`.sh` を使ってください（初回だけ `chmod +x scripts/*.sh` が必要な場合があります）。Windows では
-PowerShell で `.ps1` を使うか、Git Bash / WSL で `.sh` を使えます。
+おすすめの 3 ルートは上の [60 秒インストール](#60-秒インストール) にあります。
+以下はフルメニューで、どのルートも他のルートを必要としません。
+
+### 任意のコーディングエージェント — 1 行 (npx)
+
+[vercel-labs/skills](https://github.com/vercel-labs/skills) がインストール済みの
+エージェント（Claude Code、Codex、OpenCode、Cursor など約 70 種）を検出し、
+それぞれにスキルフォルダ全体をインストールします:
 
 ```bash
-git clone https://github.com/MJL-ren/blindspot-audit.git
-cd blindspot-audit
+npx skills add MJL-ren/blindspot-audit
+```
+
+匿名のインストール統計は `DISABLE_TELEMETRY=1` で無効化できます。
+
+### エージェントに任せる
+
+次の文を Codex、Claude Code、OpenCode などのコーディングエージェントに貼り付けると、
+このリポジトリを読んで、現在の環境に合う形でスキルをインストールできます。
+
+```text
+Install and configure Blindspot Audit for this agent environment:
+https://github.com/MJL-ren/blindspot-audit
+
+Read the repository README.md and AGENTS.md first, then install using the documented skill route that fits this host and scope: the installer script, the Claude desktop .skill, or a safe manual copy. If a permission or safety guard blocks writing the skill into the agent's config directory, don't silently stop - ask me to approve the permission, or offer the plugin marketplace route as a managed fallback.
+
+Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
 ```
 
 ### Claude Code — プラグインマーケットプレイス（1 行インストール + 自動更新）
@@ -139,6 +227,8 @@ Claude Code 内で次を実行します。
 ```
 
 クローンは不要で、`/plugin marketplace update blindspot-audit` で更新を受け取れます。
+（`blindspot-audit@blindspot-audit` は `<プラグイン>@<マーケットプレイス>` の
+表記です — ここでは両方の名前がたまたま同じなだけで、誤記ではありません。）
 
 ### Codex — プラグインマーケットプレイス
 
@@ -158,6 +248,18 @@ codex plugin add blindspot-audit@blindspot-audit
 ```
 
 インストールまたは更新後は、新しい Codex スレッドを開いてプラグインスキルを読み込ませます。
+
+### スクリプトインストール（クローンが必要）
+
+以下のスクリプトルートにはローカルクローンが必要です。すべてのインストーラーには
+PowerShell (`.ps1`) と Bash (`.sh`) があります。macOS/Linux では `.sh` を
+使ってください（初回だけ `chmod +x scripts/*.sh` が必要な場合があります）。
+Windows では PowerShell で `.ps1` を使うか、Git Bash / WSL で `.sh` を使えます。
+
+```bash
+git clone https://github.com/MJL-ren/blindspot-audit.git
+cd blindspot-audit
+```
 
 ### Claude Code — 個人インストール（推奨、OpenCode も対象）
 
@@ -199,8 +301,11 @@ codex plugin add blindspot-audit@blindspot-audit
 
 ### Claude デスクトップアプリ / Cowork
 
-`dist/blindspot-audit.skill` を Claude デスクトップアプリのチャットに添付し、**Save skill** を
-押します。ターミナルは不要なので、開発者でない人には一番簡単です。
+最新パッケージを直接ダウンロードして —
+[blindspot-audit.skill](https://github.com/MJL-ren/blindspot-audit/releases/latest/download/blindspot-audit.skill)
+（クローンがあれば `dist/blindspot-audit.skill` でも可）— Claude デスクトップ
+アプリのチャットに添付し、**Save skill** を押します。ターミナルは不要なので、
+開発者でない人には一番簡単です。
 
 デスクトップアプリ内でマーケットプレイスの**プラグイン**として入れた場合、アプリを再起動するだけでは
 更新されません。プラグイン管理画面で **Update** ボタンを押すか、Claude Code などの互換プラグイン
@@ -269,6 +374,8 @@ Use $blindspot-audit in deep mode on this project. Create or update the BLINDSPO
 
 さらに多くの例は [examples/prompts.md](./examples/prompts.md) にあります。
 
+![BLINDSPOT_LEDGER と繰り返し監査](./docs/assets/readme/en/ledger-diff.png)
+
 ## メンテナンス
 
 `skills/blindspot-audit` を変更した後は、Claude デスクトップアプリ用パッケージを作り直します。
@@ -303,6 +410,14 @@ python3 scripts/verify-codex-plugin.py
   プラットフォーム関連の項目は「未検証」として扱います。
 - ファイルを書けるホスト: 既定で `BLINDSPOT_LEDGER.md` を作成または更新します。
 - 読み取り専用ホスト: 台帳候補を含む持ち運び可能なレポートを返します。
+
+## コントリビュート
+
+バグ報告と実地実行の記録は歓迎です —
+[イシューフォーム](https://github.com/MJL-ren/blindspot-audit/issues/new/choose)
+を使うと、ホスト、スキルバージョン、モードを最初に聞かれます。新しいスキル、
+パック、大きな機能の PR は原則受け付けていません: 監査コアは小さく、実地検証
+済みの状態を保ちます。何かが足りないと思ったら、まずイシューを開いてください。
 
 ## 出典と着想
 
