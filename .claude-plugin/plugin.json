@@ -1,7 +1,7 @@
 {
   "name": "blindspot-audit",
   "description": "Project-level blind spot audit: finds unknown unknowns, hidden risks, and missing decisions for any kind of project, and keeps or triages a durable BLINDSPOT_LEDGER.md so repeat work stays focused.",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "author": {
     "name": "MJL-ren"
   },

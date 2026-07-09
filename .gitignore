@@ -29,3 +29,5 @@ tmp/
 # (matches the audit's own Search Hygiene default excludes; see README
 # "Reference Repositories" note under Attribution)
 external_repos/
+
+/ADOPTION_AUDIT_*.md

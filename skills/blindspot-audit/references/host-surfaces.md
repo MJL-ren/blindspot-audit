@@ -62,11 +62,30 @@ Use the tool sparingly:
    report entirely. (Field data: a choice-capable run once shipped the
    numbered fallback instead of asking through the tool; the concrete
    template below exists so the tool path is never the vaguer option.)
+   Interview order: present the findings in the owner-visible chat
+   channel BEFORE asking - at least one plain-language line per finding.
+   A report saved to a file does not count as "presented": the owner may
+   meet the question before ever seeing the file. On hosts that compress
+   narration between tool calls (Cowork), route that summary through the
+   host's user-visible message channel first, or the question arrives
+   before any introduction the owner can actually see. (Field data: an
+   owner once faced the interview cold and had to open the report file
+   to decode the options.)
    Interview shape: one multiSelect question - "Which of these did you
-   already know about?" - with one option per finding, labeled by the
-   finding's short consequence title; "already in docs", "deliberately
-   skipped", and "wrong" corrections arrive through the built-in Other
-   path. Mind the option cap from rule 3.
+   already know about?" - with one option per finding. Every option must
+   pass the self-sufficiency test: an owner who has NOT read the report
+   can still classify it from the option alone. Label = the finding's
+   everyday-consequence phrase (what can happen, in the owner's words) -
+   never a topic shorthand, internal term, or bare ID ("npx route"
+   fails; "one-line install exists but the README never mentions it"
+   passes). Description = one or two sentences saying what is missing
+   and what happens if it stays missing, at the owner's level (Ground
+   Rule 6). Assume the host may collapse or hide descriptions until
+   interaction (observed on Cowork), so the label must carry the meaning
+   alone; finding numbers may ride along as a cross-reference, never as
+   the label's meaning. "Already in docs", "deliberately skipped", and
+   "wrong" corrections arrive through the built-in Other path. Mind the
+   option cap from rule 3.
 
 Good structured-choice output: same findings as the shared core, a decision
 log when interactive choices were used, awareness classifications from the
@@ -83,6 +102,13 @@ the board fits Cowork poorly because the shell sandbox cannot serve a
 mounted. If a board is truly unavoidable, present the HTML with the file
 view (`present_files`) so it opens on the owner's machine, then have them
 drop the response JSON into the mounted `.blindspot-tmp` before `validate`.
+
+One interaction quirk changes how the interview is delivered: narration
+written between tool calls is summarized away from the owner, so "present
+the findings, then interview" requires sending the findings summary
+through the user-visible message channel (`send_user_message` or
+equivalent) before the interview question. Otherwise the owner meets the
+choice UI cold, before any explanation they can actually see.
 
 Two environment quirks change HOW to gather evidence:
 

@@ -603,7 +603,12 @@ single multi-select question works well on choice-capable hosts). On
 choice-capable hosts the structured tool IS the interview: ask through the
 tool and do not print the numbered awareness check in the report - that
 check exists only for hosts without such a tool (see
-`references/host-surfaces.md` for the concrete question shape). The
+`references/host-surfaces.md` for the concrete question shape). Present
+the findings where the owner can actually SEE them before asking, and
+write every option to pass the self-sufficiency test - labeled by its
+everyday consequence, never by an internal shorthand - so an owner who
+has not read the report can still answer (concrete shape in the same
+reference). The
 interview only measures awareness if the owner UNDERSTOOD each finding
 first (Ground Rule 6) - "I don't know what this means" and "I didn't know
 about this" are different answers, and conflating them corrupts the

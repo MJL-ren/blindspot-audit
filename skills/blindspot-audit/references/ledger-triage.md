@@ -149,6 +149,12 @@ and Claude Code cap at 4 options plus a built-in "Other") rarely bites. Good
 grouping collapses a 20-row ledger into roughly 4-7 questions - one or two
 question rounds - not 20.
 
+Option labels follow the structured-choice adapter's self-sufficiency rule
+(see `references/host-surfaces.md`): each option says in plain words what
+the row IS and what applying it would do - a bare ledger ID or topic
+shorthand forces the owner to open the ledger just to answer, and the
+host may hide option descriptions until interaction.
+
 - `quick_cleanup` and `safe_accept`: one multiSelect question each -
   "Which of these should I apply? (recommended: all)", one option per row,
   the owner unchecks any to skip. Many rows become one question.

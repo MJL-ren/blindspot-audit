@@ -2,6 +2,28 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.6.5] - 2026-07-10
+
+### Fixed
+
+- The structured-choice awareness interview now carries the same
+  no-generic-descriptions discipline the 0.6.0 HTML board got: every
+  option must pass a self-sufficiency test (an owner who has not read the
+  report can classify it from the option alone), labels state the
+  finding's everyday consequence instead of a topic shorthand or bare ID,
+  and options are written assuming the host may hide descriptions until
+  interaction. Field driver: in a distribution-repo self run the
+  interview options used two-word internal shorthands, so the owner had
+  to open the report file just to answer.
+- "Present the findings, then interview" is now explicit about WHERE:
+  findings must appear in the owner-visible chat channel before the
+  question. On hosts that summarize narration between tool calls
+  (Cowork), the findings summary routes through the user-visible message
+  channel first.
+- Ledger-triage structured-choice batching now points at the same option
+  self-sufficiency rule, so triage questions cannot regress into bare-ID
+  options.
+
 ## [0.6.4] - 2026-07-09
 
 ### Fixed
