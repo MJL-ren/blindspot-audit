@@ -2,6 +2,34 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.6.2] - 2026-07-09
+
+### Added
+
+- `ledger_triage_board.py create --serve` now creates the HTML decision board
+  and starts the localhost submit server in one foreground command. Both
+  `create --serve` and `serve` support `--write-url`, `--write-pid`, and
+  `--write-board-dir` for hosts that run the server detached.
+- The board server writes `server-state.json`, and cleanup shuts down only
+  the matching localhost server through its shutdown token before deleting
+  the temporary board directory.
+- Board items now support an internal `itemType` field for agent-only ledger
+  section maintenance. `draft --include-ledger-hygiene` can scaffold stale
+  version, test-count, release, and audit-log summary checks as hidden
+  `ledger_section` candidates.
+- `validate --write-ledger-suggestions` writes a temporary
+  `ledger-triage-ledger-suggestions.md` file with selected ledger edit hints
+  and an Audit Log draft without modifying `BLINDSPOT_LEDGER.md`.
+
+### Changed
+
+- HTML submit success and download fallback copy now tells the owner the
+  response is saved or downloaded, they can tell the agent the answers are
+  ready, and the tab can be closed. The copy was updated across ko/en/ja/zh/es.
+- Ledger-triage instructions now prefer `create --serve` for no-choice
+  file-writing hosts and document server-state cleanup, hygiene drafting,
+  internal `itemType`, and temporary ledger-suggestion files.
+
 ## [0.6.1] - 2026-07-09
 
 ### Fixed

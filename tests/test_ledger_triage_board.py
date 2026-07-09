@@ -1,8 +1,12 @@
 import importlib.util
 import io
 import json
+import subprocess
+import sys
 import tempfile
+import time
 import unittest
+import urllib.request
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
@@ -102,6 +106,15 @@ class LedgerTriageBoardTests(unittest.TestCase):
         )
         return target
 
+    def wait_for_file(self, path, timeout=8):
+        deadline = time.time() + timeout
+        path = Path(path)
+        while time.time() < deadline:
+            if path.exists() and path.read_text(encoding="utf-8").strip():
+                return path.read_text(encoding="utf-8").strip()
+            time.sleep(0.1)
+        self.fail(f"Timed out waiting for file: {path}")
+
     def test_create_html_is_self_contained_and_escaped(self):
         board_dir = self.create_board()
         self.assertEqual("*", (self.project / ".blindspot-tmp" / ".gitignore").read_text(encoding="utf-8").strip())
@@ -116,6 +129,7 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertIn("항목의 이해를 위한 설명", html)
         self.assertIn("선택하지 않은 항목", html)
         self.assertIn("다운로드 폴더에 그대로", html)
+        self.assertIn("이 탭은 닫아도 됩니다", html)
         self.assertIn("blindspot-triage-response-${safedownloadtoken(data.boardid)}.json", html)
         self.assertIn("ledger-triage-test", html)
         self.assertIn("findings/bs-1/pending", html)
@@ -891,6 +905,167 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertIn("<호스트>", output)
         self.assertIn("선택 1건", output)
         self.assertIn("임시 선택판 정리 완료", output)
+
+    def test_create_serve_writes_runtime_files_and_cleanup_shuts_down(self):
+        url_file = self.project / "board-url.txt"
+        pid_file = self.project / "board.pid"
+        board_file = self.project / "board-dir.txt"
+        proc = subprocess.Popen(
+            [
+                sys.executable,
+                str(HELPER_PATH),
+                "create",
+                "--project-root",
+                str(self.project),
+                "--ledger",
+                str(self.ledger),
+                "--data",
+                str(self.data),
+                "--serve",
+                "--write-url",
+                str(url_file),
+                "--write-pid",
+                str(pid_file),
+                "--write-board-dir",
+                str(board_file),
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        try:
+            url = self.wait_for_file(url_file)
+            board_dir = Path(self.wait_for_file(board_file))
+            pid = self.wait_for_file(pid_file)
+            self.assertEqual(str(proc.pid), pid)
+            with urllib.request.urlopen(url, timeout=5) as response:
+                self.assertEqual(200, response.status)
+                self.assertIn(b"Ledger", response.read())
+            state = json.loads((board_dir / ledger_triage_board.SERVER_STATE_NAME).read_text(encoding="utf-8"))
+            self.assertEqual("blindspot-triage-server.v1", state["schema"])
+            self.assertEqual("ledger-triage-test", state["boardId"])
+            self.assertEqual(str(board_dir.resolve()), state["boardDir"])
+            self.write_response(board_dir)
+
+            ledger_triage_board.command_cleanup(SimpleNamespace(board_dir=board_dir, confirm_applied=True))
+            proc.wait(timeout=8)
+            self.assertEqual(0, proc.returncode)
+            self.assertFalse(board_dir.exists())
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait(timeout=5)
+
+    def test_cleanup_refuses_tampered_server_state_token(self):
+        board_dir = self.create_board()
+        url_file = self.project / "serve-url.txt"
+        proc = subprocess.Popen(
+            [
+                sys.executable,
+                str(HELPER_PATH),
+                "serve",
+                "--board-dir",
+                str(board_dir),
+                "--write-url",
+                str(url_file),
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        try:
+            self.wait_for_file(url_file)
+            state_path = board_dir / ledger_triage_board.SERVER_STATE_NAME
+            deadline = time.time() + 8
+            while time.time() < deadline and not state_path.exists():
+                time.sleep(0.1)
+            self.assertTrue(state_path.exists())
+            original_state = json.loads(state_path.read_text(encoding="utf-8"))
+            tampered = dict(original_state)
+            tampered["shutdownToken"] = "wrong-token"
+            state_path.write_text(json.dumps(tampered), encoding="utf-8")
+            self.write_response(board_dir)
+
+            with self.assertRaises(SystemExit):
+                ledger_triage_board.command_cleanup(SimpleNamespace(board_dir=board_dir, confirm_applied=True))
+            self.assertTrue(board_dir.exists())
+
+            state_path.write_text(json.dumps(original_state), encoding="utf-8")
+            ledger_triage_board.command_cleanup(SimpleNamespace(board_dir=board_dir, confirm_applied=True))
+            proc.wait(timeout=8)
+            self.assertEqual(0, proc.returncode)
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait(timeout=5)
+
+    def test_draft_include_ledger_hygiene_creates_internal_section_item(self):
+        self.ledger.write_text(
+            "# Ledger\n\n"
+            "## Checked And Well Covered\n\n"
+            "- 버전 표기: 최신 heading이 모두 `0.6.0`으로 맞음. 공개 Latest는 `v0.5.2`.\n"
+            "- 0.6.0 helper 검증: `python -m unittest discover -s tests` 21개 통과.\n",
+            encoding="utf-8",
+        )
+        out = self.project / "triage-hygiene.json"
+        ledger_triage_board.command_draft(
+            SimpleNamespace(
+                project_root=self.project,
+                ledger=self.ledger,
+                out=out,
+                language="ko",
+                board_id="",
+                project_name="",
+                title="",
+                include_ledger_hygiene=True,
+            )
+        )
+        data = json.loads(out.read_text(encoding="utf-8"))
+        items = [item for group in data["groups"] for item in group["items"]]
+        self.assertEqual(1, len(items))
+        self.assertEqual("ledger_section", items[0]["itemType"])
+        self.assertEqual("cheap_verification", items[0]["executionKind"])
+
+        data.pop("draftOnly")
+        self.data.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        board_dir = self.create_board()
+        board_data = json.loads((board_dir / "board-data.json").read_text(encoding="utf-8"))
+        html = (board_dir / ledger_triage_board.HTML_NAME).read_text(encoding="utf-8")
+        self.assertEqual("ledger_section", board_data["groups"][0]["items"][0]["itemType"])
+        self.assertNotIn("ledger_section", html)
+
+    def test_validate_writes_ledger_suggestions_without_editing_ledger(self):
+        board_dir = self.create_board()
+        self.write_response(board_dir)
+        before = self.ledger.read_text(encoding="utf-8")
+
+        stream = io.StringIO()
+        with redirect_stdout(stream):
+            ledger_triage_board.command_validate(
+                SimpleNamespace(
+                    board_dir=board_dir,
+                    response=None,
+                    collect_response=False,
+                    response_dir=None,
+                    write_plan=False,
+                    write_ledger_suggestions=True,
+                )
+            )
+        output = stream.getvalue()
+        suggestions = board_dir / ledger_triage_board.LEDGER_SUGGESTIONS_NAME
+        self.assertTrue(suggestions.exists())
+        text = suggestions.read_text(encoding="utf-8")
+        self.assertIn("Ledger Triage Ledger Suggestions", text)
+        self.assertIn("BS-1", text)
+        self.assertIn("Audit Log Draft", text)
+        self.assertIn("Wrote temporary ledger suggestions", output)
+        self.assertEqual(before, self.ledger.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

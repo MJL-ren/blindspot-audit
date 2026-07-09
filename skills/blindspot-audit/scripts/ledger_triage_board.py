@@ -13,14 +13,18 @@ import functools
 import hashlib
 import http.server
 import json
+import os
 import re
 import secrets
 import shutil
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urlparse
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 
 BOARD_SCHEMA = "blindspot-triage-board.v1"
@@ -30,6 +34,9 @@ MARKER_NAME = "BLINDSPOT_TRIAGE_TMP.json"
 HTML_NAME = "ledger-triage-board.html"
 RESPONSE_NAME = "blindspot-triage-response.json"
 PLAN_NAME = "ledger-triage-application-plan.md"
+SERVER_STATE_NAME = "server-state.json"
+SERVER_STATE_SCHEMA = "blindspot-triage-server.v1"
+LEDGER_SUGGESTIONS_NAME = "ledger-triage-ledger-suggestions.md"
 ALLOWED_ACTIONS = {
     "accept",
     "defer",
@@ -58,6 +65,10 @@ ALLOWED_STATUSES = {
     "deferred",
     "rejected",
     "resolved",
+}
+ALLOWED_ITEM_TYPES = {
+    "ledger_row",
+    "ledger_section",
 }
 ACTION_DEFAULT_STATUS = {
     "accept": "accepted",
@@ -496,6 +507,13 @@ def normalize_execution_kind(value: Any, category: str) -> str:
     return kind
 
 
+def normalize_item_type(value: Any) -> str:
+    item_type = str(value or "ledger_row").strip()
+    if item_type not in ALLOWED_ITEM_TYPES:
+        raise SystemExit(f"Unknown itemType: {item_type!r}")
+    return item_type
+
+
 def language_key(language: str) -> str:
     text = language.lower()
     if text.startswith("ko"):
@@ -682,6 +700,7 @@ def normalize_board_data(raw: dict[str, Any], root: Path, ledger: Path) -> dict[
                 implementation_hint = "Before closing, verify both current files and Git history for exposed secrets."
             normalized = {
                 "ledgerId": ledger_id,
+                "itemType": normalize_item_type(item.get("itemType")),
                 "shortTitle": owner_facing_text(language, item.get("shortTitle") or ledger_id),
                 "ledgerLocation": ledger_location(item, section, ledger_id, current_status),
                 "ledgerSummary": clean_ledger_summary(language, ledger_summary, ledger_id, current_status),
@@ -743,11 +762,25 @@ def normalize_board_data(raw: dict[str, Any], root: Path, ledger: Path) -> dict[
 
 def render_html(template_path: Path, board_data: dict[str, Any]) -> str:
     template = template_path.read_text(encoding="utf-8")
-    data_for_html = {key: value for key, value in board_data.items() if not key.startswith("_")}
+    data_for_html = strip_internal_board_fields(
+        {key: value for key, value in board_data.items() if not key.startswith("_")}
+    )
     payload = json.dumps(data_for_html, ensure_ascii=False)
     # Script content cannot contain a literal closing script tag.
     payload = payload.replace("</", "<\\/")
     return template.replace("__TRIAGE_BOARD_DATA_JSON__", payload)
+
+
+def strip_internal_board_fields(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: strip_internal_board_fields(child)
+            for key, child in value.items()
+            if key != "itemType"
+        }
+    if isinstance(value, list):
+        return [strip_internal_board_fields(child) for child in value]
+    return value
 
 
 def ensure_tmp_gitignore(tmp_root: Path) -> None:
@@ -940,6 +973,136 @@ def draft_explanation(language: str, ledger_summary: str = "", followup: str = "
     )
 
 
+def parse_markdown_sections(text: str) -> list[tuple[str, str, list[str]]]:
+    sections: list[tuple[str, str, list[str]]] = []
+    current_raw = ""
+    current = ""
+    current_lines: list[str] = []
+    for raw_line in text.splitlines():
+        heading = re.match(r"^##+\s+(.+?)\s*$", raw_line)
+        if heading:
+            if current_raw:
+                sections.append((canonical_ledger_section(current_raw), current_raw, current_lines))
+            current_raw = heading.group(1).strip()
+            current = canonical_ledger_section(current_raw)
+            current_lines = []
+            continue
+        if current_raw:
+            current_lines.append(raw_line)
+    if current_raw:
+        sections.append((current, current_raw, current_lines))
+    return sections
+
+
+def hygiene_signal_lines(lines: list[str]) -> list[str]:
+    signals = []
+    pattern = re.compile(
+        r"(?:\b\d+\.\d+\.\d+\b|\bv\d+\.\d+\.\d+\b|latest|release|릴리스|"
+        r"version|버전|pytest|unittest|test|테스트|검증|통과|\d+\s*개)",
+        re.IGNORECASE,
+    )
+    for line in lines:
+        text = re.sub(r"\s+", " ", line.strip(" -")).strip()
+        if text and pattern.search(text):
+            signals.append(text)
+    return signals
+
+
+def draft_hygiene_items(ledger: Path, language: str) -> list[dict[str, Any]]:
+    text = ledger.read_text(encoding="utf-8")
+    items: list[dict[str, Any]] = []
+    for section, raw_section, lines in parse_markdown_sections(text):
+        if section not in {"Checked And Well Covered", "Audit Log"}:
+            continue
+        signals = hygiene_signal_lines(lines)
+        if not signals:
+            continue
+        preview = "; ".join(first_sentence(signal, 140) for signal in signals[:4])
+        today = datetime.now().strftime("%Y%m%d")
+        suffix = len(items) + 1
+        if language_key(language) == "ko":
+            summary = f"{raw_section} 섹션에 버전, 테스트, 릴리스, 검증 결과처럼 시간이 지나면 낡을 수 있는 문구가 있습니다: {preview}"
+            explanation = (
+                "이 항목은 특정 발견 하나가 아니라 원장 섹션 자체의 상태 점검입니다. "
+                "현재 코드와 릴리스 상태를 확인한 뒤, 오래된 요약 문구만 고치면 됩니다."
+            )
+            why = "다음 세션이 오래된 버전이나 테스트 개수를 기준으로 판단하지 않게 막아줍니다."
+            question = "이 원장 요약 섹션을 현재 상태 기준으로 다시 확인할까요?"
+            label = "확인 후 원장 요약 갱신하기"
+            tradeoff = "현재 버전, 테스트, 릴리스 상태를 확인한 뒤 원장 요약 문구만 고칩니다."
+            keep_label = "지금은 그대로 두기"
+            keep_tradeoff = "원장은 바꾸지 않습니다. 대신 다음 세션이 오래된 요약을 다시 볼 수 있습니다."
+            explain_label = "왜 갱신해야 하는지 설명받기"
+            explain_tradeoff = "원장은 건드리지 않고, 어떤 문구가 왜 낡았을 수 있는지 먼저 설명합니다."
+        else:
+            summary = (
+                f"The {raw_section} section contains version, test, release, or verification text "
+                f"that can go stale: {preview}"
+            )
+            explanation = (
+                "This is not a single finding row. It is a ledger-section hygiene check: "
+                "verify the current project state, then refresh only stale summary wording."
+            )
+            why = "It prevents future sessions from relying on outdated version numbers, test counts, or release status."
+            question = "Should this ledger summary section be checked and refreshed?"
+            label = "Check and refresh the ledger summary"
+            tradeoff = "Verify current version, tests, and release state, then update only the ledger summary wording."
+            keep_label = "Leave it unchanged for now"
+            keep_tradeoff = "Do not change the ledger. A later session may still see the stale summary."
+            explain_label = "Explain why this matters"
+            explain_tradeoff = "Do not change the ledger; explain which wording may be stale first."
+        items.append(
+            {
+                "category": "quick_cleanup",
+                "item": {
+                    "ledgerId": f"LEDGER-HYGIENE-{today}-{suffix:02d}",
+                    "itemType": "ledger_section",
+                    "shortTitle": f"{raw_section} summary refresh",
+                    "ledgerSection": section,
+                    "ledgerLocation": f"{raw_section} / hygiene candidate",
+                    "ledgerSummary": summary,
+                    "plainExplanation": explanation,
+                    "whyItMatters": why,
+                    "decisionQuestion": question,
+                    "executionKind": "cheap_verification",
+                    "implementationHint": "Verify current manifests, tests, package checks, and release/latest status before editing this ledger section.",
+                    "currentStatus": "hygiene-candidate",
+                    "currentAwareness": "unconfirmed",
+                    "recommendedAction": "accept",
+                    "risk": "next",
+                    "options": [
+                        {
+                            "optionId": "refresh-ledger-summary",
+                            "action": "accept",
+                            "label": label,
+                            "tradeoff": tradeoff,
+                            "status": "accepted",
+                            "intentDetail": "refresh_ledger_summary",
+                            "recommended": True,
+                        },
+                        {
+                            "optionId": "keep-ledger-summary",
+                            "action": "keep_pending",
+                            "label": keep_label,
+                            "tradeoff": keep_tradeoff,
+                            "status": "",
+                            "intentDetail": "",
+                        },
+                        {
+                            "optionId": "reexplain-ledger-summary",
+                            "action": "needs_reexplain",
+                            "label": explain_label,
+                            "tradeoff": explain_tradeoff,
+                            "status": "",
+                            "intentDetail": "",
+                        },
+                    ],
+                },
+            }
+        )
+    return items
+
+
 def parse_ledger_tables(ledger: Path) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     section = ""
@@ -1092,6 +1255,9 @@ def command_draft(args: argparse.Namespace) -> int:
         if not drafted:
             continue
         grouped.setdefault(drafted["category"], []).append(drafted["item"])
+    if getattr(args, "include_ledger_hygiene", False):
+        for drafted in draft_hygiene_items(ledger, language):
+            grouped.setdefault(drafted["category"], []).append(drafted["item"])
     if not grouped:
         raise SystemExit("No open Findings or Decision Packet rows found for draft board input")
 
@@ -1179,11 +1345,31 @@ def command_create(args: argparse.Namespace) -> int:
 
     print(f"Created ledger triage board: {html_path}")
     print(f"Board directory: {board_dir}")
+    write_optional_text_file(getattr(args, "write_board_dir", None), str(board_dir))
+    if getattr(args, "serve", False):
+        return command_serve(
+            argparse.Namespace(
+                board_dir=board_dir,
+                port=getattr(args, "port", 0),
+                write_url=getattr(args, "write_url", None),
+                write_pid=getattr(args, "write_pid", None),
+                write_board_dir=getattr(args, "write_board_dir", None),
+            )
+        )
     return 0
+
+
+def write_optional_text_file(path: Optional[Path], value: str) -> None:
+    if not path:
+        return
+    target = path.resolve()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(value.rstrip() + "\n", encoding="utf-8")
 
 
 class TriageHandler(http.server.SimpleHTTPRequestHandler):
     board_dir: Path
+    shutdown_token: str = ""
 
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
         print(f"[ledger-triage-board] {format % args}", file=sys.stderr)
@@ -1196,6 +1382,9 @@ class TriageHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
+        if parsed.path == "/api/shutdown":
+            self.handle_shutdown()
+            return
         if parsed.path != "/api/triage-response":
             self.send_error(404, "Not found")
             return
@@ -1212,6 +1401,23 @@ class TriageHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b'{"ok": true}\n')
 
+    def handle_shutdown(self) -> None:
+        length = int(self.headers.get("Content-Length", "0"))
+        body = self.rfile.read(length) if length else b"{}"
+        try:
+            payload = json.loads(body.decode("utf-8"))
+        except json.JSONDecodeError:
+            self.send_error(400, "Invalid JSON")
+            return
+        if str(payload.get("token") or "") != self.shutdown_token:
+            self.send_error(403, "Invalid shutdown token")
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(b'{"ok": true, "shutdown": true}\n')
+        threading.Thread(target=self.server.shutdown, daemon=True).start()
+
 
 def command_serve(args: argparse.Namespace) -> int:
     board_dir = args.board_dir.resolve()
@@ -1223,6 +1429,8 @@ def command_serve(args: argparse.Namespace) -> int:
         pass
 
     BoundTriageHandler.board_dir = board_dir
+    shutdown_token = secrets.token_urlsafe(32)
+    BoundTriageHandler.shutdown_token = shutdown_token
     handler = functools.partial(BoundTriageHandler, directory=str(board_dir))
 
     class Server(http.server.ThreadingHTTPServer):
@@ -1231,18 +1439,72 @@ def command_serve(args: argparse.Namespace) -> int:
     with Server(("127.0.0.1", args.port), handler) as server:
         host, port = server.server_address
         url = f"http://{host}:{port}/"
+        write_server_state(board_dir, marker, url, shutdown_token)
         print(f"Open {url}")
+        write_optional_text_file(getattr(args, "write_url", None), url)
+        write_optional_text_file(getattr(args, "write_pid", None), str(os.getpid()))
+        write_optional_text_file(getattr(args, "write_board_dir", None), str(board_dir))
         if getattr(args, "write_url", None):
-            url_path = args.write_url.resolve()
-            url_path.parent.mkdir(parents=True, exist_ok=True)
-            url_path.write_text(url + "\n", encoding="utf-8")
-            print(f"Wrote board URL: {url_path}")
+            print(f"Wrote board URL: {args.write_url.resolve()}")
+        if getattr(args, "write_pid", None):
+            print(f"Wrote server PID: {args.write_pid.resolve()}")
+        if getattr(args, "write_board_dir", None):
+            print(f"Wrote board directory: {args.write_board_dir.resolve()}")
         print("Press Ctrl+C after the owner submits the response.")
         try:
             server.serve_forever()
         except KeyboardInterrupt:
             print("\nStopped ledger triage board server")
     return 0
+
+
+def write_server_state(board_dir: Path, marker: dict[str, Any], url: str, shutdown_token: str) -> Path:
+    state = {
+        "schema": SERVER_STATE_SCHEMA,
+        "boardId": marker.get("boardId"),
+        "boardDir": str(board_dir.resolve()),
+        "url": url,
+        "pid": os.getpid(),
+        "shutdownToken": shutdown_token,
+        "createdAt": utc_now(),
+    }
+    path = board_dir / SERVER_STATE_NAME
+    write_json(path, state)
+    return path
+
+
+def shutdown_server_from_state(board_dir: Path, marker: dict[str, Any]) -> bool:
+    state_path = board_dir / SERVER_STATE_NAME
+    if not state_path.exists():
+        return False
+    state = load_json(state_path)
+    if state.get("schema") != SERVER_STATE_SCHEMA:
+        raise SystemExit(f"Server state schema must be {SERVER_STATE_SCHEMA!r}")
+    if state.get("boardId") != marker.get("boardId"):
+        raise SystemExit("Server state boardId does not match marker")
+    state_board_dir = Path(str(state.get("boardDir") or "")).resolve()
+    if state_board_dir != board_dir.resolve():
+        raise SystemExit("Server state boardDir does not match cleanup target")
+    token = str(state.get("shutdownToken") or "")
+    if not token:
+        raise SystemExit("Server state is missing shutdown token")
+    parsed = urlparse(str(state.get("url") or ""))
+    if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost"} or not parsed.port:
+        raise SystemExit("Server state URL must be localhost HTTP")
+    endpoint = f"http://{parsed.hostname}:{parsed.port}/api/shutdown"
+    payload = json.dumps({"token": token}).encode("utf-8")
+    request = Request(endpoint, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        with urlopen(request, timeout=3) as response:
+            if response.status != 200:
+                raise SystemExit(f"Server shutdown failed with HTTP {response.status}")
+    except HTTPError as exc:
+        raise SystemExit(f"Server shutdown rejected the stored token with HTTP {exc.code}") from exc
+    except URLError as exc:
+        print(f"Server state found but no running board server responded: {exc.reason}")
+        return False
+    print("Stopped ledger triage board server from server-state.json")
+    return True
 
 
 def read_marker(board_dir: Path) -> dict[str, Any]:
@@ -1525,7 +1787,11 @@ def response_application_review(board_dir: Path, response: dict[str, Any]) -> di
         status, intent_detail = normalize_status_detail(decision, action)
         summary = {
             "ledgerId": ledger_id,
+            "itemType": str(item.get("itemType") or "ledger_row"),
             "title": str(item.get("shortTitle") or ledger_id),
+            "ledgerSection": str(item.get("ledgerSection") or ""),
+            "ledgerLocation": str(item.get("ledgerLocation") or ""),
+            "ledgerSummary": one_line_preview(item.get("ledgerSummary") or ""),
             "action": action,
             "bucket": bucket,
             "executionKind": execution_kind,
@@ -1662,6 +1928,55 @@ def write_application_plan(board_dir: Path, marker: dict[str, Any], review: dict
     return plan_path
 
 
+def ledger_suggestion_line(decision: dict[str, Any]) -> str:
+    status = decision.get("status") or "-"
+    detail = decision.get("intentDetail") or "-"
+    note = f"; owner note: {decision['note']}" if decision.get("note") else ""
+    if decision.get("itemType") == "ledger_section":
+        return (
+            f"- {decision['ledgerId']}: review `{decision.get('ledgerLocation') or decision.get('ledgerSection')}` "
+            f"and update only stale ledger-section wording after verification "
+            f"(action={decision['action']}; status={status}; intentDetail={detail}{note})."
+        )
+    return (
+        f"- {decision['ledgerId']}: update only this ledger row/archive entry "
+        f"(action={decision['action']}; status={status}; intentDetail={detail}{note})."
+    )
+
+
+def write_ledger_suggestions(board_dir: Path, marker: dict[str, Any], review: dict[str, Any]) -> Path:
+    path = board_dir / LEDGER_SUGGESTIONS_NAME
+    lines = [
+        "# Ledger Triage Ledger Suggestions",
+        "",
+        f"- board id: {marker.get('boardId')}",
+        f"- ledger: {marker.get('ledgerPath')}",
+        f"- selected decisions: {review['selectedCount']}",
+        "",
+        "These are temporary suggestions for the applying agent. They do not edit the ledger.",
+        "",
+        "## Suggested Ledger Edits",
+        "",
+    ]
+    lines.extend(ledger_suggestion_line(decision) for decision in review["decisions"])
+    lines.extend(
+        [
+            "",
+            "## Audit Log Draft",
+            "",
+            audit_log_suggestion(marker, review["selectedCount"], (board_dir / PLAN_NAME).exists(), review.get("language", "en")),
+            "",
+            "## Safety Notes",
+            "",
+            "- Apply only selected decisions from the validated response.",
+            "- Leave omitted rows unchanged.",
+            "- Delete this suggestions file with the board directory after durable ledger results are recorded.",
+        ]
+    )
+    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    return path
+
+
 def audit_log_suggestion(
     marker: dict[str, Any], selected_count: int, plan_existed: bool, language: str = "en"
 ) -> str:
@@ -1728,6 +2043,9 @@ def command_validate(args: argparse.Namespace) -> int:
         else:
             plan_path = write_application_plan(board_dir, marker, review)
             print(f"Wrote temporary application plan draft: {plan_path}")
+    if getattr(args, "write_ledger_suggestions", False):
+        suggestions_path = write_ledger_suggestions(board_dir, marker, review)
+        print(f"Wrote temporary ledger suggestions: {suggestions_path}")
     return 0
 
 
@@ -1749,8 +2067,12 @@ def command_cleanup(args: argparse.Namespace) -> int:
     marker, response = validate_response(board_dir, check_current_ledger_hash=False)
     review = response_application_review(board_dir, response)
     plan_existed = (board_dir / PLAN_NAME).exists()
+    suggestions_existed = (board_dir / LEDGER_SUGGESTIONS_NAME).exists()
+    shutdown_server_from_state(board_dir, marker)
     shutil.rmtree(board_dir)
     print(f"Deleted temporary ledger triage board: {board_dir}")
+    if suggestions_existed:
+        print(f"Deleted temporary ledger suggestions: {LEDGER_SUGGESTIONS_NAME}")
     print("Audit Log suggestion:")
     print(audit_log_suggestion(marker, review["selectedCount"], plan_existed, review.get("language", "en")))
     return 0
@@ -1768,12 +2090,22 @@ def main() -> int:
     draft.add_argument("--board-id", default="")
     draft.add_argument("--project-name", default="")
     draft.add_argument("--title", default="")
+    draft.add_argument(
+        "--include-ledger-hygiene",
+        action="store_true",
+        help="Add internal ledger_section candidates for stale version/test/release summary wording.",
+    )
     draft.set_defaults(func=command_draft)
 
     create = sub.add_parser("create", help="Create a temporary HTML decision board")
     create.add_argument("--project-root", type=Path, required=True)
     create.add_argument("--ledger", type=Path, required=True)
     create.add_argument("--data", type=Path, required=True)
+    create.add_argument("--serve", action="store_true", help="Serve the created board on localhost in the foreground.")
+    create.add_argument("--port", type=int, default=0)
+    create.add_argument("--write-url", type=Path, help="Write the served URL to this file when --serve is used.")
+    create.add_argument("--write-pid", type=Path, help="Write the serving process PID to this file when --serve is used.")
+    create.add_argument("--write-board-dir", type=Path, help="Write the created board directory to this file.")
     create.add_argument(
         "--allow-unreviewed-draft",
         action="store_true",
@@ -1785,6 +2117,8 @@ def main() -> int:
     serve.add_argument("--board-dir", type=Path, required=True)
     serve.add_argument("--port", type=int, default=0)
     serve.add_argument("--write-url", type=Path, help="Write the served URL to this file for detached hosts")
+    serve.add_argument("--write-pid", type=Path, help="Write the serving process PID to this file for detached hosts")
+    serve.add_argument("--write-board-dir", type=Path, help="Write the served board directory to this file")
     serve.set_defaults(func=command_serve)
 
     validate = sub.add_parser("validate", help="Validate response JSON against marker and ledger hash")
@@ -1801,6 +2135,7 @@ def main() -> int:
         help="Directory to search with --collect-response; defaults to the user's Downloads folder",
     )
     validate.add_argument("--write-plan", action="store_true")
+    validate.add_argument("--write-ledger-suggestions", action="store_true")
     validate.set_defaults(func=command_validate)
 
     collect = sub.add_parser("collect-response", help="Find and copy a downloaded response JSON into a board directory")

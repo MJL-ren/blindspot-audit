@@ -211,25 +211,39 @@ python "<skill-folder>/scripts/ledger_triage_board.py" draft --project-root "<pr
    (`닫아도 됨`, `신경 안 써도 됨`, similar wording), the draft may recommend
    `resolved_candidate`; the board must still collect a short evidence note
    before submission.
+   Add `--include-ledger-hygiene` when the ledger has summary sections that
+   may be stale, such as `Checked And Well Covered`, `Audit Log`, version
+   summaries, test counts, or Latest release notes. Those become internal
+   `ledger_section` maintenance candidates with `executionKind` set to
+   `cheap_verification`. Review current manifests, tests, and release state
+   before presenting them to the owner.
 2. Run:
 
 ```text
-python "<skill-folder>/scripts/ledger_triage_board.py" create --project-root "<project-root>" --ledger "<ledger-path>" --data "<triage-input.json>"
+python "<skill-folder>/scripts/ledger_triage_board.py" create --project-root "<project-root>" --ledger "<ledger-path>" --data "<triage-input.json>" --serve --write-url "<url-file>" --write-board-dir "<board-dir-file>"
 ```
 
-3. Serve the board on localhost when the host allows it. This is the
-   default because the owner should be done after pressing submit; the
-   response writes directly into the board directory.
+   `create --serve` makes the board and starts the localhost server in the
+   foreground. Use the host's background process support when the session
+   needs to keep working, then read `--write-url` and `--write-board-dir`.
+   Add `--write-pid` when the host needs to record the server process id for
+   diagnostics only.
+
+3. If the board was already created without `--serve`, serve it on localhost
+   when the host allows it. This is the default because the owner should be
+   done after pressing submit; the response writes directly into the board
+   directory.
 
 ```text
-python "<skill-folder>/scripts/ledger_triage_board.py" serve --board-dir "<board-dir>"
+python "<skill-folder>/scripts/ledger_triage_board.py" serve --board-dir "<board-dir>" --write-url "<url-file>" --write-board-dir "<board-dir-file>" --write-pid "<pid-file>"
 ```
 
    If localhost serving is impossible, the same HTML still works as a
    static file. In that fallback the browser downloads a response JSON.
    Do not ask the owner to move it by hand; collect it with the helper.
-   When serving in a detached host, add `--write-url "<file>"` so the agent
-   can read the URL without scraping terminal logs.
+   `serve` writes `server-state.json` in the board directory. Cleanup uses
+   that file's board id, board dir, localhost URL, and shutdown token to stop
+   only the matching board server; it does not kill an arbitrary PID.
 
 4. After the owner says the response is ready, run:
 
@@ -264,6 +278,17 @@ Treat owner notes on
 implementation, external-confirmation, or owner-followup items as execution
 constraints.
 
+For ledger editing support without letting the helper edit the ledger, ask
+for temporary suggestions:
+
+```text
+python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>" --write-ledger-suggestions
+```
+
+The helper writes `<board-dir>/ledger-triage-ledger-suggestions.md` with
+selected-row wording hints and an Audit Log draft. It is a temporary work
+file and disappears with the board directory during cleanup.
+
 When validate reports implementation work, ask the helper for a temporary
 plan scaffold instead of writing it from scratch:
 
@@ -287,6 +312,9 @@ python "<skill-folder>/scripts/ledger_triage_board.py" cleanup --board-dir "<boa
 
 The board directory lives under `<project-root>/.blindspot-tmp/`. It is a
 temporary workspace artifact, not documentation, and must not be committed.
+If `server-state.json` exists, `cleanup --confirm-applied` shuts down the
+matching localhost server through its token endpoint before deleting the
+directory.
 
 Do not write an Audit Log row, status change, archive move, or triage note
 before validation. The board itself is the pre-decision artifact.
@@ -350,6 +378,13 @@ The agent prepares this JSON and passes it to the helper:
 
 `projectRoot`, `ledgerPath`, and `ledgerHash` are filled or verified by the
 helper at create time.
+
+Items may include optional internal `itemType`: `ledger_row` (default) or
+`ledger_section`. Use `ledger_section` only for agent maintenance work on
+ledger sections themselves, such as stale summary wording, version notes,
+test-count summaries, or release notes. Do not expose `itemType` as a
+user-facing label; the owner should see plain titles such as "refresh the
+ledger summary after checking the current version."
 
 Use `executionKind` to describe what happens if the owner accepts the
 recommendation:
