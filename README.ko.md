@@ -22,7 +22,7 @@ AI 에이전트용 스킬이다. unknown unknowns, 숨은 위험, 빠진 결정,
 Install and configure Blindspot Audit for this agent environment:
 https://github.com/MJL-ren/blindspot-audit
 
-Read the repository README.md and AGENTS.md first, then choose the documented install route that fits this host and install scope: marketplace/plugin, Claude desktop .skill, installer script, or safe manual copy.
+Read the repository README.md and AGENTS.md first, then install using the documented skill route that fits this host and scope: the installer script, the Claude desktop .skill, or a safe manual copy. If a permission or safety guard blocks writing the skill into the agent's config directory, don't silently stop - ask me to approve the permission, or offer the plugin marketplace route as a managed fallback.
 
 Do not modify unrelated project files. After installation, tell me which route you used, the installed path or plugin name, how to update it later, and the exact prompt I can use to run a deep blindspot audit.
 ```
