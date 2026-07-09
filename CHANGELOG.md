@@ -2,6 +2,21 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.6.1] - 2026-07-09
+
+### Fixed
+
+- Added a root `pytest.ini` so `python -m pytest` collects only this repo's
+  `tests/` folder instead of trying to recurse into local reference clones
+  under `external_repos/`.
+
+### Changed
+
+- Added a short `Mode Router` near the top of `SKILL.md` so hosts that read
+  the first 100-200 lines first can route `ledger-triage`, `deep`, `quick`,
+  `focus: ux-ui`, planning, post-implementation, and interview runs before
+  scanning the longer workflow details.
+
 ## [0.6.0] - 2026-07-08
 
 Ledger growth became its own maintenance problem: once a good

@@ -24,6 +24,26 @@ owner says "I didn't even know I should be thinking about that" at least
 once - AND feels calmer afterward, because they now also know what they can
 safely ignore.
 
+## Mode Router
+
+Use this router before reading the rest of the skill:
+
+- `ledger-triage`: existing `BLINDSPOT_LEDGER.md` cleanup or decisions.
+  Read `references/ledger-triage.md` first. Do not run fresh-eyes audit.
+  Do not edit ledger status/archive/decision rows before owner choices.
+- `deep`: whole-project blindspot pass. Run inventory, read the ledger,
+  inspect representative docs/code/tests/configs, then rank 3-7 findings.
+- `quick`: light project pass. Read core docs, inventory, and ledger;
+  return only the highest-signal blind spots.
+- `focus: ux-ui`: domain-scoped audit. Load `references/packs/ux-ui.md`
+  and inspect user-facing screens, flows, states, and design decisions.
+- `planning`: before implementation, surface decisions that may change data,
+  UX, operations, interfaces, or verification.
+- `post-implementation`: after a change, compare diffs, notes, and tests for
+  remaining unknowns.
+- `interview`: ask one owner question at a time when the answer changes
+  architecture, scope, workflow, or risk.
+
 ## Core Model
 
 Classify findings with the four-unknowns frame:
