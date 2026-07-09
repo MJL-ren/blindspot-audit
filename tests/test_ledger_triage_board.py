@@ -126,6 +126,9 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertNotIn("@import", html)
         self.assertNotIn("theme c", html)
         self.assertNotIn("035 forge", html)
+        self.assertNotIn("css.escape", html)
+        self.assertIn("optionneedsnote", html)
+        self.assertIn("dataset.note === ledgerid", html)
         self.assertNotIn("쉽게 말하면", html)
         self.assertNotIn("recommend:", html)
         self.assertIn("항목의 이해를 위한 설명", html)
@@ -139,7 +142,7 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertIn("주요 안내 버튼", html)
         self.assertIn("미확인", html)
         self.assertIn("선택 후 처리", html)
-        self.assertIn("확인 근거 메모가 필요합니다", html)
+        self.assertIn("어떤 언어로든 적어주세요", html)
 
         board_data = json.loads((board_dir / "board-data.json").read_text(encoding="utf-8"))
         item = board_data["groups"][0]["items"][0]
@@ -426,12 +429,62 @@ class LedgerTriageBoardTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             ledger_triage_board.command_cleanup(SimpleNamespace(board_dir=unsafe, confirm_applied=True))
 
-    def test_missing_marker_and_resolved_candidate_note_required(self):
+    def test_missing_marker_and_external_resolved_candidate_note_required(self):
         missing_marker = self.project / ".blindspot-tmp" / "ledger-triage-missing-marker"
         missing_marker.mkdir(parents=True)
         with self.assertRaises(SystemExit):
             ledger_triage_board.command_validate(SimpleNamespace(board_dir=missing_marker))
 
+        external = self.board_data()
+        item = external["groups"][0]["items"][0]
+        item["executionKind"] = "external_confirmation"
+        item["recommendedAction"] = "resolved_candidate"
+        item["options"] = [
+            {
+                "optionId": "resolve-after-owner-confirmation",
+                "action": "resolved_candidate",
+                "label": "확인 완료로 닫기",
+                "tradeoff": "사용자가 외부 확인 근거를 남긴 뒤 닫습니다.",
+                "status": "resolved",
+                "noteRequired": True,
+            }
+        ]
+        self.data.write_text(json.dumps(external, ensure_ascii=False), encoding="utf-8")
+        board_dir = self.create_board()
+        self.write_response(
+            board_dir,
+            decisions=[
+                {
+                    "ledgerId": "BS-1",
+                    "optionId": "resolve-after-owner-confirmation",
+                    "action": "resolved_candidate",
+                    "awareness": "unconfirmed",
+                    "status": "resolved",
+                    "intentDetail": "",
+                    "note": "",
+                }
+            ],
+        )
+        with self.assertRaises(SystemExit):
+            ledger_triage_board.command_validate(SimpleNamespace(board_dir=board_dir))
+
+        self.write_response(
+            board_dir,
+            decisions=[
+                {
+                    "ledgerId": "BS-1",
+                    "optionId": "resolve-after-owner-confirmation",
+                    "action": "resolved_candidate",
+                    "awareness": "unconfirmed",
+                    "status": "resolved",
+                    "intentDetail": "",
+                    "note": "確認済み。已处理。تم.",
+                }
+            ],
+        )
+        ledger_triage_board.command_validate(SimpleNamespace(board_dir=board_dir))
+
+    def test_ledger_only_resolved_candidate_can_use_agent_verification_without_note(self):
         board_dir = self.create_board()
         self.write_response(
             board_dir,
@@ -446,8 +499,8 @@ class LedgerTriageBoardTests(unittest.TestCase):
                 }
             ],
         )
-        with self.assertRaises(SystemExit):
-            ledger_triage_board.command_validate(SimpleNamespace(board_dir=board_dir))
+
+        ledger_triage_board.command_validate(SimpleNamespace(board_dir=board_dir))
 
     def test_create_refuses_duplicate_ledger_ids(self):
         duplicate = self.board_data()

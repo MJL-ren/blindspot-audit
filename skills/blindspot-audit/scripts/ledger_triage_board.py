@@ -471,6 +471,8 @@ def normalize_option(
         "status": status,
         "intentDetail": intent_detail,
     }
+    if "noteRequired" in option:
+        normalized["noteRequired"] = bool(option.get("noteRequired"))
     if option.get("recommended") or action == recommended:
         normalized["recommended"] = True
     return normalized
@@ -1625,6 +1627,17 @@ def collect_response_to_board(board_dir: Path, response_dir: Optional[Path] = No
     return destination
 
 
+def resolved_candidate_note_required(item: dict[str, Any], option: dict[str, Any]) -> bool:
+    if option.get("action") != "resolved_candidate":
+        return False
+    if "noteRequired" in option:
+        return bool(option.get("noteRequired"))
+    execution_kind = str(item.get("executionKind") or "ledger_only")
+    return execution_kind in {"external_confirmation", "owner_followup"} or bool(
+        item.get("secretChecklist") or []
+    )
+
+
 def validate_response(board_dir: Path, *, check_current_ledger_hash: bool = True) -> tuple[dict[str, Any], dict[str, Any]]:
     marker = read_marker(board_dir)
     _root, ledger = validate_board_dir_shape(board_dir.resolve(), marker)
@@ -1661,6 +1674,7 @@ def validate_response(board_dir: Path, *, check_current_ledger_hash: bool = True
         raise SystemExit("Response decisions must include at least one selected item")
     option_by_id: dict[str, dict[str, dict[str, Any]]] = {}
     options_by_action: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    item_by_id: dict[str, dict[str, Any]] = {}
     for group in board_data.get("groups") or []:
         if not isinstance(group, dict):
             continue
@@ -1668,6 +1682,7 @@ def validate_response(board_dir: Path, *, check_current_ledger_hash: bool = True
             if not isinstance(item, dict):
                 continue
             ledger_id = str(item.get("ledgerId") or "")
+            item_by_id[ledger_id] = item
             option_by_id[ledger_id] = {}
             options_by_action[ledger_id] = {}
             for option in item.get("options") or []:
@@ -1725,8 +1740,13 @@ def validate_response(board_dir: Path, *, check_current_ledger_hash: bool = True
                 f"expected {expected_status!r}/{expected_intent_detail!r}, "
                 f"got {response_status!r}/{response_intent_detail!r}"
             )
-        if action == "resolved_candidate" and not str(decision.get("note") or "").strip():
-            raise SystemExit(f"{ledger_id} is resolved_candidate and needs a note/evidence")
+        item = item_by_id.get(str(ledger_id), {})
+        if (
+            action == "resolved_candidate"
+            and resolved_candidate_note_required(item, option)
+            and not str(decision.get("note") or "").strip()
+        ):
+            raise SystemExit(f"{ledger_id} is resolved_candidate and needs a non-empty owner note")
     return marker, response
 
 

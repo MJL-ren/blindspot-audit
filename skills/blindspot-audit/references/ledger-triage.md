@@ -209,8 +209,9 @@ python "<skill-folder>/scripts/ledger_triage_board.py" draft --project-root "<pr
    (`BS-...` / `DP-...`) rather than writing every item from memory. When
    the ledger text or follow-up says the owner already confirmed closure
    (`닫아도 됨`, `신경 안 써도 됨`, similar wording), the draft may recommend
-   `resolved_candidate`; the board must still collect a short evidence note
-   before submission.
+   `resolved_candidate`; require a short evidence note only when that
+   option needs owner proof, such as a token revocation or account setting
+   confirmation.
    Add `--include-ledger-hygiene` when the ledger has summary sections that
    may be stale, such as `Checked And Well Covered`, `Audit Log`, version
    summaries, test counts, or Latest release notes. Those become internal
@@ -416,6 +417,18 @@ one a distinct `optionId`; the response carries `action`, `optionId`,
 `status`, and `intentDetail` so `accept` option A cannot be confused with
 `accept` option B.
 
+For `resolved_candidate`, require an owner note only when owner evidence is
+actually needed. Set option-level `noteRequired: true` for secret/token
+revocation, provider/account checks, legal/platform confirmation, or any
+case where the owner must supply proof. Leave it omitted or false for
+ledger-only duplicate cleanup or cheap repo-local verification that the
+applying agent can perform after validation.
+When a note is required, validation checks only that the note is non-empty
+after trimming whitespace. Do not parse the note for keywords such as
+"confirmed", "revoked", or localized equivalents; users may answer in any
+language, and meaning belongs to the applying agent's review step, not the
+submit gate.
+
 For secret, token, API key, PAT, credential, or private-key findings, do not
 close on "current file looks fixed" alone. The helper adds a secret
 checklist to board data and temporary plans: scan the current working tree,
@@ -486,8 +499,9 @@ Allowed actions:
 - `defer`: mark deferred with the owner's reason or trigger.
 - `resolved_candidate`: verify cheaply, then move to `Resolved Archive`;
   if verification is not possible, leave pending and record the note. The
-  HTML board blocks submission for this action until the owner enters a
-  short evidence note.
+  HTML board blocks submission only when the selected option needs owner
+  proof, such as secret rotation, account settings, legal/platform checks,
+  or another external confirmation.
 - `reject`: move to rejected/archive with the reason.
 - `keep_pending`: leave open, optionally improving the next-check wording.
 - `needs_reexplain`: do not change the ledger status; answer the owner in

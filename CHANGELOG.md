@@ -2,6 +2,22 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.6.4] - 2026-07-09
+
+### Fixed
+
+- Resolved-candidate choices now require an owner evidence note only when the
+  selected option explicitly sets `noteRequired`, or when the item needs
+  external/owner confirmation or secret-related proof. Ledger-only cleanup
+  candidates can submit without an owner note and still require the applying
+  agent to perform cheap verification before archiving.
+- The HTML board now looks up note fields by dataset value instead of CSS
+  selector escaping, so response construction is more robust for ledger IDs
+  with punctuation.
+- Required owner notes are accepted as any non-empty text in any language.
+  The submit gate does not parse notes for confirmation, revocation, or
+  other keywords; the applying agent reviews note meaning after validation.
+
 ## [0.6.3] - 2026-07-09
 
 ### Changed

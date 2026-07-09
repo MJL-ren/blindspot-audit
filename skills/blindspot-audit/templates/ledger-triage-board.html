@@ -520,8 +520,8 @@ header p {
         whyLabel: "지금 신경 써야 하는 이유",
         decisionQuestionLabel: "지금 고를 선택",
         notePlaceholder: "선택 이유나 남기고 싶은 메모가 있으면 적어주세요. 없어도 괜찮습니다.",
-        resolvedNotePlaceholder: "해결 후보로 보려면 확인 근거를 짧게 적어주세요. 예: 내가 확인했고 닫아도 됨",
-        resolvedNoteRequired: "해결 후보로 고른 항목은 확인 근거 메모가 필요합니다: {ids}",
+        resolvedNotePlaceholder: "확인한 내용을 어떤 언어로든 짧게 적어주세요. 비워두지만 않으면 제출할 수 있습니다.",
+        resolvedNoteRequired: "이 항목은 짧은 메모가 필요합니다. 어떤 언어로든 적어주세요: {ids}",
         submitTitle: "선택한 결정 제출",
         selectedLabel: "개 선택됨",
         partialHint: "선택하지 않은 항목은 응답 JSON에 포함되지 않고 ledger에서도 그대로 남습니다.",
@@ -579,8 +579,8 @@ header p {
         whyLabel: "Why to care now",
         decisionQuestionLabel: "Choice to make",
         notePlaceholder: "Add a note if the choice needs context. You can leave this blank.",
-        resolvedNotePlaceholder: "Likely resolved choices need evidence. Example: I checked this and it can be closed.",
-        resolvedNoteRequired: "Likely resolved items need an evidence note before submit: {ids}",
+        resolvedNotePlaceholder: "Write a short note in any language. Any non-empty text is enough to submit.",
+        resolvedNoteRequired: "These items need a short note in any language before submit: {ids}",
         submitTitle: "Submit selected decisions",
         selectedLabel: "selected",
         partialHint: "Unselected items are not included in the response JSON and remain unchanged in the ledger.",
@@ -638,8 +638,8 @@ header p {
         whyLabel: "今気にする理由",
         decisionQuestionLabel: "今選ぶこと",
         notePlaceholder: "理由やメモがあれば書いてください。空でも構いません。",
-        resolvedNotePlaceholder: "解決候補にする場合は、確認根拠を短く書いてください。",
-        resolvedNoteRequired: "解決候補には確認メモが必要です: {ids}",
+        resolvedNotePlaceholder: "確認した内容を任意の言語で短く書いてください。空でなければ送信できます。",
+        resolvedNoteRequired: "この項目には短いメモが必要です。任意の言語で書いてください: {ids}",
         submitTitle: "選択した決定を送信",
         selectedLabel: "件選択",
         partialHint: "未選択の項目は response JSON に入らず、台帳でも変更されません。",
@@ -690,8 +690,8 @@ header p {
         whyLabel: "现在需要注意的原因",
         decisionQuestionLabel: "现在要选择的事",
         notePlaceholder: "如有理由或备注可写在这里，也可以留空。",
-        resolvedNotePlaceholder: "选择可能已解决时，请简短写下确认依据。",
-        resolvedNoteRequired: "可能已解决的项目需要确认备注: {ids}",
+        resolvedNotePlaceholder: "请用任意语言简短写下你确认的内容。只要不是空白即可提交。",
+        resolvedNoteRequired: "这些项目需要一条简短备注。可使用任意语言: {ids}",
         submitTitle: "提交已选择决定",
         selectedLabel: "项已选择",
         partialHint: "未选择项目不会进入 response JSON，台账中也保持不变。",
@@ -742,8 +742,8 @@ header p {
         whyLabel: "Por qué importa ahora",
         decisionQuestionLabel: "Decisión a tomar",
         notePlaceholder: "Agrega una nota si hace falta contexto. Puedes dejarlo vacío.",
-        resolvedNotePlaceholder: "Si parece resuelto, escribe una evidencia breve antes de enviar.",
-        resolvedNoteRequired: "Los elementos que parecen resueltos necesitan una nota de evidencia: {ids}",
+        resolvedNotePlaceholder: "Escribe una nota breve en cualquier idioma. Cualquier texto no vacío permite enviar.",
+        resolvedNoteRequired: "Estos elementos necesitan una nota breve en cualquier idioma antes de enviar: {ids}",
         submitTitle: "Enviar decisiones seleccionadas",
         selectedLabel: "seleccionados",
         partialHint: "Los elementos no seleccionados no entran al response JSON y quedan igual en el ledger.",
@@ -827,8 +827,25 @@ header p {
       if (action === "needs_reexplain") return "owner_followup";
       return "ledger_only";
     }
+    function optionNeedsNote(item, option) {
+      if (!option || option.action !== "resolved_candidate") return false;
+      if (Object.prototype.hasOwnProperty.call(option, "noteRequired")) {
+        return Boolean(option.noteRequired);
+      }
+      const executionKind = item.executionKind || "ledger_only";
+      return executionKind === "external_confirmation"
+        || executionKind === "owner_followup"
+        || (Array.isArray(item.secretChecklist) && item.secretChecklist.length > 0);
+    }
     function noteElement(item) {
-      return document.querySelector(`textarea[data-note="${CSS.escape(item.ledgerId)}"]`);
+      const ledgerId = String(item && item.ledgerId ? item.ledgerId : "");
+      return Array.from(document.querySelectorAll("textarea[data-note]"))
+        .find(el => el.dataset.note === ledgerId) || null;
+    }
+    function optionElementsFor(ledgerId) {
+      const id = String(ledgerId || "");
+      return Array.from(document.querySelectorAll(".option[data-ledger-id]"))
+        .filter(el => el.dataset.ledgerId === id);
     }
     function noteText(item) {
       const el = noteElement(item);
@@ -838,11 +855,11 @@ header p {
       return allItems().filter(item => {
         if (!selected.has(item.ledgerId)) return false;
         const option = selectedOption(item);
-        return option && option.action === "resolved_candidate" && !noteText(item);
+        return optionNeedsNote(item, option) && !noteText(item);
       });
     }
     function showMissingResolvedNotes(items) {
-      const ids = items.map(item => item.ledgerId).join(", ");
+      const ids = items.map(item => `${item.ledgerId} (${item.shortTitle || item.ledgerId})`).join(", ");
       const status = document.getElementById("submit-status");
       status.textContent = copy.resolvedNoteRequired.replace("{ids}", ids);
       status.className = "status bad";
@@ -877,7 +894,7 @@ header p {
         const option = articleItem ? selectedOption(articleItem) : null;
         article.classList.toggle(
           "needs-note",
-          Boolean(option && option.action === "resolved_candidate" && !note.value.trim())
+          Boolean(optionNeedsNote(articleItem, option) && !note.value.trim())
         );
       });
     }
@@ -1000,11 +1017,11 @@ header p {
       const selectedOptionForItem = item ? optionList(item).find(opt => opt.optionId === optionId) : null;
       const noteEl = item ? noteElement(item) : null;
       if (noteEl) {
-        const needsNote = selectedOptionForItem && selectedOptionForItem.action === "resolved_candidate";
+        const needsNote = optionNeedsNote(item, selectedOptionForItem);
         noteEl.required = Boolean(needsNote);
         noteEl.placeholder = needsNote ? copy.resolvedNotePlaceholder : copy.notePlaceholder;
       }
-      document.querySelectorAll(`.option[data-ledger-id="${CSS.escape(ledgerId)}"]`).forEach(el => {
+      optionElementsFor(ledgerId).forEach(el => {
         const isSelected = el.dataset.optionId === optionId;
         el.classList.toggle("selected", isSelected);
         if (updateRadio) {
@@ -1019,7 +1036,7 @@ header p {
       const decisions = allItems()
         .filter(item => selected.has(item.ledgerId))
         .map(item => {
-          const noteEl = document.querySelector(`textarea[data-note="${CSS.escape(item.ledgerId)}"]`);
+          const noteEl = noteElement(item);
           const option = selectedOption(item) || {};
           return {
             ledgerId: item.ledgerId,
@@ -1055,7 +1072,10 @@ header p {
       const status = document.getElementById("submit-status");
       const missingNotes = missingResolvedNotes();
       if (done > 0 && missingNotes.length) {
-        status.textContent = copy.resolvedNoteRequired.replace("{ids}", missingNotes.map(item => item.ledgerId).join(", "));
+        status.textContent = copy.resolvedNoteRequired.replace(
+          "{ids}",
+          missingNotes.map(item => `${item.ledgerId} (${item.shortTitle || item.ledgerId})`).join(", ")
+        );
         status.className = "status bad";
       } else if (done > 0) {
         status.textContent = copy.ready;
