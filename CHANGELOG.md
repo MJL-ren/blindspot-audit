@@ -2,6 +2,16 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.6.3] - 2026-07-09
+
+### Changed
+
+- Updated the HTML ledger-triage decision board's default visual theme to a
+  stronger choice-board layout: dark header chrome, light workbench body,
+  yellow primary actions, purple selected states, larger choice tiles, and
+  clearer state panels. The production template remains self-contained and
+  does not include theme-lab labels, external fonts, CDNs, or network calls.
+
 ## [0.6.2] - 2026-07-09
 
 ### Added

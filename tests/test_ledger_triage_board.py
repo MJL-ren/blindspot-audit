@@ -124,6 +124,8 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertNotIn("<script src", html)
         self.assertNotIn("<link", html)
         self.assertNotIn("@import", html)
+        self.assertNotIn("theme c", html)
+        self.assertNotIn("035 forge", html)
         self.assertNotIn("쉽게 말하면", html)
         self.assertNotIn("recommend:", html)
         self.assertIn("항목의 이해를 위한 설명", html)
