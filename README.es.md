@@ -238,15 +238,16 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-En la app de Codex, para actualizar más adelante, cierra Codex por completo y vuelve a abrirlo.
-Si usas la CLI o quieres forzar la actualización, ejecuta:
+En la app de escritorio de ChatGPT, abre `Codex > Plugins > Installed` para
+revisar o gestionar el plugin instalado. Si usas la CLI o quieres forzar la
+actualización del marketplace, ejecuta:
 
 ```bash
 codex plugin marketplace upgrade blindspot-audit
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-Después de instalar o actualizar, abre un nuevo hilo de Codex para que se carguen las skills del plugin.
+Después de instalar o actualizar, abre una nueva tarea de Codex para que se carguen las skills del plugin.
 
 ### Instalación con scripts (requiere clonar)
 
@@ -286,8 +287,10 @@ Instala en `<project>/.claude/skills`, que OpenCode también lee dentro de ese p
 
 ### Codex — instalación manual de la skill
 
-Instala en `$CODEX_HOME/skills` si `CODEX_HOME` existe; si no, en `~/.codex/skills`.
-También puedes pasar una ruta personalizada como argumento.
+Instala en el directorio actual de skills personales de Codex,
+`~/.agents/skills`. También puedes pasar una ruta personalizada como
+argumento. Si encuentra una copia con el mismo nombre en las rutas antiguas
+`~/.codex/skills` o `$CODEX_HOME/skills`, avisa pero no la elimina.
 
 ```powershell
 .\scripts\install-codex.ps1
@@ -316,10 +319,16 @@ Copia la carpeta `skills/blindspot-audit` en cualquiera de estas ubicaciones:
 ```text
 ~/.claude/skills/blindspot-audit                    # Claude Code personal + OpenCode
 <project>/.claude/skills/blindspot-audit            # Claude Code de proyecto + OpenCode
-~/.codex/skills/blindspot-audit                     # Codex
+~/.agents/skills/blindspot-audit                    # Codex personal
+<project>/.agents/skills/blindspot-audit            # Codex de proyecto
 <project>/.opencode/skills/blindspot-audit          # OpenCode nativo (proyecto)
 ~/.config/opencode/skills/blindspot-audit           # OpenCode nativo (global)
 ```
+
+La documentación actual de Codex usa `.agents/skills`. Algunas instalaciones
+pueden seguir mostrando copias antiguas en `~/.codex/skills` o
+`$CODEX_HOME/skills`, pero mantener la misma skill en ambas ubicaciones puede
+crear entradas duplicadas.
 
 Luego abre una nueva sesión del agente, o refresca la actual, para que cargue la skill.
 
@@ -329,11 +338,11 @@ Actualiza usando la misma ruta con la que instalaste:
 
 - Marketplace de plugins de Claude Code: ejecuta `/plugin marketplace update
   blindspot-audit` y abre una nueva sesión de Claude Code.
-- Marketplace de plugins de la app de Codex: cierra Codex por completo y
-  vuelve a abrirlo; la app refresca el plugin instalado al arrancar. Si usas
-  la CLI o quieres forzar la actualización, ejecuta `codex plugin marketplace
-  upgrade blindspot-audit`, luego `codex plugin add
-  blindspot-audit@blindspot-audit`.
+- Marketplace de plugins de Codex en la app de escritorio de ChatGPT: abre
+  `Codex > Plugins > Installed` para revisar o gestionar el plugin. Para
+  forzar una actualización por CLI, ejecuta `codex plugin marketplace upgrade
+  blindspot-audit`, luego `codex plugin add blindspot-audit@blindspot-audit`,
+  y abre una nueva tarea de Codex.
 - Plugin del marketplace en la app de escritorio de Claude: pulsa **Update**
   en la pantalla de gestión de plugins; reiniciar la app no lo actualiza. La
   ruta CLI compatible es `/plugin marketplace update blindspot-audit`.

@@ -34,10 +34,16 @@ Manual install — copy `skills/blindspot-audit` to one of:
 
 - Claude Code personal: `~/.claude/skills/blindspot-audit` (OpenCode reads this too)
 - Claude Code project: `<project>/.claude/skills/blindspot-audit` (OpenCode reads this too)
-- Codex: `$CODEX_HOME/skills/blindspot-audit`, or `~/.codex/skills/blindspot-audit` when `CODEX_HOME` is unset
+- Codex personal: `~/.agents/skills/blindspot-audit`
+- Codex project: `<project>/.agents/skills/blindspot-audit`
 - Codex plugin marketplace: `codex plugin marketplace add MJL-ren/blindspot-audit --ref main`, then `codex plugin add blindspot-audit@blindspot-audit`
 - OpenCode native: `<project>/.opencode/skills/blindspot-audit` or `~/.config/opencode/skills/blindspot-audit`
 - Claude desktop app / Cowork: use `dist/blindspot-audit.skill` (Save skill button)
+
+Current Codex documentation uses `.agents/skills`. Legacy
+`~/.codex/skills` or `$CODEX_HOME/skills` copies may still appear but can
+duplicate a same-name skill; the Codex install scripts warn and do not delete
+those copies automatically.
 
 Do not edit the user's target project except for copying the skill into the
 requested skill location.

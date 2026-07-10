@@ -240,15 +240,15 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-Codex 앱에서는 나중에 업데이트할 때 앱을 완전히 종료했다가 다시 열면 된다. CLI를
-쓰거나 강제로 새로고침하고 싶으면 이렇게 실행한다.
+ChatGPT 데스크톱 앱에서는 `Codex > Plugins > Installed`를 열면 설치된 플러그인을
+확인하고 관리할 수 있다. CLI로 마켓플레이스를 강제로 새로고침하려면 이렇게 실행한다.
 
 ```bash
 codex plugin marketplace upgrade blindspot-audit
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-설치나 업데이트 뒤에는 새 Codex 스레드를 열어야 플러그인 스킬이 로드된다.
+설치나 업데이트 뒤에는 새 Codex 작업을 열어야 플러그인 스킬이 로드된다.
 
 ### 스크립트 설치 (클론 필요)
 
@@ -289,8 +289,9 @@ cd blindspot-audit
 
 ### Codex — 수동 스킬 설치
 
-`CODEX_HOME`이 있으면 `$CODEX_HOME/skills`, 없으면 `~/.codex/skills`에
-설치된다. 원하는 위치를 인자로 넘길 수도 있다.
+현재 Codex의 사용자 스킬 경로인 `~/.agents/skills`에 설치된다. 원하는 위치를
+인자로 넘길 수도 있다. 예전 `~/.codex/skills`나 `$CODEX_HOME/skills`에 같은
+스킬이 남아 있으면 경고하지만 자동으로 지우지는 않는다.
 
 ```powershell
 .\scripts\install-codex.ps1
@@ -320,10 +321,15 @@ Code 같은 호환 플러그인 CLI에서 `/plugin marketplace update blindspot-
 ```text
 ~/.claude/skills/blindspot-audit                    # Claude Code 개인 + OpenCode
 <프로젝트>/.claude/skills/blindspot-audit            # Claude Code 프로젝트 + OpenCode
-~/.codex/skills/blindspot-audit                     # Codex
+~/.agents/skills/blindspot-audit                    # Codex 개인
+<프로젝트>/.agents/skills/blindspot-audit            # Codex 프로젝트
 <프로젝트>/.opencode/skills/blindspot-audit          # OpenCode 네이티브 (프로젝트)
 ~/.config/opencode/skills/blindspot-audit           # OpenCode 네이티브 (전역)
 ```
+
+현재 Codex 공식 문서는 `.agents/skills`를 사용한다. 일부 설치에서는 예전
+`~/.codex/skills`나 `$CODEX_HOME/skills` 복사본도 계속 보일 수 있지만, 같은 스킬을
+두 위치에 함께 두면 중복으로 표시될 수 있다.
 
 복사 후 에이전트 세션을 새로 열면 스킬이 잡힌다.
 
@@ -333,10 +339,10 @@ Code 같은 호환 플러그인 CLI에서 `/plugin marketplace update blindspot-
 
 - Claude Code 플러그인 마켓플레이스: `/plugin marketplace update
   blindspot-audit`를 실행한 뒤 새 Claude Code 세션을 연다.
-- Codex 앱 플러그인 마켓플레이스: Codex를 완전히 종료했다가 다시 열면 설치된
-  플러그인이 새로고침된다. CLI를 쓰거나 강제로 새로고침하고 싶으면 `codex
-  plugin marketplace upgrade blindspot-audit`를 실행하고, 다시 `codex plugin
-  add blindspot-audit@blindspot-audit`를 실행한다.
+- ChatGPT 데스크톱 앱의 Codex 플러그인 마켓플레이스: `Codex > Plugins >
+  Installed`에서 플러그인을 확인하고 관리한다. CLI로 강제로 새로고침하려면
+  `codex plugin marketplace upgrade blindspot-audit`, `codex plugin add
+  blindspot-audit@blindspot-audit`를 차례로 실행한 뒤 새 Codex 작업을 연다.
 - Claude 데스크톱 앱 마켓플레이스 플러그인: 앱의 플러그인 관리 화면에서
   **Update** 버튼을 누른다. 앱을 다시 켜는 것만으로는 업데이트되지 않는다. 호환
   CLI 경로는 `/plugin marketplace update blindspot-audit`다.

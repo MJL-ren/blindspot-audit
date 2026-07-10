@@ -2,6 +2,22 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.6.6] - 2026-07-10
+
+### Fixed
+
+- Codex direct-install scripts now default to the current user skill
+  directory, `~/.agents/skills`, while keeping explicit custom destinations
+  available. They warn about same-name copies in legacy `~/.codex/skills` or
+  `$CODEX_HOME/skills` locations without deleting user files automatically.
+- All five README translations and the repository agent instructions now
+  document both Codex personal and project `.agents/skills` locations. Legacy
+  locations are described only as compatibility leftovers that may create
+  duplicate entries.
+- Codex plugin instructions now point to `Codex > Plugins > Installed` in the
+  ChatGPT desktop app and retain the supported marketplace CLI refresh route.
+  A regression test protects the new install paths and management guidance.
+
 ## [0.6.5] - 2026-07-10
 
 ### Fixed

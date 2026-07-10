@@ -12,13 +12,12 @@ fi
 
 if [[ $# -ge 1 ]]; then
   DESTINATION="$1"
-elif [[ -n "${CODEX_HOME:-}" ]]; then
-  DESTINATION="$CODEX_HOME/skills"
 else
-  DESTINATION="$HOME/.codex/skills"
+  DESTINATION="$HOME/.agents/skills"
 fi
 
 mkdir -p "$DESTINATION"
+DESTINATION="$(cd "$DESTINATION" && pwd -P)"
 
 # Replace, don't merge: an overwrite-copy leaves files that were renamed or
 # deleted upstream lingering in the install, silently steering agents.
@@ -33,3 +32,26 @@ fi
 cp -R "$SOURCE" "$DESTINATION/"
 
 echo "Installed blindspot-audit skill to: $INSTALL_PATH (previous install replaced)"
+
+LEGACY_DESTINATIONS=("$HOME/.codex/skills")
+if [[ -n "${CODEX_HOME:-}" ]]; then
+  LEGACY_DESTINATIONS+=("$CODEX_HOME/skills")
+fi
+
+SEEN_LEGACY_PATHS="|"
+for LEGACY_DESTINATION in "${LEGACY_DESTINATIONS[@]}"; do
+  LEGACY_INSTALL_PATH="$LEGACY_DESTINATION/blindspot-audit"
+  if [[ ! -d "$LEGACY_INSTALL_PATH" ]]; then
+    continue
+  fi
+
+  LEGACY_DESTINATION="$(cd "$LEGACY_DESTINATION" && pwd -P)"
+  if [[ "$LEGACY_DESTINATION" == "$DESTINATION" || "$SEEN_LEGACY_PATHS" == *"|$LEGACY_DESTINATION|"* ]]; then
+    continue
+  fi
+  SEEN_LEGACY_PATHS+="$LEGACY_DESTINATION|"
+
+  echo "Warning: Legacy Codex skill copy found at: $LEGACY_DESTINATION/blindspot-audit" >&2
+  echo "Current Codex uses ~/.agents/skills by default, and same-name copies can both appear." >&2
+  echo "This installer does not delete legacy copies; remove or migrate it manually after confirming the new install." >&2
+done

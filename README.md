@@ -251,15 +251,16 @@ codex plugin marketplace add MJL-ren/blindspot-audit --ref main
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-To refresh later in the Codex app, fully quit and reopen the app. If you
-use the CLI or want to force a refresh, run:
+In the ChatGPT desktop app, open `Codex > Plugins > Installed` to inspect
+or manage the installed plugin. If you use the CLI or want to force a
+marketplace refresh, run:
 
 ```bash
 codex plugin marketplace upgrade blindspot-audit
 codex plugin add blindspot-audit@blindspot-audit
 ```
 
-Start a new Codex thread after installing or upgrading so the plugin skills are loaded.
+Start a new Codex task after installing or upgrading so the plugin skills are loaded.
 
 ### Script installs (clone first)
 
@@ -301,8 +302,10 @@ project).
 
 ### Codex — manual skill install
 
-Installs to `$CODEX_HOME/skills` when `CODEX_HOME` is set, otherwise
-`~/.codex/skills`. A custom destination can be passed as an argument.
+Installs to the current Codex user skill directory, `~/.agents/skills`.
+A custom destination can be passed as an argument. If the installer finds
+a same-name copy under legacy `~/.codex/skills` or `$CODEX_HOME/skills`, it
+warns but does not delete it automatically.
 
 ```powershell
 .\scripts\install-codex.ps1
@@ -332,10 +335,16 @@ Copy the `skills/blindspot-audit` folder into any of:
 ```text
 ~/.claude/skills/blindspot-audit                    # Claude Code personal + OpenCode
 <project>/.claude/skills/blindspot-audit            # Claude Code project + OpenCode
-~/.codex/skills/blindspot-audit                     # Codex
+~/.agents/skills/blindspot-audit                    # Codex personal
+<project>/.agents/skills/blindspot-audit            # Codex project
 <project>/.opencode/skills/blindspot-audit          # OpenCode native (project)
 ~/.config/opencode/skills/blindspot-audit           # OpenCode native (global)
 ```
+
+Current Codex documentation uses `.agents/skills`. Older
+`~/.codex/skills` or `$CODEX_HOME/skills` copies may still appear in some
+installations, but keeping the same skill in both places can expose
+duplicate entries.
 
 Then start a new agent session (or refresh) so the skill is picked up.
 
@@ -345,10 +354,10 @@ Use the same route you installed with:
 
 - Claude Code plugin marketplace: run `/plugin marketplace update
   blindspot-audit`, then start a new Claude Code session.
-- Codex app plugin marketplace: fully quit Codex and reopen it; the app
-  refreshes the installed plugin on restart. If you use the CLI or want to
-  force a refresh, run `codex plugin marketplace upgrade blindspot-audit`,
-  then `codex plugin add blindspot-audit@blindspot-audit`.
+- ChatGPT desktop app Codex plugin marketplace: open `Codex > Plugins >
+  Installed` to inspect or manage the plugin. To force a CLI refresh, run
+  `codex plugin marketplace upgrade blindspot-audit`, then `codex plugin
+  add blindspot-audit@blindspot-audit`, and start a new Codex task.
 - Claude desktop app marketplace plugin: click **Update** in the app's
   plugin management screen; restarting the app alone does not update it.
   The compatible CLI route is `/plugin marketplace update blindspot-audit`.
