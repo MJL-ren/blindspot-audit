@@ -6,6 +6,10 @@ A focus pack adds depth to the normal blindspot workflow; it does not replace
 the four-unknowns frame, evidence rules, findings cap, owner interview, or
 ledger behavior in `SKILL.md`.
 
+When the owner names a focus without a base mode, use `normal`. An explicit
+`quick`, `deep`, planning, post-implementation, or scoped boundary remains the
+base behavior while the pack narrows the domain.
+
 ## Contents
 
 - Runtime routing

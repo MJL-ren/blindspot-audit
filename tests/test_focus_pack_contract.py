@@ -20,6 +20,9 @@ REPORT_TEMPLATE_PATH = SKILL_ROOT / "references" / "report-template.md"
 HOST_SURFACES_PATH = SKILL_ROOT / "references" / "host-surfaces.md"
 LEDGER_LIFECYCLE_PATH = SKILL_ROOT / "references" / "ledger-lifecycle.md"
 LEDGER_TRIAGE_PATH = SKILL_ROOT / "references" / "ledger-triage.md"
+LEDGER_TRIAGE_BOARD_REFERENCE_PATH = (
+    SKILL_ROOT / "references" / "ledger-triage-board.md"
+)
 LEDGER_TEMPLATE_PATH = SKILL_ROOT / "templates" / "BLINDSPOT_LEDGER.md"
 SECURITY_BATCH_TEMPLATE_PATH = SKILL_ROOT / "templates" / "SECURITY_BATCH_PLAN.md"
 SECRET_PRESENCE_SCRIPT_PATH = SKILL_ROOT / "scripts" / "secret_presence_scan.py"
@@ -100,11 +103,15 @@ class FocusPackContractTests(unittest.TestCase):
         skill = SKILL_PATH.read_text(encoding="utf-8")
         first_hundred_lines = "\n".join(skill.splitlines()[:100])
 
+        self.assertIn("`normal`: the default", first_hundred_lines)
         self.assertIn("`focus: <domain>`", first_hundred_lines)
         self.assertIn("`references/packs/index.md`", first_hundred_lines)
         self.assertIn("exactly one matching pack", first_hundred_lines)
+        self.assertIn("`scoped` is a boundary modifier", first_hundred_lines)
+        self.assertIn("A plain audit request defaults to\n`normal`", first_hundred_lines)
         self.assertIn("`references/audit-workflow.md`", first_hundred_lines)
         self.assertIn("`references/ledger-triage.md`", first_hundred_lines)
+        self.assertIn("`references/ledger-triage-board.md`", first_hundred_lines)
         self.assertIn("## Existing Ledger Write Guard", skill)
         self.assertIn("audit_followup_guard.py", skill)
 
@@ -118,6 +125,76 @@ class FocusPackContractTests(unittest.TestCase):
         self.assertIn("## Reference Router", skill)
         self.assertIn("## Inventory And Search Hygiene", workflow)
         self.assertIn("## 8. Report And Close Out", workflow)
+
+    def test_ledger_triage_board_is_conditional_progressive_disclosure(self):
+        skill = SKILL_PATH.read_text(encoding="utf-8")
+        triage = LEDGER_TRIAGE_PATH.read_text(encoding="utf-8")
+        board = LEDGER_TRIAGE_BOARD_REFERENCE_PATH.read_text(encoding="utf-8")
+        compact_skill = " ".join(skill.split())
+        compact_triage = " ".join(triage.split())
+
+        self.assertLess(len(triage.splitlines()), 300)
+        self.assertIn("HTML decision-board fallback only", skill)
+        self.assertIn(
+            "do not load it when a structured choice tool is callable now",
+            compact_skill.lower(),
+        )
+        self.assertIn(
+            "must not load `ledger-triage-board.md` or generate HTML",
+            compact_triage,
+        )
+        self.assertIn("Read `references/ledger-triage-board.md` now", triage)
+        for command in (
+            "draft",
+            "create",
+            "serve",
+            "collect-response",
+            "validate",
+            "cleanup",
+        ):
+            self.assertIn(f'ledger_triage_board.py" {command}', board)
+        self.assertIn("append `--allow-unreviewed-draft` to the **create** command", board)
+        self.assertNotIn("--allow-unreviewed-draft", triage)
+
+    def test_claude_code_adapter_resolves_active_skill_without_copy_search(self):
+        skill = SKILL_PATH.read_text(encoding="utf-8")
+        hosts = HOST_SURFACES_PATH.read_text(encoding="utf-8")
+        compact_hosts = " ".join(hosts.split())
+
+        self.assertIn("`${CLAUDE_SKILL_DIR}`", skill)
+        self.assertIn("## Claude Code CLI Adapter", hosts)
+        self.assertIn("resolved `${CLAUDE_SKILL_DIR}`", hosts)
+        self.assertIn(
+            "Never choose among source, plugin, or installed copies",
+            compact_hosts,
+        )
+        self.assertIn("Do not apply the Cowork copy/mirror workaround", hosts)
+        self.assertIn("An invocation with no mode arguments uses `normal`", hosts)
+        self.assertIn("do not load the HTML-board reference", compact_hosts)
+        self.assertIn("`--write-url`/`--write-board-dir`", hosts)
+
+    def test_helper_command_notation_is_consistent_across_references(self):
+        reference_paths = list((SKILL_ROOT / "references").rglob("*.md"))
+        reference_text = "\n".join(
+            path.read_text(encoding="utf-8") for path in reference_paths
+        )
+        security = SECURITY_PACK_PATH.read_text(encoding="utf-8")
+        board = LEDGER_TRIAGE_BOARD_REFERENCE_PATH.read_text(encoding="utf-8")
+
+        self.assertNotIn("<skill-folder>", reference_text)
+        self.assertIn(
+            'python "<skill>/scripts/audit_followup_guard.py" scaffold-security-batch',
+            security,
+        )
+        self.assertIn(
+            'python "<skill>/scripts/secret_presence_scan.py" --project-root',
+            security,
+        )
+        self.assertNotRegex(
+            security,
+            r"(?m)^scripts/(?:audit_followup_guard|secret_presence_scan)\.py",
+        )
+        self.assertNotIn("<skill-folder>", board)
 
     def test_scoped_focus_does_not_clear_project_wide_coverage(self):
         workflow = AUDIT_WORKFLOW_PATH.read_text(encoding="utf-8")
@@ -446,9 +523,12 @@ class FocusPackContractTests(unittest.TestCase):
         self.assertIn("file-tool copy is intact", hosts)
         self.assertIn("--response \"<mounted-response-json>\"", hosts)
 
-        triage = LEDGER_TRIAGE_PATH.read_text(encoding="utf-8")
-        self.assertIn("Cowork does not mount the owner's Downloads", triage)
-        self.assertIn("instead of the default `--collect-response`", triage)
+        board = LEDGER_TRIAGE_BOARD_REFERENCE_PATH.read_text(encoding="utf-8")
+        self.assertIn("Cowork does not mount the owner's Downloads", board)
+        self.assertIn(
+            "instead of the default `--collect-response`",
+            " ".join(board.split()),
+        )
 
     def test_existing_ledger_adapter_preserves_local_schema(self):
         lifecycle = LEDGER_LIFECYCLE_PATH.read_text(encoding="utf-8")
@@ -531,7 +611,10 @@ class FocusPackContractTests(unittest.TestCase):
     def test_ledger_triage_never_composes_with_focus(self):
         skill = SKILL_PATH.read_text(encoding="utf-8")
         self.assertIn("`ledger-triage`: maintain an existing", skill)
-        self.assertIn("`ledger-triage` never composes with\n`focus`", skill)
+        self.assertIn(
+            "`ledger-triage` never composes with `focus`",
+            " ".join(skill.split()),
+        )
 
     def test_repeat_focus_delta_only_and_durability_contracts_are_discoverable(self):
         skill = SKILL_PATH.read_text(encoding="utf-8")

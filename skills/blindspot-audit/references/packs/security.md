@@ -45,7 +45,8 @@ show their actual applied ledger mappings. If two or more findings become
 `deferred` under the same named batch, the run is not complete until the
 durable `SECURITY_BATCH_PLAN` exists, the affected rows or their shared batch
 note link back to it, and final guard validation passes. Generate its mechanical
-skeleton with `audit_followup_guard.py scaffold-security-batch`;
+skeleton with
+`python "<skill>/scripts/audit_followup_guard.py" scaffold-security-batch`;
 a ledger-only batch section is not a substitute. `owner_followup` remains a next-action
 route, never a disposition.
 
@@ -530,8 +531,8 @@ side-effectful, networked, credentialed, or expensive checks uninvited.
   compare declared roles with server-side checks; inspect production defaults,
   CI triggers/permissions, secret variable names, lockfiles, and existing logs.
 - Redacted secret-presence locator: use
-  `scripts/secret_presence_scan.py --project-root <root> --scope tree` from the
-  active skill folder when a current-tree heuristic would change the decision.
+  `python "<skill>/scripts/secret_presence_scan.py" --project-root "<root>" --scope tree`
+  when a current-tree heuristic would change the decision.
   It reports only sanitized path, line, identifier, and pattern category - never
   matched values or surrounding text. The helper is a bounded manual heuristic,
   not proof that no secret exists. Its first pass follows Search Hygiene by
@@ -637,8 +638,8 @@ place a public-safe generalized handoff beside the ledger with a clear
 date/title. Even `private/full` never contains secret values.
 
 After the owner-response preview is valid, prefer
-`audit_followup_guard.py scaffold-security-batch` over copying the template by
-hand. It uses the response's repo-relative `batchPath`, preserves the canonical
+`python "<skill>/scripts/audit_followup_guard.py" scaffold-security-batch` over
+copying the template by hand. It uses the response's repo-relative `batchPath`, preserves the canonical
 verification headers, emits one placeholder row per included ID, and returns a
 ledger-backlink suggestion. Fill the consequence, target, execution order,
 exact check, tier, channel, and pass condition before final validation. The

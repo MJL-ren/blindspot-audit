@@ -20,6 +20,9 @@ something material and also knows what is already healthy or safe to defer.
 
 Resolve the mode before loading detailed references:
 
+- `normal`: the default when the owner requests a blindspot audit without a
+  depth, phase, or maintenance mode. Read the ledger, inventory, core owner
+  docs, and representative evidence, then rank 3-7 findings.
 - `ledger-triage`: maintain an existing `BLINDSPOT_LEDGER.md`. Read
   `references/ledger-triage.md` first. Do not run a fresh audit and do not edit
   decisions, awareness, status, or archive rows before owner choices.
@@ -27,8 +30,10 @@ Resolve the mode before loading detailed references:
   current outside expectations before ranking 3-7 findings.
 - `quick`: use core docs, inventory, and the ledger; return only the strongest
   signals.
-- `focus: <domain>`: read `references/packs/index.md`, resolve one registered
-  Focus ID, and load exactly one matching pack. Never invent an unknown pack.
+- `focus: <domain>`: narrow the selected base mode to one domain. When no base
+  mode is named, use `normal`. Read `references/packs/index.md`, resolve one
+  registered Focus ID, and load exactly one matching pack. Never invent an
+  unknown pack.
 - `planning`: surface decisions that could change data, interfaces, UX,
   operations, scope, or verification before implementation.
 - `post-implementation`: compare the approved plan, implementation notes,
@@ -36,10 +41,14 @@ Resolve the mode before loading detailed references:
 - `interview`: ask one owner question at a time when the answer materially
   changes architecture, workflow, scope, or risk.
 
+`scoped` is a boundary modifier, not a depth mode. Apply the named document,
+feature, module, or folder boundary to `normal`, `quick`, `deep`, planning, or
+post-implementation behavior.
+
 Infer the mode from ordinary owner wording. Requests to organize, close,
 process, decide, or go through existing ledger items imply `ledger-triage` even
-when the owner does not know that mode name. `ledger-triage` never composes with
-`focus`.
+when the owner does not know that mode name. A plain audit request defaults to
+`normal`. `ledger-triage` never composes with `focus`.
 
 When the owner says "the same focus as before" without naming it, follow the
 resolution rule in `references/packs/index.md`; do not guess across multiple
@@ -59,6 +68,8 @@ Load only what this run needs:
 - Existing/new ledger location, diff runs, durability, schema adaptation, and
   owner-response guard: `references/ledger-lifecycle.md`.
 - Ledger maintenance only: `references/ledger-triage.md`.
+- HTML decision-board fallback only: `references/ledger-triage-board.md`. Do
+  not load it when a structured choice tool is callable now.
 - Finding, interview, decision-packet, and final report shape:
   `references/report-template.md`.
 
@@ -67,6 +78,16 @@ host that reads only the first part of this file should still see the mode and
 the exact next reference within the first 100 lines.
 
 ## Packaged Helper Map
+
+`<skill>` means the directory containing the **active** `SKILL.md`, never a
+same-named copy found by searching the project. Claude Code replaces
+`${CLAUDE_SKILL_DIR}` with that directory for personal, project, and plugin
+skills; bind `<skill>` to the resolved value. Other hosts use the loaded skill
+path they expose. If a host exposes no active path and multiple copies exist,
+do not guess by filename.
+
+Command examples use `python`. If it is unavailable, substitute `py -3` on
+Windows or `python3` on POSIX, and keep that launcher consistent for the run.
 
 - `project_inventory.py`: bounded filesystem map for normal audits.
 - `audit_followup_guard.py`: snapshot, preview, and validation for existing

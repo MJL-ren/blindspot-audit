@@ -18,6 +18,9 @@ post-implementation, interview, scoped, or focus audit. Do not use it for
 
 ## Modes And Scope
 
+- `normal`: default when no depth or phase is named. Read the ledger, inventory,
+  core owner docs, and representative evidence across the applicable project
+  surface, then rank 3-7 findings without automatically loading a focus pack.
 - `quick`: read the ledger, core owner docs, and inventory; return only the
   highest-signal findings. Propose deeper packs/checks instead of silently
   expanding the run.
@@ -31,10 +34,12 @@ post-implementation, interview, scoped, or focus audit. Do not use it for
 - `post-implementation`: read implementation notes when present, then compare
   plan, diff, tests, and runtime evidence. A short optional comprehension check
   may reveal an explanation gap; it is not a grade.
-- `focus: <domain>`: preserve the base mode but narrow the domain. Read the pack
-  registry and load exactly one registered pack.
+- `focus: <domain>`: preserve the base mode but narrow the domain. Use `normal`
+  when no base mode is named. Read the pack registry and load exactly one
+  registered pack.
 
-Default scope is the whole project. When the owner names one document, feature,
+Default scope is the whole project. `scoped` is a boundary modifier rather than
+a separate depth mode. When the owner names one document, feature,
 module, or subfolder, use a scoped audit:
 
 - Read that target and its direct references instead of forcing a full-tree

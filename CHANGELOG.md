@@ -2,7 +2,7 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
-## [0.7.0] - 2026-07-11
+## [0.7.0] - 2026-07-12
 
 ### Added
 
@@ -151,6 +151,16 @@ All notable changes to the blindspot-audit skill and this repository.
   reference router in its first 100 lines. Detailed normal/focus audit procedure
   moved to `references/audit-workflow.md` for progressive disclosure on Codex,
   Claude Code, OpenCode, and compatible hosts.
+- Plain audit invocations now default explicitly to `normal`; `scoped` is a
+  boundary modifier, and an unnamed focus composes with `normal` instead of an
+  undefined implicit depth.
+- Claude Code now has a dedicated CLI adapter that resolves helpers from the
+  active `${CLAUDE_SKILL_DIR}`, avoids Cowork-only copy workarounds, keeps
+  structured questions in the same turn, and documents portable Python launcher
+  fallbacks. Helper command examples use one `<skill>` path convention.
+- Ledger-triage keeps its consent, grouping, and structured-choice contract in a
+  short core reference. The HTML board lifecycle moved to a conditional
+  reference that choice-capable hosts do not load unless the owner selects it.
 - Repeat-run routing now resolves an unnamed "same focus" only from one clear
   registered focus in the current project ledger. Explicit delta-only reporting
   suppresses unchanged finding bodies without weakening bounded verification or

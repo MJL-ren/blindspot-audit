@@ -113,6 +113,35 @@ Good structured-choice output: same findings as the shared core, a decision
 log when interactive choices were used, awareness classifications from the
 interview, ledger updates that preserve IDs and status language.
 
+## Claude Code CLI Adapter
+
+Claude Code normally has direct filesystem access to personal, project, and
+plugin skills. Follow the shared structured-choice adapter, with these path and
+execution rules:
+
+- Bind `<skill>` to the active entrypoint's resolved `${CLAUDE_SKILL_DIR}`.
+  Execute helpers directly from that folder and verify the requested script and
+  `safe_output.py` exist beside each other. Never choose among source, plugin,
+  or installed copies by grepping for a helper filename.
+- Do not apply the Cowork copy/mirror workaround in a normal local CLI session.
+  If the current Claude Code environment actually exposes a synchronized or
+  remote mirror, classify that observed capability and use the matching
+  sandbox rules instead of assuming local access.
+- An invocation with no mode arguments uses `normal`. A named path narrows the
+  scope; it does not silently change the depth.
+- Use `AskUserQuestion` whenever it is callable now. Present findings in normal
+  assistant prose and invoke the question immediately afterward in the same
+  turn. In `ledger-triage`, use bundled structured questions and do not load the
+  HTML-board reference.
+- Shell permission prompts do not authorize combining or skipping lifecycle
+  phases. Run each documented snapshot, validation, and cleanup phase with its
+  matching flag. Do not add broad permission bypasses merely to reduce prompts.
+- Use the HTML board only when structured choice is unavailable now or the
+  owner explicitly selects the board for a large independent decision set. If
+  serving is needed, use the host's background-process support and the helper's
+  `--write-url`/`--write-board-dir` outputs rather than blocking the session on
+  a foreground server.
+
 ## Cowork (Claude Desktop App) Adapter
 
 Cowork runs the same interactive flow as the structured choice adapter when
@@ -281,29 +310,11 @@ precedence order: a `callable-now` structured choice tool first (see
 the Structured Choice Tool Adapter above and the batching scheme in
 `references/ledger-triage.md`); then, on a file-writing host with no choice
 tool callable now, a temporary HTML decision board; then a numbered reply for
-read-only/chat-only hosts. The rules below apply when the board is the
-chosen surface. Never edit the ledger from the agent's own judgment:
-
-- Put it under `<project-root>/.blindspot-tmp/ledger-triage-*`, never in
-  docs and never in commit scope.
-- Generate it with `scripts/ledger_triage_board.py create`; serve it on
-  `127.0.0.1` with the helper when localhost is available.
-- If serving is impossible, the static HTML downloads or displays
-  `blindspot-triage-response.json`. Do not ask the owner to move files by
-  hand; have them leave the downloaded JSON in Downloads or the browser's
-  chosen folder, then run `validate --collect-response`, `validate
-  --response <path>`, or `collect-response` as described in
-  `references/ledger-triage.md`. Cowork is the exception: Downloads is not
-  mounted, so place the response in a mounted path and use explicit
-  `validate --response <mounted-path>`.
-- Present recommendations in the board. A recommended option is not
-  authorization to apply it.
-- Run the helper's `validate` command before applying any ledger change.
-- Apply only the touched rows, preserving the ledger's local status labels.
-- Add one Audit Log row noting `mode: ledger-triage`, board id, decisions
-  applied, and cleanup result.
-- Delete the board directory only with the helper's `cleanup
-  --confirm-applied` after decisions were applied.
+read-only/chat-only hosts. When the board is selected, read
+`references/ledger-triage-board.md` and follow its complete create, serve,
+response, application, and cleanup contract. Do not load that board reference
+on a choice-capable run merely because ledger triage is active. Cowork's
+mounted-response exception is defined in its adapter above.
 
 Use the normal numbered reply fallback only for read-only/chat-only hosts,
 or when the owner explicitly asks not to create temporary HTML files. In
