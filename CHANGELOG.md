@@ -52,10 +52,11 @@ All notable changes to the blindspot-audit skill and this repository.
 - Added GitHub Actions Dependabot updates and pinned all workflow actions to
   verified full commit SHAs with read-only package-job permissions; only the
   release job retains `contents: write`.
-- Added `prepare-awareness` as a short, guarded path for one explicit
-  awareness-only owner reply. It prepares a temporary v1 response and the same
-  application preview without editing the ledger, and custom/localized schemas
-  still require exact column and value adapters.
+- Added `prepare-awareness` as a short, guarded path for one or more findings
+  sharing an explicit awareness-only owner reply. Repeatable finding arguments
+  prepare a temporary v1 response and the same application preview without
+  editing the ledger, while custom/localized schemas still require explicit
+  column and value adapters.
 - Added a maintainer-only testing-copy sync script that reproduces the canonical
   skill content at an explicit `blindspot-audit-testing` target while preserving
   its distinct trigger and Codex display identity.
@@ -102,6 +103,28 @@ All notable changes to the blindspot-audit skill and this repository.
 - All existing-ledger writes now require owning-repo dirty-worktree baselines,
   contextual target patches, preservation checks for prior hunks/unrelated
   files, whitespace validation, and stable-ID/row-count verification.
+- Existing-ledger follow-up now uses separate pre-delta and owner-response
+  snapshots, accepts either the printed snapshot marker file or its containing
+  directory, and reports a missing marker directly instead of a generic JSON
+  parse failure. Schema-only snapshots use `cleanup --discard`, while
+  owner-response snapshots require `cleanup --confirm-applied`; swapped modes
+  are rejected.
+- Final application checks preserve established annotated status forms such as
+  `deferred(reason)` through bounded match modes without accepting prefix
+  lookalikes. Known-work filtering no longer invents a non-canonical awareness
+  enum for already documented items.
+- Cowork and other sandbox adapters now copy `safe_output.py` beside every
+  packaged executable helper, use byte-stable mounted output paths, recheck
+  shell-observed truncation with file tools before creating findings, and honor
+  both per-call question caps and per-question option caps. Cowork interviews
+  now invoke structured questions immediately after owner-visible prose in the
+  same turn, and board fallbacks validate mounted response paths explicitly.
+- Windows PowerShell subprocess tests now tolerate the host console's legacy
+  encoding without turning valid installer output into decode errors.
+- BLOCKED pre-delta schema checks now document their recovery path: repair and
+  revalidate, or use the explicitly approved schema-migration flag, before
+  discarding the snapshot. Ledger-triage board instructions now repeat Cowork's
+  mounted-response exception beside the generic Downloads collection commands.
 - Security secret closure now preserves current-tree, history/artifact,
   provider, and downstream substates independently, and executable/update
   surfaces are prioritized by their own owner/team/tester/public audience.

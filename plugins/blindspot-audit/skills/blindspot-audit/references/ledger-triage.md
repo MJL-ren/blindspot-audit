@@ -143,11 +143,13 @@ The board is a fallback, not the default on hosts that can ask directly.
 ### Structured Choice Hosts
 
 Use the host's choice tool (for example `AskUserQuestion`) for decisions only
-when it is callable in the current mode, before editing the ledger. Triage is bundle-first, not row-first: group the
-ledger before asking, so the host's small per-question option cap (Cowork
-and Claude Code cap at 4 options plus a built-in "Other") rarely bites. Good
-grouping collapses a 20-row ledger into roughly 4-7 questions - one or two
-question rounds - not 20.
+when it is callable in the current mode, before editing the ledger. Triage is
+bundle-first, not row-first: group the ledger before asking, so the host's
+small caps rarely bite. In the tested Claude adapter, each call allows at most
+4 questions and each question allows 4 options plus a built-in "Other". Good
+grouping collapses a 20-row ledger into roughly 4-7 questions across one or two
+calls - never 7 questions in one call - not 20. Other hosts follow their
+current callable schema.
 
 Option labels follow the structured-choice adapter's self-sufficiency rule
 (see `references/host-surfaces.md`): each option says in plain words what
@@ -269,6 +271,11 @@ python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<bo
 python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>" --collect-response --response-dir "<downloads-or-other-folder>"
 python "<skill-folder>/scripts/ledger_triage_board.py" validate --board-dir "<board-dir>" --response "<downloaded-response-json>"
 ```
+
+   Cowork does not mount the owner's Downloads. Follow
+   `references/host-surfaces.md`: place the response in a mounted path and use
+   `validate --board-dir "<board-dir>" --response "<mounted-response-json>"`
+   instead of the default `--collect-response` search.
 
    `--collect-response` searches for matching
    `blindspot-triage-response*.json` files, verifies board id, ledger path,

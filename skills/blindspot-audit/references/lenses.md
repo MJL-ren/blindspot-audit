@@ -32,7 +32,7 @@ Lenses are breadth: a few questions per frame, applied to the whole
 project. When one domain needs real depth - the owner is weak there and
 the surface is large - read `references/packs/index.md` and load exactly
 one registered deep-probe pack for an explicit `focus: <domain>` run or
-eligible weak-domain escalation (SKILL.md Workflow step 4). Do not inline
+eligible weak-domain escalation (`audit-workflow.md` section 4). Do not inline
 pack detail into a normal full audit; emit the escalation meta-finding
 instead. Never invent a pack for an unregistered domain.
 
@@ -110,15 +110,16 @@ instead. Never invent a pack for an unregistered domain.
 - What do USERS of this category take for granted? Pick 2-3 representative
   peers and walk their user-visible surface: which features/elements do all
   of them have that this project lacks? (Table stakes only - see the peer
-  expectation scan in SKILL.md; differentiator ideas are not findings.)
+  expectation scan in `audit-workflow.md` section 5; differentiator ideas are
+  not findings.)
 - Is the absence a decision the owner made, or an expectation they never
   knew existed? The prescription is "decide to meet it or skip it on
   record", not "build it".
 
 ## External Change Lens
 
-Time-dependent by nature - pair with the fresh-eyes web scan in the
-workflow. These cannot be answered from the repo alone:
+Time-dependent by nature - pair with the fresh-eyes web scan in
+`audit-workflow.md` section 5. These cannot be answered from the repo alone:
 
 - Did regulation change in the operating regions (AI-content labeling, data
   protection, disclosure rules, age rating, tax thresholds)?

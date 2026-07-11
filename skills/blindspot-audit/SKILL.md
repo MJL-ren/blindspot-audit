@@ -66,6 +66,19 @@ These references are part of the skill contract, not optional background. A
 host that reads only the first part of this file should still see the mode and
 the exact next reference within the first 100 lines.
 
+## Packaged Helper Map
+
+- `project_inventory.py`: bounded filesystem map for normal audits.
+- `audit_followup_guard.py`: snapshot, preview, and validation for existing
+  ledger writes outside `ledger-triage`.
+- `ledger_triage_board.py`: temporary HTML decision board for no-choice
+  file-writing hosts in `ledger-triage`.
+- `secret_presence_scan.py`: value-suppressing location scan for
+  `focus: security` or an explicit secret-location check.
+- `safe_output.py`: shared output-safety module, not a command. Every executable
+  helper above needs it beside the script. When a sandbox cannot reach the
+  installed skill, copy the selected helper and `safe_output.py` together.
+
 ## Core Model
 
 Classify the territory with four unknowns:
@@ -120,26 +133,30 @@ the evidence only supports a candidate.
    ```
 
    Resolve the script relative to this `SKILL.md`. Quote paths. If the plugin is
-   outside the host sandbox, copy the helper into the workspace with file tools
-   or use a bounded manual inventory. Never treat inventory output as proof.
+   outside the host sandbox, copy the helper and `safe_output.py` together into
+   the workspace with file tools, or use a bounded manual inventory. Never
+   treat inventory output as proof.
 3. Discover and read the existing ledger before searching. For a first full
    project run on a file-writing host, create one in the durable location chosen
    by `references/ledger-lifecycle.md`; scoped runs append to that project
    ledger rather than creating per-file ledgers.
 4. Before editing an existing ledger in a normal/focus audit, create the
-   Existing Ledger Write Guard snapshot. Read owner docs first, then inspect the
-   strongest evidence surfaces and only the applicable lenses or pack.
+   pre-delta Existing Ledger Write Guard snapshot. Read owner docs first, then
+   inspect the strongest evidence surfaces and only the applicable lenses or
+   pack.
 5. Run the fresh-eyes external scan only when current outside facts can change
    the result and web access exists. Use official/primary sources for claims;
    community material is a lead until verified.
 6. Filter known work, rank 3-7 findings, write the ledger delta, and run
-   schema-only validation before the owner interview.
+   schema-only validation. Delete that pre-delta snapshot with `cleanup
+   --discard` before the owner interview.
 7. Present self-contained findings before asking awareness. Use a structured
    choice tool only when it is callable now; otherwise use the exact no-choice
    fallback in `references/host-surfaces.md` and `references/report-template.md`.
-8. Preview the structured owner response before edits, apply only that delta,
-   satisfy required security-batch links, run final validation, and clean up
-   temporary files.
+8. After an explicit owner reply, create a fresh owner-response snapshot of the
+   current ledger, preview the structured response before edits, apply only
+   that delta, satisfy required security-batch links, run final validation,
+   and clean up temporary files.
 9. Before finishing a first run, classify every created ledger, routing file,
    and durable handoff as `tracked`, `owner-approved-local-only`,
    `untracked-pending`, or `not-versioned`. Never stage automatically. An
@@ -151,18 +168,29 @@ the evidence only supports a candidate.
 Use `scripts/audit_followup_guard.py` for every existing-ledger write outside
 `mode: ledger-triage`:
 
-1. Run `snapshot` before the first edit.
-2. Append only the audit delta and run schema-only `validate` before interview.
-3. Map an explicit owner reply to `blindspot-owner-response.v1` or grouped v2;
+1. Run `snapshot` before the first edit. Keep its printed
+   `.../ledger-snapshot.json` file path as the pre-delta snapshot.
+2. Append only the audit delta, run schema-only `validate`, then delete the
+   validated pre-delta snapshot with:
+   `cleanup --snapshot "<pre-delta-snapshot-file>" --discard`.
+   If validation is BLOCKED, fix the ledger and rerun it; use
+   `--allow-schema-change` only after explicit schema-migration approval. Do not
+   clean up until validation is VALID.
+3. After an explicit owner reply, run `snapshot` again. This fresh
+   owner-response snapshot contains the new `BA-` run and finding IDs.
+4. Map the reply to `blindspot-owner-response.v1` or grouped v2;
    never keyword-parse natural language. Run `preview` before applying it.
-4. For one awareness-only reply, `prepare-awareness` may create and preview the
-   temporary v1 response, but it still never edits the ledger.
-5. Apply only previewed rows, then run final `validate --data`. It must compare
+5. For one or more findings sharing one awareness-only reply,
+   `prepare-awareness` may create and preview the temporary v1 response, but it
+   still never edits the ledger.
+6. Apply only previewed rows, then run final `validate --data`. It must compare
    the response with the actual mapped cells or archive destination.
-6. For two or more security findings deferred to one named batch, use
+7. For two or more security findings deferred to one named batch, use
    `scaffold-security-batch`, fill its human-judgment fields, add the ledger
    backlink, and validate.
-7. Run `cleanup --confirm-applied` only after successful final validation.
+8. Run `cleanup --confirm-applied` on an owner-response snapshot only after
+   successful final validation. Never use it for a schema-only snapshot;
+   `--discard` is the pre-delta path.
 
 Detailed commands, custom/localized schema mapping, dirty-worktree protection,
 and archive rules live in `references/ledger-lifecycle.md`.

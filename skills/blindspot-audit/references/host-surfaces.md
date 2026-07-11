@@ -61,17 +61,18 @@ Use the tool sparingly:
    on later runs).
 2. Offer 2-3 clear options, with the recommended option first.
    Option labels and descriptions follow the same plain-language rule as
-   findings (SKILL.md Ground Rule 6): a label like "Steam AI disclosure
+   findings (SKILL.md Core Invariant 5): a label like "Steam AI disclosure
    matrix" is unclassifiable for an owner who has never seen the term -
    label by the everyday consequence ("Steam's AI question - no answer
    yet") and put the one-line explanation in the option description.
-3. Mind the option cap: structured choice tools usually limit options per
-   question (Claude Code's `AskUserQuestion` caps at 4, plus a built-in
-   "Other"). With 5-7 findings, never silently drop the overflow - either
-   split the awareness interview into two questions, or ask about the top 4
-   and cover the rest with a numbered awareness check in the report. A UI
-   limit must not shrink the audit. (Field data: a 5th finding once went
-   uninterviewed exactly this way.)
+3. Mind both caps in the callable tool schema: options per question and
+   questions per call. In the tested Claude adapter, `AskUserQuestion` allows
+   at most 4 questions per call and 4 options per question, plus a built-in
+   "Other". With 5-7 findings, never silently drop the overflow - split the
+   interview across questions/calls, or ask about the top 4 and cover the rest
+   with a numbered awareness check in the report. A UI limit must not shrink
+   the audit. Other hosts may expose different caps; obey the current callable
+   schema rather than assuming Claude's numbers.
 4. Record the selected option in the report or ledger.
 5. Continue after the answer; do not ask a series of preference questions
    that only refine wording.
@@ -86,9 +87,10 @@ Use the tool sparingly:
    channel BEFORE asking - at least one plain-language line per finding.
    A report saved to a file does not count as "presented": the owner may
    meet the question before ever seeing the file. On hosts that compress
-   narration between tool calls (Cowork), route that summary through the
-   host's user-visible message channel first, or the question arrives
-   before any introduction the owner can actually see. (Field data: an
+   narration between tool calls (Cowork), write that summary as ordinary
+   owner-visible assistant prose immediately before the tool call, following
+   the host adapter's same-turn sequencing, or the question arrives before
+   any introduction the owner can actually see. (Field data: an
    owner once faced the interview cold and had to open the report file
    to decode the options.)
    Interview shape: one multiSelect question - "Which of these did you
@@ -99,8 +101,8 @@ Use the tool sparingly:
    never a topic shorthand, internal term, or bare ID ("npx route"
    fails; "one-line install exists but the README never mentions it"
    passes). Description = one or two sentences saying what is missing
-   and what happens if it stays missing, at the owner's level (Ground
-   Rule 6). Assume the host may collapse or hide descriptions until
+   and what happens if it stays missing, at the owner's level (SKILL.md Core
+   Invariant 5). Assume the host may collapse or hide descriptions until
    interaction (observed on Cowork), so the label must carry the meaning
    alone; finding numbers may ride along as a cross-reference, never as
    the label's meaning. "Already in docs", "deliberately skipped", and
@@ -121,21 +123,33 @@ the board fits Cowork poorly because the shell sandbox cannot serve a
 `localhost` the owner's browser can reach, and the owner's Downloads are not
 mounted. If a board is truly unavoidable, present the HTML with the file
 view (`present_files`) so it opens on the owner's machine, then have them
-drop the response JSON into the mounted `.blindspot-tmp` before `validate`.
+drop the response JSON into a mounted path and validate it explicitly with
+`validate --board-dir "<board-dir>" --response "<mounted-response-json>"`.
+Do not rely on default Downloads collection in Cowork because Downloads is not
+mounted into its sandbox.
 
 One interaction quirk changes how the interview is delivered: narration
-written between tool calls is summarized away from the owner, so "present
-the findings, then interview" requires sending the findings summary
-through the user-visible message channel (`send_user_message` or
-equivalent) before the interview question. Otherwise the owner meets the
-choice UI cold, before any explanation they can actually see.
+written between tool calls may be summarized away from the owner. Write the
+findings in normal owner-visible assistant prose, then immediately invoke
+`AskUserQuestion` after that prose in the **same turn**. Do not end the turn,
+promise to ask next time, or wait for another owner message. Cowork renders the prose
+before the choice UI when they are emitted in that order. Do not search for or
+invent a special message tool that the host does not expose.
 
 Two environment quirks change HOW to gather evidence:
 
 - The installed plugin folder is usually NOT reachable from the shell
-  sandbox. To run `scripts/project_inventory.py`, copy the script into the
-  session workspace with the file tools first (read from the skill folder,
-  write next to the outputs), then run the copy.
+  sandbox. To run a packaged executable helper, copy that script **and its
+  required companion `safe_output.py`** into the same session-workspace
+  directory with file tools, then run the copied helper. This applies to
+  `project_inventory.py`, `audit_followup_guard.py`,
+  `ledger_triage_board.py`, and `secret_presence_scan.py`. Copying only the
+  executable helper is an incomplete installation and must fail with a clear
+  companion-file message. For a byte-stable shell handoff, use file tools to
+  write both files through Cowork's mounted outputs/session-files area, then
+  execute the mounted copies. Do not copy from a stale project mirror or
+  reconstruct a helper by pasting text; compare byte size or hash when the host
+  exposes both views.
 - The shell sandbox works on a synced mirror of the user's folders, while
   the file tools read the real files. On a folder attached mid-session the
   mirror can lag or even truncate file contents. If shell output (`wc`,
@@ -143,6 +157,12 @@ Two environment quirks change HOW to gather evidence:
   tools, re-verify, and say which view each claim came from. Never run
   destructive git commands (restore/checkout/clean) from the shell against
   a folder whose mirror freshness has not been verified.
+- A mirrored file can end mid-sentence or produce false syntax/test failures.
+  Before promoting any shell-observed absence, truncation, corruption, parse
+  error, or test failure to a project finding, re-read the exact source with a
+  file tool. If the file-tool copy is intact, record a Cowork mirror limitation,
+  exclude the shell result from project evidence, and do not report a project
+  defect from it.
 - Prefer file tools for all writes (ledger, routing edits). Treat the
   mirror's `.git` as read-only and untrusted: `git log/status/diff` are fine
   for evidence (cross-check surprises against file tools), but do not run
@@ -228,16 +248,19 @@ Interpret replies generously:
 - A global all/none awareness statement applies to every finding.
 - Numbers only, or "I knew/already knew <numbers>" -> `unknown_known`.
 - Omitted numbers -> `unknown_unknown`.
-- Already documented, tracked, implemented, or in code -> `known_known` or
-  downgraded/resolved, and do not re-report as a discovery.
+- Already documented or tracked -> treat it as a known-work filter result:
+  merge with the existing item or reject the duplicate, and do not invent a
+  fourth stored awareness value. Already implemented -> verify the evidence
+  and resolve/reject as appropriate. Preserve the existing awareness value
+  unless the owner separately states whether they knew.
 - Later/batched/postponed -> disposition `deferred`; do not change awareness
   unless the same reply also says whether the owner knew.
 - Intentionally declined/will not do -> disposition `deliberate_skip` with
   the stated reason and re-check trigger.
 - Wrong/not true/not applicable -> rejected/resolved with a correction note.
 - Number plus question mark (`3?`, `3번?`, "what is 3") -> the owner did not
-  understand the finding. Re-explain it in plainer terms (SKILL.md Ground
-  Rule 6), keep awareness `unconfirmed`, and classify only after they
+  understand the finding. Re-explain it in plainer terms (SKILL.md Core
+  Invariant 5), keep awareness `unconfirmed`, and classify only after they
   respond to the plainer version. Do not count "I don't understand it" as
   "I didn't know about it".
 
@@ -270,7 +293,9 @@ chosen surface. Never edit the ledger from the agent's own judgment:
   hand; have them leave the downloaded JSON in Downloads or the browser's
   chosen folder, then run `validate --collect-response`, `validate
   --response <path>`, or `collect-response` as described in
-  `references/ledger-triage.md`.
+  `references/ledger-triage.md`. Cowork is the exception: Downloads is not
+  mounted, so place the response in a mounted path and use explicit
+  `validate --response <mounted-path>`.
 - Present recommendations in the board. A recommended option is not
   authorization to apply it.
 - Run the helper's `validate` command before applying any ledger change.

@@ -216,29 +216,50 @@ Use `scripts/audit_followup_guard.py` for every existing-ledger write outside
 `mode: ledger-triage`. Resolve it from the active skill folder. It validates and
 previews; it never interprets owner language or edits the ledger.
 
-1. Before the first ledger edit:
+1. Before the first ledger edit, create the **pre-delta snapshot**:
 
    ```text
    python "<skill>/scripts/audit_followup_guard.py" snapshot --project-root "<root>" --ledger "<ledger>"
    ```
 
-   The snapshot lives under `.blindspot-tmp/audit-followup-*`, stores protected
-   finding-table headers/order, defined stable IDs, file hash, and hashed
-   dirty-target state, but not ledger row prose or diff contents.
+   Keep the printed `snapshotPath`. It is the
+   `.blindspot-tmp/audit-followup-*/ledger-snapshot.json` **file**, not merely
+   its directory. The helper also accepts the containing directory when it has
+   that marker file. The snapshot stores protected finding-table headers/order,
+   defined stable IDs, file hash, and hashed dirty-target state, but not ledger
+   row prose or diff contents.
 
 2. After writing new audit rows, before the owner interview:
 
    ```text
-   python "<skill>/scripts/audit_followup_guard.py" validate --snapshot "<snapshot>" --ledger "<ledger>"
+   python "<skill>/scripts/audit_followup_guard.py" validate --snapshot "<pre-delta-snapshot-file>" --ledger "<ledger>"
+   python "<skill>/scripts/audit_followup_guard.py" cleanup --snapshot "<pre-delta-snapshot-file>" --discard
    ```
 
    This schema-only validation blocks added/removed/reordered columns in the
-   existing finding tables. New Audit Evidence tables remain allowed.
+   existing finding tables. New Audit Evidence tables remain allowed. Clean
+   this validated pre-delta snapshot before the interview so it cannot be
+   mistaken for the later owner-response baseline. `--discard` is accepted
+   only after successful schema-only validation. The helper rejects
+   `--confirm-applied` here because no owner decision was applied.
    `--allow-schema-change` is permitted only after the owner explicitly approves
    a ledger schema migration; never infer approval from an audit request.
+   If validation is BLOCKED, do not clean up the snapshot. Correct the ledger
+   delta and rerun `validate`; for an explicitly approved migration, rerun it
+   with `--allow-schema-change`. Run `cleanup --discard` only after a VALID
+   result.
 
-3. After an explicit owner reply, the agent semantically maps the reply into a
-   temporary JSON object inside the snapshot's `audit-followup-*` directory.
+3. After an explicit owner reply, create a **new owner-response snapshot** of
+   the current ledger before preparing or applying the reply:
+
+   ```text
+   python "<skill>/scripts/audit_followup_guard.py" snapshot --project-root "<root>" --ledger "<ledger>"
+   ```
+
+   The new snapshot now contains the audit's `BA-` run and finding IDs. Use
+   only its printed `ledger-snapshot.json` path for `prepare-awareness`, final
+   validation, and cleanup. Then semantically map the reply into a temporary
+   JSON object inside this owner-response snapshot directory.
    Do NOT use keyword matching or language-specific parsing. Use v1 for
    individual decisions. Use v2 `decisionGroups` when several findings share
    the same awareness, disposition, reason, trigger, batch, and next action;
@@ -284,10 +305,17 @@ previews; it never interprets owner language or edits the ledger.
        "dispositionColumn": "결정",
        "awarenessValues": {"unknown_unknown": "unknown_unknown"},
        "dispositionValues": {"deferred": "보류"},
+       "dispositionMatchModes": {"deferred": "annotated"},
        "destinations": {}
      }
    }
    ```
+
+   Match modes default to `exact`. Use `annotated` only when the established
+   local status style appends a date/reason after a clear separator, such as
+   `보류(2026-07-12: 다음 묶음)`. Standard `ID`/`Awareness`/`Status` ledgers
+   accept this safe annotated disposition form automatically. Prefix lookalikes
+   such as `deferredish` never match. Keep awareness matching exact.
 
    `destinations` defaults each decision to `row`. Set an ID to `archive` only
    for an explicit `resolved` or `rejected` move. The final guard then confirms
@@ -305,20 +333,23 @@ previews; it never interprets owner language or edits the ledger.
    missing or invalid custom-ledger adapter. Unmentioned findings remain
    unchanged.
 
-   For one explicit awareness-only reply, the helper can prepare the temporary
-   v1 response and run the same preview without editing the ledger:
+   For one or more findings that share one explicit awareness-only reply, the
+   helper can prepare the temporary v1 response and run the same preview
+   without editing the ledger. Repeat `--finding` for each included ID:
 
    ```text
-   python "<skill>/scripts/audit_followup_guard.py" prepare-awareness --snapshot "<snapshot>" --audit-run "<BA-ID>" --finding "<BS-ID>" --value unknown_known
+   python "<skill>/scripts/audit_followup_guard.py" prepare-awareness --snapshot "<owner-response-snapshot-file>" --audit-run "<BA-ID>" --finding "<BS-ID-1>" --finding "<BS-ID-2>" --value unknown_known
    ```
 
    Standard `ID`/`Awareness`/`Status` ledgers need no adapter arguments. For a
    localized/custom table, pass the exact `--id-column`, `--awareness-column`,
    `--disposition-column`, and final `--ledger-awareness-value`; never translate
-   column names or enum values by guessing. The command writes its response JSON
-   inside the snapshot directory and prints the normal application target. The
-   agent still makes the one contextual cell edit, runs final validation, and
-   cleans up only after success.
+   column names or enum values by guessing. Use this shortcut only when every
+   repeated finding shares the same awareness value and no disposition changes;
+   mixed replies use the normal v1/v2 JSON. The command writes its response JSON
+   inside the owner-response snapshot directory and prints the normal
+   application targets. The agent still makes the contextual cell edits, runs
+   final validation, and cleans up only after success.
 
    For 2+ findings deferred to one named security batch, create the mechanical
    handoff skeleton from the validated preview before filling its judgment
@@ -339,15 +370,17 @@ previews; it never interprets owner language or edits the ledger.
    batch handoff/backlink:
 
    ```text
-   python "<skill>/scripts/audit_followup_guard.py" validate --snapshot "<snapshot>" --ledger "<ledger>" --data "<response.json>"
-   python "<skill>/scripts/audit_followup_guard.py" cleanup --snapshot "<snapshot>" --confirm-applied
+   python "<skill>/scripts/audit_followup_guard.py" validate --snapshot "<owner-response-snapshot-file>" --ledger "<ledger>" --data "<response.json>"
+   python "<skill>/scripts/audit_followup_guard.py" cleanup --snapshot "<owner-response-snapshot-file>" --confirm-applied
    ```
 
    Final validation blocks unauthorized schema drift, removed/duplicate stable
    IDs, owner decisions that were not actually written to the mapped ledger
    cells/archive, missing 2+-finding security batch files or ledger backlinks,
    unsafe public handoff paths, missing visibility policy, and verification
-   rows that combine multiple tiers or evidence channels. Its output lists the
+   rows that combine multiple tiers or evidence channels. `--confirm-applied`
+   is accepted only when the snapshot has a successfully validated owner
+   response; the helper rejects `--discard` for this phase. Its output lists the
    applied mapping per finding. Remove the temporary response JSON with the
    snapshot.
 
@@ -424,8 +457,10 @@ On later runs:
   but must not apply them from agent judgment. Apply only owner-selected
   and validated decisions, preserve the ledger's local status language, and
   record the board id or structured-choice path in the audit log.
-- Mark changed status instead of rewriting history (date the change in the
-  status cell).
+- Mark changed status instead of rewriting history. Date/reason the status cell
+  only when that decorated form is already the ledger's local style; otherwise
+  keep the enum cell exact and put the date/reason in its decision note, next
+  check, or Audit Log.
 - Keep local labels and decision terms.
 - After an owner awareness reply, update awareness and implementation
   disposition independently and add an Audit Log owner-response note. A later

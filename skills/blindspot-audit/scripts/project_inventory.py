@@ -17,7 +17,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from safe_output import safe_display_text
+try:
+    from safe_output import safe_display_text
+except ModuleNotFoundError as exc:
+    if exc.name != "safe_output":
+        raise
+    raise SystemExit(
+        "error: project_inventory.py requires safe_output.py in the same directory; "
+        "copy both packaged files together."
+    ) from exc
 
 
 IGNORE_DIRS = {
@@ -82,7 +90,7 @@ DOC_NAMES = {
 
 DOC_EXTS = {".md", ".mdx", ".txt", ".rst"}
 # Name patterns that mark a file as documentation wherever it lives.
-# Ground Rule 1 (the self-tracking-doc filter) depends on catching these:
+# Core Invariant 1 (the self-tracking-doc filter) depends on catching these:
 # a missed RUNBOOK or FORM doc silently breaks the audit's noise filter.
 DOC_NAME_HINTS = (
     "readme",

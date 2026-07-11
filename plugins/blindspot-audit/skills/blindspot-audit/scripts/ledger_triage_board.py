@@ -31,7 +31,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from safe_output import safe_display_text
+try:
+    from safe_output import safe_display_text
+except ModuleNotFoundError as exc:
+    if exc.name != "safe_output":
+        raise
+    raise SystemExit(
+        "error: ledger_triage_board.py requires safe_output.py in the same directory; "
+        "copy both packaged files together."
+    ) from exc
 
 
 BOARD_SCHEMA = "blindspot-triage-board.v1"

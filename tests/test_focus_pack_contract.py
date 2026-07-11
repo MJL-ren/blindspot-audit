@@ -1,4 +1,8 @@
 import re
+import shutil
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -316,6 +320,56 @@ class FocusPackContractTests(unittest.TestCase):
                     path.read_text(encoding="utf-8"),
                 )
 
+    def test_copied_console_helpers_require_and_accept_safe_output_companion(self):
+        for helper in (
+            PROJECT_INVENTORY_PATH,
+            LEDGER_TRIAGE_BOARD_PATH,
+            AUDIT_FOLLOWUP_GUARD_PATH,
+            SECRET_PRESENCE_SCRIPT_PATH,
+        ):
+            with self.subTest(helper=helper.name), tempfile.TemporaryDirectory() as temp:
+                target = Path(temp) / helper.name
+                shutil.copy2(helper, target)
+                missing = subprocess.run(
+                    [sys.executable, str(target), "--help"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
+                )
+                self.assertNotEqual(missing.returncode, 0)
+                self.assertIn("safe_output.py", missing.stdout + missing.stderr)
+
+                shutil.copy2(SAFE_OUTPUT_PATH, Path(temp) / SAFE_OUTPUT_PATH.name)
+                paired = subprocess.run(
+                    [sys.executable, str(target), "--help"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
+                )
+                self.assertEqual(
+                    paired.returncode,
+                    0,
+                    paired.stdout + paired.stderr,
+                )
+
+    def test_references_do_not_use_retired_entrypoint_names_or_ghost_tools(self):
+        reference_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in (SKILL_ROOT / "references").rglob("*.md")
+        )
+        for retired in (
+            "SKILL.md Ground Rule",
+            "SKILL.md Workflow step",
+            "SKILL.md Guardrails",
+            "SKILL.md fresh-eyes scan",
+            "send_user_message",
+            "`known_known`",
+        ):
+            with self.subTest(retired=retired):
+                self.assertNotIn(retired, reference_text)
+
     def test_security_pack_routes_secret_search_through_redacted_helper(self):
         security = SECURITY_PACK_PATH.read_text(encoding="utf-8")
 
@@ -361,6 +415,40 @@ class FocusPackContractTests(unittest.TestCase):
         self.assertIn("callable now", skill)
         self.assertIn("`callable-now`", triage)
         self.assertIn("mode-gated", triage)
+        self.assertIn("at most 4 questions per call", hosts)
+        self.assertIn("never 7 questions in one call", triage)
+
+    def test_entrypoint_names_helpers_and_two_snapshot_guard(self):
+        skill = SKILL_PATH.read_text(encoding="utf-8")
+        lifecycle = LEDGER_LIFECYCLE_PATH.read_text(encoding="utf-8")
+        hosts = HOST_SURFACES_PATH.read_text(encoding="utf-8")
+
+        for helper in (
+            "project_inventory.py",
+            "audit_followup_guard.py",
+            "ledger_triage_board.py",
+            "secret_presence_scan.py",
+            "safe_output.py",
+        ):
+            self.assertIn(helper, skill)
+        self.assertIn("copy the selected helper and `safe_output.py` together", skill)
+        self.assertIn("pre-delta snapshot", lifecycle)
+        self.assertIn("new owner-response snapshot", lifecycle)
+        self.assertIn("cleanup --snapshot \"<pre-delta-snapshot-file>\" --discard", skill)
+        self.assertIn("schema-only snapshot;\n   `--discard`", skill)
+        self.assertIn("If validation is BLOCKED", skill)
+        self.assertIn("`--discard` is accepted", lifecycle)
+        self.assertIn("Run `cleanup --discard` only after a VALID", lifecycle)
+        self.assertIn("ledger-snapshot.json` **file**", lifecycle)
+        self.assertIn("Repeat `--finding`", lifecycle)
+        self.assertIn('"dispositionMatchModes": {"deferred": "annotated"}', lifecycle)
+        self.assertIn("same-turn sequencing", hosts)
+        self.assertIn("file-tool copy is intact", hosts)
+        self.assertIn("--response \"<mounted-response-json>\"", hosts)
+
+        triage = LEDGER_TRIAGE_PATH.read_text(encoding="utf-8")
+        self.assertIn("Cowork does not mount the owner's Downloads", triage)
+        self.assertIn("instead of the default `--collect-response`", triage)
 
     def test_existing_ledger_adapter_preserves_local_schema(self):
         lifecycle = LEDGER_LIFECYCLE_PATH.read_text(encoding="utf-8")

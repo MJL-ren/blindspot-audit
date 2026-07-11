@@ -121,7 +121,15 @@ def mixed_response(batch_path: str) -> dict:
     }
 
 
-def standard_ledger_text(awareness: str = "unconfirmed", status: str = "pending") -> str:
+def standard_ledger_text(
+    awareness: str = "unconfirmed",
+    status: str = "pending",
+    finding_ids: list[str] | None = None,
+) -> str:
+    rows = "\n".join(
+        f"| {finding_id} | Test item {index} | next | {awareness} | {status} | Check it |"
+        for index, finding_id in enumerate(finding_ids or FINDING_IDS[:1], start=1)
+    )
     return f"""# Blindspot Ledger
 
 ## Audit Log
@@ -134,7 +142,7 @@ def standard_ledger_text(awareness: str = "unconfirmed", status: str = "pending"
 
 | ID | Finding | Priority | Awareness | Status | Next check / owner |
 | --- | --- | --- | --- | --- | --- |
-| {FINDING_IDS[0]} | Test item | next | {awareness} | {status} | Check it |
+{rows}
 
 ## Resolved Archive
 """
@@ -258,6 +266,14 @@ Detail policy: generalized
 
             refused = self.run_guard("cleanup", "--snapshot", str(snapshot))
             self.assertNotEqual(refused.returncode, 0)
+            wrong_mode = self.run_guard(
+                "cleanup",
+                "--snapshot",
+                str(snapshot),
+                "--discard",
+            )
+            self.assertNotEqual(wrong_mode.returncode, 0)
+            self.assertIn("cannot use --discard", wrong_mode.stderr)
             cleaned = self.run_guard(
                 "cleanup",
                 "--snapshot",
@@ -316,6 +332,85 @@ Detail policy: generalized
             )
             self.assertEqual(validated.returncode, 0, validated.stdout + validated.stderr)
             self.assertIn("unknown_known (applied)", validated.stdout)
+
+    def test_two_snapshot_flow_allows_new_audit_ids_before_awareness(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            ledger = project / "BLINDSPOT_LEDGER.md"
+            ledger.write_text(
+                """# Blindspot Ledger
+
+## Audit Log
+
+| Date | Scope | Notes |
+| --- | --- | --- |
+
+## Findings
+
+| ID | Finding | Priority | Awareness | Status | Next check / owner |
+| --- | --- | --- | --- | --- | --- |
+
+## Resolved Archive
+""",
+                encoding="utf-8",
+            )
+            pre_delta_snapshot = self.create_snapshot(project, ledger)
+
+            ledger.write_text(standard_ledger_text(), encoding="utf-8")
+            schema_check = self.run_guard(
+                "validate",
+                "--snapshot",
+                str(pre_delta_snapshot),
+                "--ledger",
+                str(ledger),
+            )
+            self.assertEqual(
+                schema_check.returncode,
+                0,
+                schema_check.stdout + schema_check.stderr,
+            )
+            wrong_mode = self.run_guard(
+                "cleanup",
+                "--snapshot",
+                str(pre_delta_snapshot),
+                "--confirm-applied",
+            )
+            self.assertNotEqual(wrong_mode.returncode, 0)
+            self.assertIn("use --discard", wrong_mode.stderr)
+            cleanup = self.run_guard(
+                "cleanup",
+                "--snapshot",
+                str(pre_delta_snapshot),
+                "--discard",
+            )
+            self.assertEqual(cleanup.returncode, 0, cleanup.stderr)
+            self.assertIn("Discarded validated pre-delta", cleanup.stdout)
+
+            owner_response_snapshot = self.create_snapshot(project, ledger)
+            prepared = self.run_guard(
+                "prepare-awareness",
+                "--snapshot",
+                str(owner_response_snapshot),
+                "--audit-run",
+                "BA-20260711-01",
+                "--finding",
+                FINDING_IDS[0],
+                "--value",
+                "unknown_known",
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            result = json.loads(prepared.stdout)
+            self.assertTrue(result["valid"])
+            self.assertEqual(
+                result["snapshotId"],
+                json.loads(owner_response_snapshot.read_text(encoding="utf-8"))[
+                    "snapshotId"
+                ],
+            )
 
     def test_prepare_awareness_requires_exact_custom_adapter(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -417,6 +512,200 @@ Detail policy: generalized
             )
             self.assertEqual(external.returncode, 2)
             self.assertIn("inside the snapshot directory", external.stderr)
+
+    def test_prepare_awareness_accepts_snapshot_directory_and_repeated_findings(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            ledger = project / "BLINDSPOT_LEDGER.md"
+            selected = FINDING_IDS[:3]
+            ledger.write_text(
+                standard_ledger_text(finding_ids=selected),
+                encoding="utf-8",
+            )
+            snapshot = self.create_snapshot(project, ledger)
+
+            prepared = self.run_guard(
+                "prepare-awareness",
+                "--snapshot",
+                str(snapshot.parent),
+                "--audit-run",
+                "BA-20260711-01",
+                "--finding",
+                selected[0],
+                "--finding",
+                selected[1],
+                "--finding",
+                selected[2],
+                "--value",
+                "unknown_unknown",
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            response = json.loads(prepared.stdout)["response"]
+            self.assertEqual(response["expectedFindingIds"], selected)
+            self.assertEqual(
+                [decision["findingId"] for decision in response["decisions"]],
+                selected,
+            )
+            self.assertTrue(
+                all(
+                    decision["awareness"] == "unknown_unknown"
+                    for decision in response["decisions"]
+                )
+            )
+
+    def test_snapshot_directory_error_names_required_marker(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            ledger = project / "BLINDSPOT_LEDGER.md"
+            ledger.write_text(standard_ledger_text(), encoding="utf-8")
+
+            blocked = self.run_guard(
+                "validate",
+                "--snapshot",
+                str(project),
+                "--ledger",
+                str(ledger),
+            )
+
+        self.assertEqual(blocked.returncode, 2)
+        self.assertIn("ledger-snapshot.json", blocked.stderr)
+        self.assertIn("snapshotPath", blocked.stderr)
+
+    def test_standard_status_allows_safe_annotation_but_not_prefix_lookalike(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            ledger = project / "BLINDSPOT_LEDGER.md"
+            ledger.write_text(standard_ledger_text(), encoding="utf-8")
+            snapshot = self.create_snapshot(project, ledger)
+            response = self.write_response(
+                project,
+                {
+                    "schema": "blindspot-owner-response.v1",
+                    "auditRunId": "BA-20260711-01",
+                    "ownerResponseRecorded": True,
+                    "expectedFindingIds": [FINDING_IDS[0]],
+                    "unmappedReferences": [],
+                    "decisions": [
+                        {
+                            "findingId": FINDING_IDS[0],
+                            "awareness": None,
+                            "disposition": "deferred",
+                            "reason": "later batch",
+                        }
+                    ],
+                },
+            )
+
+            ledger.write_text(
+                standard_ledger_text(status="deferred(2026-07-12: later batch)"),
+                encoding="utf-8",
+            )
+            accepted = self.run_guard(
+                "validate",
+                "--snapshot",
+                str(snapshot),
+                "--ledger",
+                str(ledger),
+                "--data",
+                str(response),
+            )
+            self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+            self.assertIn("deferred(2026-07-12: later batch) (applied)", accepted.stdout)
+
+            ledger.write_text(
+                standard_ledger_text(status="deferredish"),
+                encoding="utf-8",
+            )
+            blocked = self.run_guard(
+                "validate",
+                "--snapshot",
+                str(snapshot),
+                "--ledger",
+                str(ledger),
+                "--data",
+                str(response),
+            )
+            self.assertEqual(blocked.returncode, 3)
+            self.assertIn("expected 'deferred', found 'deferredish'", blocked.stdout)
+
+    def test_custom_status_annotation_requires_explicit_match_mode(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            ledger = project / "BLINDSPOT_LEDGER.md"
+            ledger.write_text(ledger_text(), encoding="utf-8")
+            snapshot = self.create_snapshot(project, ledger)
+            response_value = {
+                "schema": "blindspot-owner-response.v1",
+                "auditRunId": "BA-20260711-01",
+                "ownerResponseRecorded": True,
+                "expectedFindingIds": [FINDING_IDS[0]],
+                "unmappedReferences": [],
+                "decisions": [
+                    {
+                        "findingId": FINDING_IDS[0],
+                        "awareness": None,
+                        "disposition": "deferred",
+                        "reason": "다음 묶음",
+                    }
+                ],
+                "applicationMap": {
+                    "idColumn": "ID",
+                    "awarenessColumn": "인지 분류",
+                    "dispositionColumn": "결정",
+                    "awarenessValues": {},
+                    "dispositionValues": {"deferred": "보류"},
+                    "destinations": {},
+                },
+            }
+            response = self.write_response(project, response_value)
+            ledger.write_text(
+                ledger_text().replace(
+                    "| pending | 확인 필요 |",
+                    "| 보류(다음 묶음) | 확인 필요 |",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+
+            blocked = self.run_guard(
+                "validate",
+                "--snapshot",
+                str(snapshot),
+                "--ledger",
+                str(ledger),
+                "--data",
+                str(response),
+            )
+            self.assertEqual(blocked.returncode, 3)
+            self.assertIn("expected '보류', found '보류(다음 묶음)'", blocked.stdout)
+
+            response_value["applicationMap"]["dispositionMatchModes"] = {
+                "deferred": "annotated"
+            }
+            response.write_text(
+                json.dumps(response_value, ensure_ascii=False),
+                encoding="utf-8",
+            )
+
+            validated = self.run_guard(
+                "validate",
+                "--snapshot",
+                str(snapshot),
+                "--ledger",
+                str(ledger),
+                "--data",
+                str(response),
+            )
+
+        self.assertEqual(validated.returncode, 0, validated.stdout + validated.stderr)
+        self.assertIn("보류(다음 묶음) (applied)", validated.stdout)
 
     def test_final_validation_blocks_unapplied_owner_state(self):
         with tempfile.TemporaryDirectory() as temporary:

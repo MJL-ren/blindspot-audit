@@ -122,7 +122,7 @@ use the adapter in `references/ledger-lifecycle.md`; priority and severity are
 not assumed equivalent.
 
 External sources cited in the report keep the source tiers separated
-(primary sources vs community leads - SKILL.md fresh-eyes scan), and
+(primary sources vs community leads - `audit-workflow.md` section 5), and
 category-expectation findings name the actual peers walked.
 
 ## Post-Interview Mapping
@@ -137,7 +137,7 @@ sentence may update either or both:
 | "Handle these together later" | unchanged | `deferred` with batch/re-check note |
 | "I did not know; handle them together later" | `unknown_unknown` | `deferred` |
 | "I intentionally will not do this" | keep stated/previous awareness | `deliberate_skip` with reason + re-check trigger |
-| "This is already in the docs" | `known_known`; merge/downgrade instead of retaining as new | preserve existing local decision |
+| "This is already in the docs" | no new awareness enum; merge with the known item or reject the duplicate | preserve existing local decision, or resolve/reject with evidence |
 | "This is not true / does not apply" | preserve as correction context | `rejected` or `resolved` with evidence note |
 | "I do not understand this" | `unconfirmed` | unchanged until re-explained |
 
@@ -337,13 +337,14 @@ Suggested Korean prompt:
 ```
 
 Interpret number-only replies as `unknown_known` and omitted numbers as
-`unknown_unknown`. Documented/tracked replies become `known_known` or are
-merged/downgraded. Later/batched replies set disposition `deferred` without
+`unknown_unknown`. Documented/tracked replies are filtered, merged, or rejected
+as duplicates; known known is a conceptual quadrant, not a stored awareness
+enum. Later/batched replies set disposition `deferred` without
 changing awareness; only an explicit decision not to act sets disposition
 `deliberate_skip` with a reason and trigger. Wrong items become
 rejected/resolved. A number with a question mark (`3?`, `3번?`,
 "what is 3") means the finding was not understood: re-explain it more
-simply (Ground Rule 6), keep it `unconfirmed`, and only classify after the
+simply (SKILL.md Core Invariant 5), keep it `unconfirmed`, and only classify after the
 owner responds to the plainer version. If the owner later replies, update
 awareness and disposition through the local ledger adapter, record the
 owner-response Audit Log note, and report only that delta.

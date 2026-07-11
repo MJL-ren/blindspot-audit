@@ -36,6 +36,7 @@ class PowerShellInstallSafetyTests(unittest.TestCase):
             stderr=subprocess.PIPE,
             text=True,
             encoding="utf-8",
+            errors="replace",
             check=False,
         )
 
@@ -61,6 +62,7 @@ class PowerShellInstallSafetyTests(unittest.TestCase):
             stderr=subprocess.PIPE,
             text=True,
             encoding="utf-8",
+            errors="replace",
             check=False,
         )
 

@@ -21,7 +21,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from safe_output import safe_display_text
+try:
+    from safe_output import safe_display_text
+except ModuleNotFoundError as exc:
+    if exc.name != "safe_output":
+        raise
+    raise SystemExit(
+        "error: audit_followup_guard.py requires safe_output.py in the same directory; "
+        "copy both packaged files together."
+    ) from exc
 
 
 SNAPSHOT_SCHEMA = "blindspot-audit-ledger-snapshot.v1"
@@ -81,9 +89,25 @@ APPLICATION_MAP_KEYS = {
     "dispositionColumn",
     "awarenessValues",
     "dispositionValues",
+    "awarenessMatchModes",
+    "dispositionMatchModes",
     "destinations",
 }
 ALLOWED_APPLICATION_DESTINATIONS = {"row", "archive"}
+ALLOWED_MATCH_MODES = {"exact", "annotated"}
+ANNOTATION_PREFIXES = (
+    "(",
+    " (",
+    "[",
+    " [",
+    "{",
+    " {",
+    ":",
+    " - ",
+    " — ",
+    " – ",
+)
+SNAPSHOT_FILENAME = "ledger-snapshot.json"
 
 
 class GuardError(RuntimeError):
@@ -106,10 +130,32 @@ def load_json(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise GuardError("JSON input could not be read or parsed.") from exc
+        raise GuardError(f"JSON input could not be read or parsed: {path}") from exc
     if not isinstance(value, dict):
         raise GuardError("JSON input must be an object.")
     return value
+
+
+def resolve_snapshot_input(value: Path) -> Path:
+    """Resolve a snapshot marker file, accepting its containing directory too."""
+    try:
+        resolved = value.expanduser().resolve(strict=True)
+    except OSError as exc:
+        raise GuardError(f"Snapshot path does not exist: {value}") from exc
+    if resolved.is_dir():
+        marker = resolved / SNAPSHOT_FILENAME
+        if not marker.is_file():
+            raise GuardError(
+                "Snapshot directory does not contain ledger-snapshot.json; "
+                "pass the snapshotPath printed by the snapshot command."
+            )
+        return marker
+    if not resolved.is_file():
+        raise GuardError(
+            "Snapshot must be the ledger-snapshot.json file printed by the "
+            "snapshot command, or its containing directory."
+        )
+    return resolved
 
 
 def write_json(path: Path, value: dict[str, Any]) -> None:
@@ -450,6 +496,29 @@ def normalize_value_map(
     return result
 
 
+def normalize_match_modes(
+    value: Any,
+    field: str,
+    allowed_keys: set[str],
+    errors: list[str],
+) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        errors.append(f"{field} must be an object")
+        return {}
+    result: dict[str, str] = {}
+    for key, mode in value.items():
+        if key not in allowed_keys:
+            errors.append(f"{field} has unsupported canonical value: {key}")
+            continue
+        if mode not in ALLOWED_MATCH_MODES:
+            errors.append(f"{field}.{key} must be exact or annotated")
+            continue
+        result[key] = mode
+    return result
+
+
 def normalize_application_map(
     value: Any,
     decision_ids: set[str],
@@ -484,6 +553,18 @@ def normalize_application_map(
         ALLOWED_DISPOSITIONS,
         errors,
     )
+    awareness_match_modes = normalize_match_modes(
+        value.get("awarenessMatchModes"),
+        "applicationMap.awarenessMatchModes",
+        ALLOWED_AWARENESS,
+        errors,
+    )
+    disposition_match_modes = normalize_match_modes(
+        value.get("dispositionMatchModes"),
+        "applicationMap.dispositionMatchModes",
+        ALLOWED_DISPOSITIONS,
+        errors,
+    )
 
     destinations_raw = value.get("destinations", {})
     destinations: dict[str, str] = {}
@@ -507,6 +588,8 @@ def normalize_application_map(
         **columns,
         "awarenessValues": awareness_values,
         "dispositionValues": disposition_values,
+        "awarenessMatchModes": awareness_match_modes,
+        "dispositionMatchModes": disposition_match_modes,
         "destinations": destinations,
     }
 
@@ -818,6 +901,14 @@ def normalized_cell(value: str) -> str:
     return value.strip().strip("`").strip()
 
 
+def mapped_value_matches(actual: str, expected: str, mode: str) -> bool:
+    if actual == expected:
+        return True
+    if mode != "annotated":
+        return False
+    return any(actual.startswith(expected + prefix) for prefix in ANNOTATION_PREFIXES)
+
+
 def application_column_indexes(
     table: dict[str, Any],
     adapter: dict[str, Any],
@@ -842,6 +933,10 @@ def standard_application_adapter(ledger_text: str) -> dict[str, Any] | None:
         "dispositionColumn": "Status",
         "awarenessValues": {value: value for value in ALLOWED_AWARENESS},
         "dispositionValues": {value: value for value in ALLOWED_DISPOSITIONS},
+        "awarenessMatchModes": {},
+        "dispositionMatchModes": {
+            value: "annotated" for value in ALLOWED_DISPOSITIONS
+        },
         "destinations": {},
     }
     if any(
@@ -948,9 +1043,21 @@ def validate_applied_decisions(
 
         table, indexes, row = matches[0]
         mapping["tableHeading"] = table["heading"]
-        for axis, value_key, index_key, column_key in (
-            ("awareness", "awarenessValues", "awareness", "awarenessColumn"),
-            ("disposition", "dispositionValues", "disposition", "dispositionColumn"),
+        for axis, value_key, mode_key, index_key, column_key in (
+            (
+                "awareness",
+                "awarenessValues",
+                "awarenessMatchModes",
+                "awareness",
+                "awarenessColumn",
+            ),
+            (
+                "disposition",
+                "dispositionValues",
+                "dispositionMatchModes",
+                "disposition",
+                "dispositionColumn",
+            ),
         ):
             canonical = decision.get(axis)
             if canonical is None:
@@ -968,11 +1075,17 @@ def validate_applied_decisions(
                 }
                 continue
             actual = normalized_cell(row[indexes[index_key]])
-            applied = actual == expected if compare_values else None
+            match_mode = adapter.get(mode_key, {}).get(canonical, "exact")
+            applied = (
+                mapped_value_matches(actual, expected, match_mode)
+                if compare_values
+                else None
+            )
             mapping[axis] = {
                 "column": adapter[column_key],
                 "expected": expected,
                 "actual": actual,
+                "matchMode": match_mode,
                 "applied": applied,
             }
             if compare_values and not applied:
@@ -1383,7 +1496,7 @@ def render_validation(result: dict[str, Any]) -> str:
 def prepare_awareness_response(
     snapshot_path: Path,
     audit_run_id: str,
-    finding_id: str,
+    finding_ids: list[str],
     awareness: str,
     output_path: Path | None,
     *,
@@ -1418,8 +1531,16 @@ def prepare_awareness_response(
         )
     if audit_run_id not in set(STABLE_ID_PATTERN.findall(ledger_text)):
         raise GuardError(f"Audit run is not defined in the snapshot: {audit_run_id}")
-    if finding_id not in snapshot.get("definedStableIds", []):
-        raise GuardError(f"Finding is not defined in the snapshot: {finding_id}")
+    if len(finding_ids) != len(set(finding_ids)):
+        raise GuardError("--finding contains duplicate finding IDs.")
+    defined_ids = set(snapshot.get("definedStableIds", []))
+    missing_findings = [
+        finding_id for finding_id in finding_ids if finding_id not in defined_ids
+    ]
+    if missing_findings:
+        raise GuardError(
+            "Findings are not defined in the snapshot: " + ", ".join(missing_findings)
+        )
 
     adapter_values = (
         id_column,
@@ -1439,7 +1560,7 @@ def prepare_awareness_response(
         "schema": "blindspot-owner-response.v1",
         "auditRunId": audit_run_id,
         "ownerResponseRecorded": True,
-        "expectedFindingIds": [finding_id],
+        "expectedFindingIds": finding_ids,
         "unmappedReferences": [],
         "decisions": [
             {
@@ -1453,6 +1574,7 @@ def prepare_awareness_response(
                 "nextActionRoute": "none",
                 "nextAction": "",
             }
+            for finding_id in finding_ids
         ],
     }
     if all(isinstance(value, str) and value.strip() for value in adapter_values):
@@ -1475,9 +1597,12 @@ def prepare_awareness_response(
     preview["errors"].extend(application_errors)
     preview["valid"] = not preview["errors"]
 
-    destination = output_path or Path(
-        f"owner-response-{finding_id}-awareness.json"
+    default_name = (
+        f"owner-response-{finding_ids[0]}-awareness.json"
+        if len(finding_ids) == 1
+        else f"owner-response-{len(finding_ids)}-findings-awareness.json"
     )
+    destination = output_path or Path(default_name)
     if not destination.is_absolute():
         destination = snapshot_dir / destination
     destination = resolve_inside(project_root, destination, must_exist=False)
@@ -1515,17 +1640,41 @@ def render_awareness_preparation(result: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def cleanup_snapshot(snapshot_path: Path, confirm_applied: bool) -> Path:
-    if not confirm_applied:
-        raise GuardError("cleanup requires --confirm-applied")
+def cleanup_snapshot(
+    snapshot_path: Path,
+    *,
+    confirm_applied: bool,
+    discard: bool,
+) -> Path:
+    if not confirm_applied and not discard:
+        raise GuardError(
+            "cleanup requires --discard for a validated pre-delta snapshot or "
+            "--confirm-applied after owner-response application"
+        )
     snapshot = load_json(snapshot_path)
-    if snapshot.get("schema") != SNAPSHOT_SCHEMA or not snapshot.get("validatedAt"):
+    if (
+        snapshot.get("schema") != SNAPSHOT_SCHEMA
+        or not snapshot.get("validatedAt")
+    ):
         raise GuardError("Snapshot was not successfully validated.")
+    has_owner_response = snapshot.get("validatedResponseHash") is not None
+    if discard and has_owner_response:
+        raise GuardError(
+            "An owner-response snapshot cannot use --discard; use "
+            "--confirm-applied after the validated decisions were applied."
+        )
+    if confirm_applied and not has_owner_response:
+        raise GuardError(
+            "A schema-only pre-delta snapshot has no applied owner response; "
+            "use --discard."
+        )
     project_root = Path(str(snapshot.get("projectRoot", ""))).resolve(strict=True)
     resolved_snapshot = resolve_inside(project_root, snapshot_path, must_exist=True)
     board_dir = resolved_snapshot.parent
     expected_parent = project_root / ".blindspot-tmp"
-    if board_dir.parent != expected_parent or not board_dir.name.startswith("audit-followup-"):
+    if board_dir.parent != expected_parent or not board_dir.name.startswith(
+        "audit-followup-"
+    ):
         raise GuardError("Unsafe audit-followup cleanup path.")
     shutil.rmtree(board_dir)
     return board_dir
@@ -1558,7 +1707,12 @@ def build_parser() -> argparse.ArgumentParser:
     prepare_awareness = subparsers.add_parser("prepare-awareness")
     prepare_awareness.add_argument("--snapshot", required=True)
     prepare_awareness.add_argument("--audit-run", required=True)
-    prepare_awareness.add_argument("--finding", required=True)
+    prepare_awareness.add_argument(
+        "--finding",
+        action="append",
+        required=True,
+        help="Finding ID; repeat for findings that share the same awareness value",
+    )
     prepare_awareness.add_argument(
         "--value",
         choices=tuple(sorted(ALLOWED_AWARENESS)),
@@ -1599,7 +1753,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     cleanup = subparsers.add_parser("cleanup")
     cleanup.add_argument("--snapshot", required=True)
-    cleanup.add_argument("--confirm-applied", action="store_true")
+    cleanup_mode = cleanup.add_mutually_exclusive_group()
+    cleanup_mode.add_argument("--confirm-applied", action="store_true")
+    cleanup_mode.add_argument(
+        "--discard",
+        action="store_true",
+        help="Delete a successfully schema-validated pre-delta snapshot",
+    )
     return parser
 
 
@@ -1652,7 +1812,7 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "prepare-awareness":
             result = prepare_awareness_response(
-                Path(args.snapshot).expanduser().resolve(strict=True),
+                resolve_snapshot_input(Path(args.snapshot)),
                 args.audit_run,
                 args.finding,
                 args.value,
@@ -1670,7 +1830,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0 if result["valid"] else 3
 
         if args.command == "validate":
-            snapshot_path = Path(args.snapshot).expanduser().resolve(strict=True)
+            snapshot_path = resolve_snapshot_input(Path(args.snapshot))
             ledger = (
                 Path(args.ledger).expanduser().resolve(strict=True)
                 if args.ledger
@@ -1715,13 +1875,16 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "cleanup":
             removed = cleanup_snapshot(
-                Path(args.snapshot).expanduser().resolve(strict=True),
-                args.confirm_applied,
+                resolve_snapshot_input(Path(args.snapshot)),
+                confirm_applied=args.confirm_applied,
+                discard=args.discard,
             )
-            print(
-                "Deleted audit follow-up snapshot directory: "
-                f"{safe_display_text(removed)}"
+            action = (
+                "Discarded validated pre-delta snapshot directory"
+                if args.discard
+                else "Deleted applied owner-response snapshot directory"
             )
+            print(f"{action}: {safe_display_text(removed)}")
             return 0
 
         raise GuardError("Unknown command.")

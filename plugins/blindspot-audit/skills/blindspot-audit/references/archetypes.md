@@ -8,7 +8,7 @@ The lists below skew toward operations and delivery mechanics on purpose -
 they generalize across domains. Category-specific USER expectations (what a
 tarot service, a gallery manager, or a roguelike "obviously" has) cannot be
 pre-listed here: derive them at audit time with the peer expectation scan
-(SKILL.md, fresh-eyes step) - pick 2-3 real peers of the specific category
+(`audit-workflow.md` section 5) - pick 2-3 real peers of the specific category
 and compare their user-visible surface against this project. Apply the
 three table-stakes tests before promoting any gap to a finding.
 

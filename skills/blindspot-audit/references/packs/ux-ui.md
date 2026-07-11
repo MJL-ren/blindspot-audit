@@ -15,7 +15,7 @@ Contents: [Activation](#activation-and-applicability) |
 Use this pack for a meaningful user-facing visual or interactive surface:
 web apps, sites, desktop and mobile app UIs, game menus/HUDs, and tool UIs.
 Load it only for a `focus: ux-ui` run or a weak-domain escalation in `deep`
-mode (SKILL.md Workflow step 4). It exists because full audits structurally
+mode (`audit-workflow.md` section 4). It exists because full audits structurally
 under-report this domain: interface gaps are individually "small" and lose
 the findings-cap ranking to legal/security/data findings, while owners who
 are strong engineers and weak designers may never notice the accumulation.
@@ -137,8 +137,8 @@ Evidence: `tabindex` misuse, `onClick` on non-interactive elements,
 missing `label`/`aria-label`, `outline: none` without `:focus-visible`,
 `alt` coverage. These basics are also the legally exposed subset
 (accessibility regulation applies to commercial surfaces in many
-regions - hedge per Ground Rule 5 and check current rules via the
-fresh-eyes scan).
+regions - hedge per SKILL.md Core Invariant 9 and check current rules via
+`audit-workflow.md` section 5).
 
 ### 6. Feedback And Affordance
 
@@ -187,20 +187,21 @@ peers compared (the report template requires it) and walk their
 user-visible surface directly. Listicles, "best apps" roundups, and
 agency blogs are leads for CHOOSING peers, never the evidence behind a
 table-stakes claim - a category-expectation finding backed only by an
-aggregator link fails the source-tier rule (SKILL.md fresh-eyes scan).
+aggregator link fails the source-tier rule (`audit-workflow.md` section 5).
 (Field data: the pack's first run cited two roundup links and named no
 peers - the conclusion happened to hold, but the evidence form did not.)
 
 For current mechanical behavior, prefer official W3C/WAI guidance and the
 actual platform or browser documentation. For legal applicability, use the
-current regulator or statutory source and preserve Ground Rule 5 hedging.
+current regulator or statutory source and preserve SKILL.md Core Invariant 9
+hedging.
 Component-system behavior is a calibration aid, not proof that this project
 must use that component library.
 
 ## Cheapest Next Checks
 
-Propose these; never run them uninvited. Audits observe (SKILL.md
-Guardrails). Match the check to the finding's weight:
+Propose these; never run them uninvited. Audits observe (SKILL.md Audit
+Safety). Match the check to the finding's weight:
 
 - Free and instant: resize the window to phone width; tab through the
   main journey; toggle OS dark mode and reduced motion.
@@ -220,10 +221,10 @@ territory - that split is why both belong in one prescription list.
 Focus-run reports follow the normal template with `scope: focus/ux-ui`
 in the header. The awareness interview matters MORE here than in full
 audits: expect a high share of `unknown_unknown` from engineer-owners and
-translate every finding to plain consequences (Ground Rule 6 - "users on
+translate every finding to plain consequences (SKILL.md Core Invariant 5 - "users on
 phones see a broken layout", not "no responsive breakpoints"). Record the
-pack under a compact Audit Log run ID and its linked Audit Evidence, so rules 8
-and 10 stop flagging it as coverage debt. Record the concrete screens/flows sampled and
+pack under a compact Audit Log run ID and its linked Audit Evidence, so
+`ledger-lifecycle.md` no longer treats it as coverage debt. Record the concrete screens/flows sampled and
 any device, browser, runtime, or accessibility limits; a pack name alone is
 not proof that its material surface was inspected. When no material UI
 exists, record `pack ux-ui: not applicable` instead of manufacturing findings.
