@@ -10,12 +10,17 @@ This fixture tests `mode: ledger-triage`, not a normal blindspot audit.
   separate chat questions.
 - Preserves localized status/awareness labels in untouched rows; no
   mass-normalization of `대기` or `미확인`.
+- Does not add Priority/Confidence/Awareness columns or map report priority into
+  a local severity column. It updates only existing semantically equivalent
+  fields on touched rows; schema migration remains a separate owner decision.
 - Gives beginner explanations for rows marked `unknown_unknown`,
   `unconfirmed`, or `미확인`: what the item means, why it matters, the
   choices, and the recommendation.
 - HTML board items include the actual ledger-row summary plus a plain
   explanation, so the owner can understand each item without opening the
   ledger beside the board.
+- Removing `draftOnly` without rewriting every generated explanation,
+  importance note, and group summary is blocked before HTML creation.
 - HTML board separates source metadata from content: source position such
   as `Findings/BS-.../pending` is small metadata, while the main item text
   contains only the issue or decision itself.
@@ -54,6 +59,9 @@ This fixture tests `mode: ledger-triage`, not a normal blindspot audit.
   through the helper safety checks.
 - Keeps `needs_reexplain` rows open and answers them more simply instead
   of changing their status.
+- When the ledger already has staged or unstaged owner edits, captures the
+  owning-repo status and target baselines, patches only selected rows/log
+  entries, and verifies that every prior hunk and unrelated dirty file remains.
 
 ## Fail Criteria
 
@@ -72,6 +80,8 @@ This fixture tests `mode: ledger-triage`, not a normal blindspot audit.
 - Generates an HTML board that only shows IDs, terse titles, or raw
   recommendations, forcing the owner to open the ledger to understand the
   item.
+- Deletes the draft marker while leaving helper-generated scaffold explanations
+  unchanged, then creates the owner board anyway.
 - Repeats wrapper phrases like "Findings has ... BS-123 pending" as the
   main item content instead of separating row location from row content.
 - Shows raw internal enum text such as `accepted`, `resolved_candidate`, or
@@ -88,3 +98,7 @@ This fixture tests `mode: ledger-triage`, not a normal blindspot audit.
 - Moves `resolved_candidate` rows to the archive without response evidence
   or a cheap verification.
 - Normalizes the whole ledger to English statuses or renumbers IDs.
+- Adds canonical report columns to the localized ledger or mixes
+  `now/next/later/watch` into a severity column without owner approval.
+- Rewrites a dirty ledger or cannot distinguish and preserve pre-existing
+  staged/unstaged changes before applying selected decisions.

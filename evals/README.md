@@ -42,6 +42,15 @@ a fail (they are named consistently so this is detectable).
   escalation meta-finding on a full audit, and concrete state/device/
   access gaps on a `focus: ux-ui` run (two graded runs - see its
   EXPECTED.md).
+- `security-boundary-gap/` - `focus: security`: a public-bound multi-user
+  service must map trust boundaries, consolidate authorization symptoms,
+  separate current-tree/history/provider secret closure, distinguish project
+  verification from external evidence, compare security promises with actual
+  enforcement, route mixed owner decisions through a schema guard, preserve
+  dirty ledger changes, keep secret closure axes separate, and avoid active
+  testing or generic enterprise-security demands. Follow-up grading also checks
+  provider N/A, Search-Hygiene locator defaults, safe helper display, and exact
+  verification-matrix cell parsing.
 - `ledger-triage-large-ledger/` - `mode: ledger-triage`: a crowded ledger
   must be grouped into owner decisions, use structured choices or the HTML
   decision board on no-choice hosts, validate response JSON before edits,

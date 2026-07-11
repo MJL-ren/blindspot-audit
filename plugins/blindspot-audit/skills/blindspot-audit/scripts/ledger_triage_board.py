@@ -27,6 +27,13 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from safe_output import safe_display_text
+
+
 BOARD_SCHEMA = "blindspot-triage-board.v1"
 RESPONSE_SCHEMA = "blindspot-triage-response.v1"
 MARKER_SCHEMA = "blindspot-triage-tmp.v1"
@@ -37,6 +44,19 @@ PLAN_NAME = "ledger-triage-application-plan.md"
 SERVER_STATE_NAME = "server-state.json"
 SERVER_STATE_SCHEMA = "blindspot-triage-server.v1"
 LEDGER_SUGGESTIONS_NAME = "ledger-triage-ledger-suggestions.md"
+DRAFT_REVIEW_FIELDS = ("plainExplanation", "whyItMatters")
+DRAFT_GROUP_REVIEW_FIELDS = ("plainSummary",)
+DRAFT_SCAFFOLD_PREFIXES = (
+    "Drafted from existing ledger rows.",
+    "The ledger item says:",
+    "This is an open item from the existing ledger.",
+    "The ledger's suggested next step is:",
+    "If this stays open without a decision,",
+    "원장에 적힌 핵심 내용은",
+    "이 항목은 기존 원장에 열려 있는 항목입니다.",
+    "원장에 적힌 후속 제안은",
+    "이 항목을 그대로 두면 다음 점검에서도",
+)
 ALLOWED_ACTIONS = {
     "accept",
     "defer",
@@ -335,6 +355,10 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def is_relative_to(path: Path, parent: Path) -> bool:
@@ -975,6 +999,58 @@ def draft_explanation(language: str, ledger_summary: str = "", followup: str = "
     )
 
 
+def draft_review_hashes(value: dict[str, Any], fields: tuple[str, ...]) -> dict[str, str]:
+    return {
+        field: sha256_text(str(value.get(field) or ""))
+        for field in fields
+    }
+
+
+def unreviewed_draft_fields(data: dict[str, Any]) -> list[str]:
+    unreviewed: list[str] = []
+    groups = data.get("groups")
+    if not isinstance(groups, list):
+        return unreviewed
+
+    for group_index, group in enumerate(groups, start=1):
+        if not isinstance(group, dict):
+            continue
+        group_review = group.get("_draftReview")
+        if isinstance(group_review, dict):
+            for field in DRAFT_GROUP_REVIEW_FIELDS:
+                current = str(group.get(field) or "")
+                if group_review.get(field) == sha256_text(current):
+                    unreviewed.append(f"groups[{group_index}].{field}")
+        else:
+            for field in DRAFT_GROUP_REVIEW_FIELDS:
+                current = str(group.get(field) or "").strip()
+                if any(current.startswith(prefix) for prefix in DRAFT_SCAFFOLD_PREFIXES):
+                    unreviewed.append(f"groups[{group_index}].{field}")
+
+        items = group.get("items")
+        if not isinstance(items, list):
+            continue
+        for item_index, item in enumerate(items, start=1):
+            if not isinstance(item, dict):
+                continue
+            item_review = item.get("_draftReview")
+            if isinstance(item_review, dict):
+                for field in DRAFT_REVIEW_FIELDS:
+                    current = str(item.get(field) or "")
+                    if item_review.get(field) == sha256_text(current):
+                        unreviewed.append(
+                            f"groups[{group_index}].items[{item_index}].{field}"
+                        )
+            else:
+                for field in DRAFT_REVIEW_FIELDS:
+                    current = str(item.get(field) or "").strip()
+                    if any(current.startswith(prefix) for prefix in DRAFT_SCAFFOLD_PREFIXES):
+                        unreviewed.append(
+                            f"groups[{group_index}].items[{item_index}].{field}"
+                        )
+    return unreviewed
+
+
 def parse_markdown_sections(text: str) -> list[tuple[str, str, list[str]]]:
     sections: list[tuple[str, str, list[str]]] = []
     current_raw = ""
@@ -1284,15 +1360,20 @@ def command_draft(args: argparse.Namespace) -> int:
         )
     groups = []
     for category, items in grouped.items():
-        groups.append(
-            {
-                "groupId": slugify_group_id(category),
-                "category": category,
-                "title": titles.get(category, category),
-                "plainSummary": "Drafted from existing ledger rows. Review explanations, recommendations, and options before creating the board.",
-                "items": items,
-            }
+        for item in items:
+            item["_draftReview"] = draft_review_hashes(item, DRAFT_REVIEW_FIELDS)
+        group = {
+            "groupId": slugify_group_id(category),
+            "category": category,
+            "title": titles.get(category, category),
+            "plainSummary": "Drafted from existing ledger rows. Review explanations, recommendations, and options before creating the board.",
+            "items": items,
+        }
+        group["_draftReview"] = draft_review_hashes(
+            group,
+            DRAFT_GROUP_REVIEW_FIELDS,
         )
+        groups.append(group)
     data = {
         "schema": BOARD_SCHEMA,
         "draftOnly": True,
@@ -1304,19 +1385,32 @@ def command_draft(args: argparse.Namespace) -> int:
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     write_json(args.out, data)
-    print(f"Wrote draft board input: {args.out}")
+    print(f"Wrote draft board input: {safe_display_text(args.out)}")
     print(f"Drafted {sum(len(group['items']) for group in groups)} item(s) in {len(groups)} group(s).")
-    print("Review and edit plain explanations, recommendations, options, and executionKind before create.")
+    print(
+        "Review and edit every generated plainExplanation and whyItMatters, plus "
+        "group summaries, recommendations, options, and executionKind before create."
+    )
+    print("Keep _draftReview metadata; create uses it to detect unchanged scaffold text.")
     return 0
 
 
 def command_create(args: argparse.Namespace) -> int:
     root, ledger = resolve_project_and_ledger(args.project_root, args.ledger)
     raw = load_json(args.data)
-    if raw.get("draftOnly") is True and not getattr(args, "allow_unreviewed_draft", False):
+    allow_unreviewed = getattr(args, "allow_unreviewed_draft", False)
+    if raw.get("draftOnly") is True and not allow_unreviewed:
         raise SystemExit(
             "Board input is marked draftOnly. Review and rewrite explanations/options first, "
             "then remove draftOnly or pass --allow-unreviewed-draft for an explicit test-only override."
+        )
+    remaining_scaffold = unreviewed_draft_fields(raw)
+    if remaining_scaffold and not allow_unreviewed:
+        sample = ", ".join(remaining_scaffold[:6])
+        suffix = "" if len(remaining_scaffold) <= 6 else f" (+{len(remaining_scaffold) - 6} more)"
+        raise SystemExit(
+            "Board input still contains unchanged generated draft scaffolding at "
+            f"{sample}{suffix}. Rewrite those owner-facing fields; removing draftOnly alone is not review."
         )
     board_data = normalize_board_data(raw, root, ledger)
     short_id = safe_path_token(board_data["boardId"])
@@ -1345,8 +1439,8 @@ def command_create(args: argparse.Namespace) -> int:
     write_json(board_dir / MARKER_NAME, marker)
     write_json(board_dir / "board-data.json", {key: value for key, value in board_data.items() if not key.startswith("_")})
 
-    print(f"Created ledger triage board: {html_path}")
-    print(f"Board directory: {board_dir}")
+    print(f"Created ledger triage board: {safe_display_text(html_path)}")
+    print(f"Board directory: {safe_display_text(board_dir)}")
     write_optional_text_file(getattr(args, "write_board_dir", None), str(board_dir))
     if getattr(args, "serve", False):
         return command_serve(
@@ -1374,7 +1468,10 @@ class TriageHandler(http.server.SimpleHTTPRequestHandler):
     shutdown_token: str = ""
 
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
-        print(f"[ledger-triage-board] {format % args}", file=sys.stderr)
+        print(
+            "[ledger-triage-board] " + safe_display_text(format % args),
+            file=sys.stderr,
+        )
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
@@ -1442,16 +1539,19 @@ def command_serve(args: argparse.Namespace) -> int:
         host, port = server.server_address
         url = f"http://{host}:{port}/"
         write_server_state(board_dir, marker, url, shutdown_token)
-        print(f"Open {url}")
+        print(f"Open {safe_display_text(url)}")
         write_optional_text_file(getattr(args, "write_url", None), url)
         write_optional_text_file(getattr(args, "write_pid", None), str(os.getpid()))
         write_optional_text_file(getattr(args, "write_board_dir", None), str(board_dir))
         if getattr(args, "write_url", None):
-            print(f"Wrote board URL: {args.write_url.resolve()}")
+            print(f"Wrote board URL: {safe_display_text(args.write_url.resolve())}")
         if getattr(args, "write_pid", None):
-            print(f"Wrote server PID: {args.write_pid.resolve()}")
+            print(f"Wrote server PID: {safe_display_text(args.write_pid.resolve())}")
         if getattr(args, "write_board_dir", None):
-            print(f"Wrote board directory: {args.write_board_dir.resolve()}")
+            print(
+                "Wrote board directory: "
+                f"{safe_display_text(args.write_board_dir.resolve())}"
+            )
         print("Press Ctrl+C after the owner submits the response.")
         try:
             server.serve_forever()
@@ -1503,7 +1603,10 @@ def shutdown_server_from_state(board_dir: Path, marker: dict[str, Any]) -> bool:
     except HTTPError as exc:
         raise SystemExit(f"Server shutdown rejected the stored token with HTTP {exc.code}") from exc
     except URLError as exc:
-        print(f"Server state found but no running board server responded: {exc.reason}")
+        print(
+            "Server state found but no running board server responded: "
+            f"{safe_display_text(exc.reason)}"
+        )
         return False
     print("Stopped ledger triage board server from server-state.json")
     return True
@@ -1578,9 +1681,15 @@ def copy_response_to_board(board_dir: Path, response_path: Path) -> Path:
     destination = board_dir / RESPONSE_NAME
     write_json(destination, response)
     if source == destination.resolve():
-        print(f"Using response JSON already in board directory: {destination}")
+        print(
+            "Using response JSON already in board directory: "
+            f"{safe_display_text(destination)}"
+        )
     else:
-        print(f"Copied response JSON into board directory: {source} -> {destination}")
+        print(
+            "Copied response JSON into board directory: "
+            f"{safe_display_text(source)} -> {safe_display_text(destination)}"
+        )
     return destination
 
 
@@ -1619,11 +1728,14 @@ def collect_response_to_board(board_dir: Path, response_dir: Optional[Path] = No
     if len(candidates) > 1:
         print(
             f"Found {len(candidates)} matching response JSON files; "
-            f"selected newest completedAt: {chosen_path}"
+            f"selected newest completedAt: {safe_display_text(chosen_path)}"
         )
     else:
-        print(f"Found matching response JSON: {chosen_path}")
-    print(f"Copied response JSON into board directory: {chosen_path} -> {destination}")
+        print(f"Found matching response JSON: {safe_display_text(chosen_path)}")
+    print(
+        "Copied response JSON into board directory: "
+        f"{safe_display_text(chosen_path)} -> {safe_display_text(destination)}"
+    )
     return destination
 
 
@@ -2027,45 +2139,69 @@ def command_validate(args: argparse.Namespace) -> int:
     marker, response = validate_response(board_dir)
     review = response_application_review(board_dir, response)
     print(
-        f"Validated {len(response['decisions'])} decisions for board {marker['boardId']} "
-        f"({board_dir})"
+        f"Validated {len(response['decisions'])} decisions for board "
+        f"{safe_display_text(marker['boardId'])} ({safe_display_text(board_dir)})"
     )
-    print(f"Next workflow: {review['workflow']}")
+    print(f"Next workflow: {safe_display_text(review['workflow'])}")
     if review["buckets"]["needs_reexplain"]:
-        print("Re-explain first: " + ", ".join(review["buckets"]["needs_reexplain"]))
+        print(
+            "Re-explain first: "
+            + safe_display_text(", ".join(review["buckets"]["needs_reexplain"]))
+        )
     if review["buckets"]["implementation_plan"]:
-        print("Temporary plan required: " + ", ".join(review["buckets"]["implementation_plan"]))
+        print(
+            "Temporary plan required: "
+            + safe_display_text(", ".join(review["buckets"]["implementation_plan"]))
+        )
     print("Selected decisions:")
     for decision in review["decisions"]:
         note_flag = " note=yes" if decision["note"] else " note=no"
         status = decision["status"] or "-"
         intent_detail = decision["intentDetail"] or "-"
         print(
-            f"- {decision['ledgerId']}: action={decision['action']} "
-            f"executionKind={decision['executionKind']} bucket={decision['bucket']} "
-            f"status={status} intentDetail={intent_detail}{note_flag}"
+            f"- {safe_display_text(decision['ledgerId'])}: "
+            f"action={safe_display_text(decision['action'])} "
+            f"executionKind={safe_display_text(decision['executionKind'])} "
+            f"bucket={safe_display_text(decision['bucket'])} "
+            f"status={safe_display_text(status)} "
+            f"intentDetail={safe_display_text(intent_detail)}{note_flag}"
         )
     if review["noteConstraints"]:
         print("Plan/external constraints from owner notes:")
         for decision in review["noteConstraints"]:
-            print(f"- {decision['ledgerId']}: {decision['note']}")
+            print(
+                f"- {safe_display_text(decision['ledgerId'])}: "
+                f"{safe_display_text(decision['note'])}"
+            )
     if review["closureNotes"]:
         print("Owner notes that may justify ledger-only closure or deferral:")
         for decision in review["closureNotes"]:
-            print(f"- {decision['ledgerId']}: {decision['note']}")
+            print(
+                f"- {safe_display_text(decision['ledgerId'])}: "
+                f"{safe_display_text(decision['note'])}"
+            )
     if review["secretChecks"]:
         print("Secret cleanup checks before closure:")
         for decision in review["secretChecks"]:
-            print(f"- {decision['ledgerId']}: scan current tree and Git history before marking resolved")
+            print(
+                f"- {safe_display_text(decision['ledgerId'])}: scan current tree "
+                "and Git history before marking resolved"
+            )
     if getattr(args, "write_plan", False):
         if review["workflow"] == "reexplain_first":
             print("Skipped plan draft: re-explain selected items first.")
         else:
             plan_path = write_application_plan(board_dir, marker, review)
-            print(f"Wrote temporary application plan draft: {plan_path}")
+            print(
+                "Wrote temporary application plan draft: "
+                f"{safe_display_text(plan_path)}"
+            )
     if getattr(args, "write_ledger_suggestions", False):
         suggestions_path = write_ledger_suggestions(board_dir, marker, review)
-        print(f"Wrote temporary ledger suggestions: {suggestions_path}")
+        print(
+            "Wrote temporary ledger suggestions: "
+            f"{safe_display_text(suggestions_path)}"
+        )
     return 0
 
 
@@ -2090,15 +2226,28 @@ def command_cleanup(args: argparse.Namespace) -> int:
     suggestions_existed = (board_dir / LEDGER_SUGGESTIONS_NAME).exists()
     shutdown_server_from_state(board_dir, marker)
     shutil.rmtree(board_dir)
-    print(f"Deleted temporary ledger triage board: {board_dir}")
+    print(f"Deleted temporary ledger triage board: {safe_display_text(board_dir)}")
     if suggestions_existed:
         print(f"Deleted temporary ledger suggestions: {LEDGER_SUGGESTIONS_NAME}")
     print("Audit Log suggestion:")
-    print(audit_log_suggestion(marker, review["selectedCount"], plan_existed, review.get("language", "en")))
+    print(
+        safe_display_text(
+            audit_log_suggestion(
+                marker,
+                review["selectedCount"],
+                plan_existed,
+                review.get("language", "en"),
+            )
+        )
+    )
     return 0
 
 
 def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Create and validate Blindspot ledger-triage boards.")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -2178,4 +2327,10 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except SystemExit as exc:
+        if isinstance(exc.code, str):
+            print(safe_display_text(exc.code), file=sys.stderr)
+            raise SystemExit(1) from None
+        raise

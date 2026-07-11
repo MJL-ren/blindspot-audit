@@ -3,6 +3,10 @@ description: Something didn't work — a failed install, a skill that didn't tri
 title: "[bug] "
 labels: ["bug"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Do not paste secrets or tokens, private/local paths, private payloads, unpublished names, or BLINDSPOT_LEDGER.md contents. For a vulnerability or exploitable detail, [open a private security report](https://github.com/MJL-ren/blindspot-audit/security/advisories/new) instead.
   - type: dropdown
     id: host
     attributes:
@@ -51,6 +55,13 @@ body:
     id: what-happened
     attributes:
       label: What happened
-      description: What did you expect, and what happened instead? Paste output snippets if you can — please remove private project names first.
+      description: What did you expect, and what happened instead? Paste only a minimal redacted snippet with secrets, tokens, private paths, private payloads, unpublished names, and ledger contents removed.
     validations:
       required: true
+  - type: checkboxes
+    id: public-redaction
+    attributes:
+      label: Public report safety
+      options:
+        - label: I removed secrets/tokens, private or local paths, private payloads, unpublished names, and ledger contents; exploitable details belong in a private security report.
+          required: true

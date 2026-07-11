@@ -44,7 +44,7 @@ Run a blindspot audit on this project. What am I missing that I don't even know 
 - 输出 3 到 7 个按重要性排序的发现，而不是无限长的清单。报告里始终包含两个信任区块：“已经检查且覆盖良好”
   和“现在可以跳过（附重新检查触发条件）”。
 - 询问负责人哪些发现其实早就知道。已知的缺口需要的是一条待办，而不是一段长篇解释。
-- 需要时可以收窄深挖：`focus: ux-ui` 运行会加载该领域专用的深度探针包；全量审计如果只是略过了
+- 需要时可以收窄深挖：`focus: ux-ui` 和 `focus: security` 会加载一个领域专用的深度探针包；全量审计如果只是略过了
   所有者薄弱领域的表面（工程师的 UI、设计师的运维），不会默默放过，而是作为发现如实报告。
   探针包会逐步增加。
 - 维护一个持久的 `BLINDSPOT_LEDGER.md`（审计留在项目里的笔记文件）。后续运行会和旧台账比较，只报告新增或变化的内容，让复查更像进展跟踪，
@@ -111,6 +111,16 @@ Run a blindspot audit on this project. What am I missing that I don't even know 
 
 当完整审计指出 UX/UI 仍是覆盖债，或者负责人在其他领域很强、但想更认真地检查用户表面时，
 就适合使用它。
+
+## Focus: Security
+
+`focus: security` 会梳理需要保护的内容、哪些人或系统跨越了哪些信任边界、
+权限实际在哪里执行、秘密信息与发布产物如何流动，以及负责人如何发现并从滥用中恢复。
+它会把当前文件、Git 历史、已部署产物和服务提供方一侧的凭据状态分开处理，
+避免只修复一个位置就把其他位置也错误地标为已解决。
+
+这个聚焦运行是防御性的，并以只读检查为主。它会隐藏秘密值，不发送攻击载荷、
+不使用凭据、也不探测在线系统，而是建议经过授权的扫描器、测试环境确认或专家复核。
 
 这不是通用质量检查表。它回答的问题是：
 
@@ -413,10 +423,22 @@ issue。
 - [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
   (MIT) - 无障碍审计代理模式。
 
+`security` 聚焦包的审计结构与防御边界参考了以下采用 MIT 许可证的项目；
+包内文字均为原创：
+
+- [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)
+  - 前期侦察与信任边界梳理、重复发现合并、独立验证结构。
+- [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks)
+  - 当前文件树与 Git 历史分离的秘密检查、基线、指纹和窄范围例外。
+- [microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit)
+  - 策略检查失败时默认阻止，以及绑定到具体操作的批准设计。
+
 ## 安全
 
 脚本做什么、哪些部分不接触网络、以及如何私下报告问题，见
 [SECURITY.md](./SECURITY.md)。
+随附的 helper 包括以只读为主的清单/秘密信息检查、经过验证的临时 ledger 文件，
+以及可选的 `127.0.0.1` 决策板。安装此技能不会授予外部网络或 provider 访问权限。
 
 ## 许可证
 

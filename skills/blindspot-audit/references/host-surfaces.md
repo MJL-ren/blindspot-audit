@@ -14,21 +14,41 @@ All hosts should do the same core work:
 - Run the fresh-eyes external scan when web access exists; disclose when it
   does not.
 - Convert each blind spot into the cheapest next check.
-- Interview the owner about awareness when the host allows it.
+- Interview the owner about awareness through a structured tool only when it is
+  callable in the current host mode.
 - When the host cannot present a structured choice UI, finish the audit
   anyway and include a numbered awareness check the owner can answer later.
 - When running `mode: ledger-triage`, collect decisions through the host's
-  structured choice UI when available; otherwise use a temporary HTML
-  decision board before applying ledger changes. Never treat a cleanup
-  request as permission for the agent to choose statuses itself.
+  structured choice UI only when it is `callable-now`; otherwise use a
+  temporary HTML decision board before applying ledger changes. Never treat a
+  cleanup request as permission for the agent to choose statuses itself.
 - Keep a durable ledger when the host can write files and the user has not
   requested read-only/chat-only output.
 
+## Capability Detection
+
+Classify a structured-choice tool by CURRENT usability, not by whether its
+definition appears somewhere in the host:
+
+- `advertised`: the tool is listed or documented, but current-call permission
+  is not established.
+- `callable-now`: the tool can be invoked in the current host mode and turn.
+- `mode-gated`: the tool exists but is restricted to another mode or workflow.
+- `unavailable`: no structured choice tool exists.
+
+Only `callable-now` makes the current run choice-capable. `advertised`,
+`mode-gated`, and `unavailable` use the no-choice adapter for this run. Do not
+make a speculative tool call merely to test availability; use the host's tool
+metadata and active-mode instructions. Record the precise limitation in the
+Audit Log, for example `structured choice unavailable in current host mode`,
+instead of claiming the host has no structured UI at all.
+
 ## Structured Choice Tool Adapter
 
-Use this adapter for hosts that provide a structured choice/question tool
-such as `AskUserQuestion`, `question`, or an equivalent UI-native selector.
-Claude Code and OpenCode commonly fit this category.
+Use this adapter only when a structured choice/question tool such as
+`AskUserQuestion`, `question`, or an equivalent UI-native selector is
+`callable-now`. Claude Code and OpenCode commonly fit this category, but their
+current mode still decides.
 
 Use the tool sparingly:
 
@@ -56,7 +76,7 @@ Use the tool sparingly:
 5. Continue after the answer; do not ask a series of preference questions
    that only refine wording.
 6. The numbered awareness check (see the no-choice adapter) is a FALLBACK
-   for hosts without this tool. If the tool exists, use it for the
+   for runs where this tool is not callable now. If it is callable now, use it for the
    awareness interview, the context intake, and the single highest-value
    known-unknown question - and leave the numbered check out of the
    report entirely. (Field data: a choice-capable run once shipped the
@@ -93,8 +113,8 @@ interview, ledger updates that preserve IDs and status language.
 
 ## Cowork (Claude Desktop App) Adapter
 
-Cowork runs the same interactive flow as the structured choice adapter
-(`AskUserQuestion` is available; use it the same way). In
+Cowork runs the same interactive flow as the structured choice adapter when
+`AskUserQuestion` is callable in the active mode. In
 `mode: ledger-triage`, use `AskUserQuestion` with the batching scheme in
 `references/ledger-triage.md` and strongly prefer it over the HTML board:
 the board fits Cowork poorly because the shell sandbox cannot serve a
@@ -159,9 +179,9 @@ Two environment quirks change HOW to gather evidence:
 
 ## No Structured Choice Tool Adapter
 
-Use this adapter for hosts that can write, inspect, and chat, but cannot
-reliably present a UI-native multiple-choice question during normal work.
-This includes many CLI, API, and chat-backed coding surfaces.
+Use this adapter for hosts that can write, inspect, and chat, but do not have a
+UI-native multiple-choice question callable in the current mode. This includes
+many CLI, API, chat-backed, and mode-gated coding surfaces.
 
 Use an assumption-first, two-phase flow:
 
@@ -192,23 +212,28 @@ Reply with the numbers you already knew. Omitted numbers stay classified as
 newly surfaced by this audit.
 
 Examples:
-- English: `1, 3` or `I already knew 1 and 3`
-- Korean: `1번, 3번 알고 있어`
+- English: `I did not know any`, `I knew all`, or `I already knew 1 and 3`
+- Korean: `다 몰랐어`, `다 알고 있었어`, `1번과 3번만 알고 있었어`, or
+  `다 몰랐고 다음 보안 정리 때 같이 처리`
 
 Optional qualifiers:
 - `2 is already in docs/roadmap.md`
-- `4 is intentionally deferred until launch`
+- `4 was new to me; handle it in the next security batch`
+- `6 is deliberately skipped because this stays offline`
 - `5 is wrong`
 ```
 
 Interpret replies generously:
 
+- A global all/none awareness statement applies to every finding.
 - Numbers only, or "I knew/already knew <numbers>" -> `unknown_known`.
 - Omitted numbers -> `unknown_unknown`.
 - Already documented, tracked, implemented, or in code -> `known_known` or
   downgraded/resolved, and do not re-report as a discovery.
-- Intentionally deferred/skipped/postponed -> `deliberate_skip` with the
-  stated reason or trigger.
+- Later/batched/postponed -> disposition `deferred`; do not change awareness
+  unless the same reply also says whether the owner knew.
+- Intentionally declined/will not do -> disposition `deliberate_skip` with
+  the stated reason and re-check trigger.
 - Wrong/not true/not applicable -> rejected/resolved with a correction note.
 - Number plus question mark (`3?`, `3번?`, "what is 3") -> the owner did not
   understand the finding. Re-explain it in plainer terms (SKILL.md Ground
@@ -216,17 +241,23 @@ Interpret replies generously:
   respond to the plainer version. Do not count "I don't understand it" as
   "I didn't know about it".
 
-If the owner replies with classifications, update the ledger and report only
-the delta. Do not rerun the whole audit unless the reply changes scope or
-evidence.
+Interpret meaning in the owner's language; do not keyword-parse these example
+phrases. Apply global awareness and numbered dispositions independently. For
+example, "I did not know any; defer 1 and 3" classifies every finding as
+`unknown_unknown` and changes only 1 and 3 to `deferred`.
+
+If the owner replies with classifications, update awareness and disposition
+independently, adapt them to the local ledger schema, add an Audit Log
+owner-response note, and report only the delta. Do not rerun the whole audit
+unless the reply changes scope or evidence.
 
 ### Ledger-Triage Decision Boards
 
 In `mode: ledger-triage`, decisions go through the host's native UI in
-precedence order: a structured choice tool first (Cowork, Claude Code - see
+precedence order: a `callable-now` structured choice tool first (see
 the Structured Choice Tool Adapter above and the batching scheme in
 `references/ledger-triage.md`); then, on a file-writing host with no choice
-tool, a temporary HTML decision board; then a numbered reply for
+tool callable now, a temporary HTML decision board; then a numbered reply for
 read-only/chat-only hosts. The rules below apply when the board is the
 chosen surface. Never edit the ledger from the agent's own judgment:
 

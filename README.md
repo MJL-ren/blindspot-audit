@@ -59,8 +59,8 @@ agent do it — in [Install](#install).
   for now" with re-check triggers.
 - Interviews the owner about which findings they already knew — a gap the
   owner knows about needs a checklist line, not a lecture.
-- Narrows on demand: a `focus: ux-ui` run loads a deep probe pack for that
-  one domain, and full audits flag weak-domain surfaces they only skimmed
+- Narrows on demand: `focus: ux-ui` and `focus: security` load one deep
+  domain pack, and full audits flag weak-domain surfaces they only skimmed
   (an engineer-owner's UI, a designer-owner's operations) instead of
   silently passing them. More packs over time.
 - Keeps a durable `BLINDSPOT_LEDGER.md` — the audit's notebook file in
@@ -136,6 +136,18 @@ where users may get stuck, and what cheap check would make the gap visible.
 
 Use it when a full audit flags UX/UI as coverage debt, or when the owner is
 strong elsewhere and wants a deeper pass on the user surface.
+
+## Focus: Security
+
+`focus: security` maps what must be protected, who or what crosses each trust
+boundary, where permissions are enforced, how secrets and releases travel, and
+how the owner would detect and recover from misuse. It separates current files,
+Git history, deployed artifacts, and provider-side credential state so fixing
+one surface cannot silently close the others.
+
+The pass stays defensive and read-mostly. It redacts secret values and proposes
+authorized scanners, staging checks, or specialist review instead of sending
+payloads, using credentials, or probing live systems.
 
 This is not a generic quality checklist. The question it answers is:
 "Given this specific project, what are we probably not seeing yet?"
@@ -464,10 +476,25 @@ projects, consulted as reference-only local clones under `external_repos/`
 - [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
   (MIT) - accessibility audit agent patterns.
 
+The `security` focus pack's audit shape and defensive boundaries were informed
+by these MIT-licensed projects; all pack text remains original:
+
+- [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)
+  - reconnaissance and trust-boundary mapping, duplicate consolidation, and
+  independent validation structure.
+- [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks)
+  - current-tree versus Git-history secret checks, baselines, fingerprints,
+  and narrow ignores.
+- [microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit)
+  - fail-closed policy behavior and action-bound approval design.
+
 ## Security
 
 What the scripts do, what never touches the network, and how to report
 concerns privately: see [SECURITY.md](./SECURITY.md).
+The packaged helpers include read-only inventory/secret checks, validated
+temporary ledger files, and an optional `127.0.0.1` decision board; installing
+the skill grants none of them external-network or provider access.
 
 ## License
 

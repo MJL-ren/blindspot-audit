@@ -42,6 +42,10 @@ you already know where your blind spots cluster:
 Use $blindspot-audit with focus: ux-ui on this project. I'm a backend developer — walk the user-facing surface with the ux-ui pack and tell me what I never knew to decide (states, devices, dark mode, keyboard access). Append the findings to the existing ledger.
 ```
 
+```text
+Use $blindspot-audit with focus: security on this project. Map the real trust boundaries, credentials, permissions, untrusted inputs, CI/release path, and incident readiness. Stay read-only, redact any secret value, and propose authorized checks instead of running attacks or scanners.
+```
+
 A context-rich prompt gets a sharper first audit (everything here is
 optional — the intake asks for what it needs and every question is
 skippable):
@@ -83,6 +87,10 @@ $blindspot-audit mode: ledger-triage.
 
 ```text
 $blindspot-audit를 focus: ux-ui로 이 프로젝트에 돌려줘. 나는 백엔드 개발자야 — ux-ui 팩으로 사용자 표면을 걸어보고, 내가 결정해야 하는지도 몰랐던 것들(상태, 기기, 다크모드, 키보드 접근)을 알려줘. 발견은 기존 원장에 추가해줘.
+```
+
+```text
+$blindspot-audit를 focus: security로 이 프로젝트에 돌려줘. 실제 신뢰 경계, 비밀정보, 권한, 외부 입력, CI/배포 경로, 사고 대응을 살펴봐. 읽기 전용으로 진행하고 비밀값은 가린 채, 공격이나 스캐너를 직접 실행하지 말고 안전한 확인 방법만 제안해줘.
 ```
 
 맥락을 함께 주면 첫 감사가 훨씬 정확해진다 (전부 선택 사항 — 스킬이 필요한

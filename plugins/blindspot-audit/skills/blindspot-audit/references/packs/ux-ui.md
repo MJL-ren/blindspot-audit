@@ -1,12 +1,32 @@
 # Focus Pack: UX/UI
 
-Deep probes for user-facing interface surfaces: web apps, sites, desktop
-and mobile app UIs, game menus/HUDs, and tool UIs. Load this file ONLY for
-a `focus: ux-ui` run or a weak-domain escalation in `deep` mode (SKILL.md
-Workflow step 4). It exists because full audits structurally under-report
-this domain: interface gaps are individually "small" and lose the
-findings-cap ranking to legal/security/data findings, while owners who are
-strong engineers and weak designers never notice the accumulation.
+Focus ID: `ux-ui`
+
+Scope label: `focus/ux-ui`
+
+Contents: [Activation](#activation-and-applicability) |
+[Identity](#identity-guard) | [Surface](#surface-map) |
+[Probes](#probe-sets) | [Boundaries](#boundaries-and-stage-fit) |
+[Anchors](#peer-and-current-anchors) | [Checks](#cheapest-next-checks) |
+[Reporting](#reporting-and-coverage)
+
+## Activation And Applicability
+
+Use this pack for a meaningful user-facing visual or interactive surface:
+web apps, sites, desktop and mobile app UIs, game menus/HUDs, and tool UIs.
+Load it only for a `focus: ux-ui` run or a weak-domain escalation in `deep`
+mode (SKILL.md Workflow step 4). It exists because full audits structurally
+under-report this domain: interface gaps are individually "small" and lose
+the findings-cap ranking to legal/security/data findings, while owners who
+are strong engineers and weak designers may never notice the accumulation.
+
+Do not apply it to a library, backend service, data pipeline, or prose-only
+project with no material interface. A tiny temporary admin page may justify
+a few ordinary UX lens questions without creating standing pack coverage
+debt. Record `not applicable` when the surface genuinely does not exist.
+Security and privacy concerns discovered in UI flows remain candidates for
+their own domains; keep this pack on the user's interaction, comprehension,
+access, state, and recovery consequences instead of duplicating those audits.
 
 ## Identity Guard
 
@@ -24,12 +44,27 @@ below is an awareness question in disguise:
   fails the stage test for most polish-level probes - but NOT for the
   awareness question itself, which is free at any stage.
 
+## Surface Map
+
+Before probing, locate the actual interface boundary:
+
+- entry points and the main journey from arrival to outcome.
+- screens, routes, menus, dialogs, forms, and destructive actions.
+- shared components, CSS, design tokens, themes, and responsive rules.
+- empty/loading/error/retry branches around asynchronous work.
+- first-run help, support/contact paths, analytics, and user feedback.
+- device, browser, input method, language, and accessibility assumptions.
+
+Read representative code and styles, then walk the rendered flow when the
+host already has it running. Do not start a dev server, build, browser test,
+or scanner solely for the audit without following the normal command
+guardrails. Tag evidence `observed` / `absent` / `inferred` / `question`.
+
 ## Probe Sets
 
-Walk each set against the actual surface. Evidence beats speculation:
-read the CSS/tokens, grep for the signals listed under Evidence, walk the
-rendered flow when the host already has it running. Tag each gap
-`observed` / `absent` / `inferred` as usual.
+Walk each set against the mapped surface. Evidence beats speculation, and
+an absent signal still needs a project-specific consequence and a cheap
+confirmation step before it becomes a finding.
 
 ### 1. Device And Viewport Reality
 
@@ -121,7 +156,24 @@ fresh-eyes scan).
 - Do repeated patterns (buttons, cards, dialogs) look and behave the
   same across pages?
 
-## Peer Anchors
+## Boundaries And Stage Fit
+
+- Visual taste is not a finding. Prefer broken expectations, inaccessible
+  interactions, missing decisions, inconsistent behavior, or future-change
+  cost that evidence can show.
+- Do not require dark mode, animation, a design system, analytics, or
+  Storybook merely because peers use them. A deliberate single-mode or
+  low-process choice can be complete.
+- Early prototypes may skip polish and broad device support, but should still
+  know their intended device/input boundary and avoid trapping or losing the
+  small number of users they do support.
+- Basic keyboard access, readable text, recovery from destructive actions,
+  and disclosure of unsupported surfaces can matter before visual polish.
+- Legal accessibility claims are current and jurisdiction-specific. Hedge
+  them and verify official sources instead of treating this pack as legal
+  certification.
+
+## Peer And Current Anchors
 
 For the peer-expectation half of the scan, compare interaction sets
 against category-standard component systems rather than taste: Radix
@@ -139,10 +191,16 @@ aggregator link fails the source-tier rule (SKILL.md fresh-eyes scan).
 (Field data: the pack's first run cited two roundup links and named no
 peers - the conclusion happened to hold, but the evidence form did not.)
 
-## Cheapest Next Checks (propose, never run uninvited)
+For current mechanical behavior, prefer official W3C/WAI guidance and the
+actual platform or browser documentation. For legal applicability, use the
+current regulator or statutory source and preserve Ground Rule 5 hedging.
+Component-system behavior is a calibration aid, not proof that this project
+must use that component library.
 
-Audits observe (SKILL.md Guardrails). Offer these as the finding's
-cheapest check, matched to weight:
+## Cheapest Next Checks
+
+Propose these; never run them uninvited. Audits observe (SKILL.md
+Guardrails). Match the check to the finding's weight:
 
 - Free and instant: resize the window to phone width; tab through the
   main journey; toggle OS dark mode and reduced motion.
@@ -157,12 +215,17 @@ Scanners find the mechanical subset (contrast, labels, landmarks); flow
 dead-ends, state gaps, and "nobody decided" findings remain this audit's
 territory - that split is why both belong in one prescription list.
 
-## Reporting
+## Reporting And Coverage
 
 Focus-run reports follow the normal template with `scope: focus/ux-ui`
 in the header. The awareness interview matters MORE here than in full
 audits: expect a high share of `unknown_unknown` from engineer-owners and
 translate every finding to plain consequences (Ground Rule 6 - "users on
 phones see a broken layout", not "no responsive breakpoints"). Record the
-pack as run in the audit log's scan notes, so rules 8 and 10 stop
-flagging it as coverage debt.
+pack under a compact Audit Log run ID and its linked Audit Evidence, so rules 8
+and 10 stop flagging it as coverage debt. Record the concrete screens/flows sampled and
+any device, browser, runtime, or accessibility limits; a pack name alone is
+not proof that its material surface was inspected. When no material UI
+exists, record `pack ux-ui: not applicable` instead of manufacturing findings.
+A run narrowed to one page, flow, or app records `pack ux-ui: partial` with
+the remaining interface surface and does not clear project-wide coverage.

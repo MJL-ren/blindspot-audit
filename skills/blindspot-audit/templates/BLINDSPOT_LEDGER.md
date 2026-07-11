@@ -21,12 +21,15 @@ and awareness values in English so runs stay diffable.
 - Verify stale or high-impact items against current project evidence before repeating them.
 - Add new or changed findings only; do not duplicate unchanged pending items.
 - Record decisions as `pending`, `accepted`, `deferred`, `rejected`, or `resolved`.
-- Record owner awareness as `unknown_unknown`, `unknown_known`, `deliberate_skip`, or `unconfirmed`.
+- Record owner awareness as `unknown_unknown`, `unknown_known`, or `unconfirmed`.
+- Keep awareness separate from implementation disposition: "new to me, handle later" is `unknown_unknown` + `deferred`; an intentional skip goes in the skip section with reason and trigger.
 - Keep rejected/deferred items with the reason so future audits do not rediscover them as new.
 - Keep the Findings table for open items only; move `resolved`/`rejected` rows to the Resolved Archive as one-liners (IDs never renumber).
 - Findings from the external/web scan keep their source URL in the row so the next audit re-verifies instead of re-searching.
 - Read Project Context before asking the owner anything; refresh only stale entries, and never re-ask items marked `skipped`.
 - Use `mode: ledger-triage` to group and apply decisions from existing rows; temporary HTML decision boards live under `.blindspot-tmp/` and are deleted after their validated decisions are applied.
+- Keep each Audit Log Notes cell to one `BA-` run ID and a short result; put multi-part coverage and limits in that run's Audit Evidence entry.
+- Before editing a dirty ledger, preserve staged/unstaged baselines and patch only the intended rows or evidence entry.
 
 ## Project Context (verified <YYYY-MM-DD>)
 
@@ -45,19 +48,34 @@ sensitive-findings rule in `references/ledger-lifecycle.md`).
 - Owner strong areas: <best-covered domains>
 - Owner weak or new areas: <where blind spots concentrate>
 - Web-search privacy rule: <category-only (default) / stricter owner rule>
+- Ledger visibility: <private / public-safe / unconfirmed; public or unconfirmed uses generalized security detail>
 - Standing decisions: <must-not-change items, platform choices, scope caps>
 
 ## Audit Log
 
 | Date | Host | Mode | Scope | Notes |
 | --- | --- | --- | --- | --- |
-| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation/ledger-triage, + focus/<domain> when narrowed> | <project/path or boundary> | <inspected surfaces, scans applied (external-change / peer expectation / context intake), focus packs run or standing pack debt, descent step taken on a zero-delta run, or ledger-triage board id / decisions applied / temp cleanup result; limits - future diff runs read this to spot never-run scans and continue the descent> |
+| <YYYY-MM-DD> | <choice-capable/no-choice/CLI/chat/read-only host> | <quick/deep/interview/planning/post-implementation/ledger-triage, + focus/<domain> when narrowed> | <project/path or boundary> | <BA-YYYYMMDD-NN; one short result; details below when needed> |
+
+## Audit Evidence
+
+Use this section only when a run's coverage and limits would make the Audit Log
+row hard to scan. Keep public or visibility-unconfirmed ledgers generalized.
+
+### BA-YYYYMMDD-NN - <mode/scope>
+
+- Coverage: <inspected, owner-confirm-needed, skipped, and remaining surfaces>
+- Verification: <tiers actually run>
+- External evidence: <channels used or not run>
+- Secret search: <manual/dedicated + tree/history/provider scope, no values>
+- Provider connector: <presence/auth/callability/scope/consent without private identifiers>
+- Owner response: <awareness/disposition/next-action delta>
 
 ## Findings
 
 | ID | Finding | Priority | Awareness | Status | Next check / owner |
 | --- | --- | --- | --- | --- | --- |
-| BS-YYYYMMDD-01 | <what may be missing + concrete consequence + evidence pointer> | now/next/later/watch | unknown_unknown/unknown_known/deliberate_skip/unconfirmed | pending | <cheapest next check> |
+| BS-YYYYMMDD-01 | <what may be missing + concrete consequence + evidence pointer> | now/next/later/watch | unknown_unknown/unknown_known/unconfirmed | pending | <cheapest next check> |
 
 ## Resolved Archive
 

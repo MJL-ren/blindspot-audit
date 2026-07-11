@@ -1,0 +1,18 @@
+name: Preview and release
+
+on:
+  pull_request_target:
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - run: python scripts/release_preview.py
+        env:
+          DEPLOY_CREDENTIAL: ${{ secrets.DEPLOY_CREDENTIAL }}

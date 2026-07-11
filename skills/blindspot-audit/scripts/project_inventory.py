@@ -6,9 +6,18 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Iterable
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from safe_output import safe_display_text
 
 
 IGNORE_DIRS = {
@@ -32,6 +41,7 @@ IGNORE_DIRS = {
     ".cache",
     ".idea",
     ".vscode",
+    "external-repos",
     "external_repos",
     "vendor",
     "runtime",
@@ -168,7 +178,7 @@ def iter_files(root: Path, max_files: int, ignore_dirs: set[str], engine_hints: 
                 rel = path.relative_to(root)
             except ValueError:
                 rel = path
-            if any(part in IGNORE_DIRS for part in rel.parts):
+            if any(part in ignore_dirs for part in rel.parts):
                 continue
             count += 1
             if count > max_files:
@@ -176,13 +186,159 @@ def iter_files(root: Path, max_files: int, ignore_dirs: set[str], engine_hints: 
             yield path
 
 
+def git_visible_files(root: Path) -> tuple[list[Path], Path] | None:
+    """Return tracked plus unignored untracked files, or None outside Git."""
+    try:
+        repository = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if repository.returncode != 0:
+        return None
+
+    try:
+        repo_root = Path(os.fsdecode(repository.stdout.strip())).resolve(strict=True)
+        root_prefix = root.relative_to(repo_root)
+    except (OSError, ValueError):
+        return None
+
+    arguments = [
+        "git",
+        "-C",
+        str(repo_root),
+        "ls-files",
+        "-z",
+        "--cached",
+        "--others",
+        "--exclude-standard",
+        "--",
+    ]
+    if root_prefix.parts:
+        arguments.append(root_prefix.as_posix())
+    else:
+        arguments.append(".")
+    try:
+        listed = subprocess.run(
+            arguments,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if listed.returncode != 0:
+        return None
+
+    files: list[Path] = []
+    for raw_path in listed.stdout.split(b"\0"):
+        if not raw_path:
+            continue
+        path = repo_root / os.fsdecode(raw_path)
+        try:
+            path.relative_to(root)
+        except ValueError:
+            continue
+        files.append(path)
+    return sorted(set(files), key=lambda value: value.as_posix().casefold()), repo_root
+
+
+def path_is_hard_excluded(path: Path, root: Path, ignore_dirs: set[str]) -> bool:
+    try:
+        relative = path.relative_to(root)
+    except ValueError:
+        return True
+    directory_parts = relative.parts[:-1]
+    if any(part in ignore_dirs for part in directory_parts):
+        return True
+    if any(
+        part.startswith(prefix)
+        for part in directory_parts
+        for prefix in IGNORE_PREFIXES
+    ):
+        return True
+    return any(path.name.endswith(suffix) for suffix in IGNORE_SUFFIXES)
+
+
+def enumerate_inventory_files(
+    root: Path,
+    max_files: int,
+    ignore_dirs: set[str],
+    engine_hints: set[str],
+) -> tuple[list[Path], dict[str, object]]:
+    git_result = git_visible_files(root)
+    if git_result is None:
+        sampled = list(
+            iter_files(
+                root,
+                max_files=max_files + 1,
+                ignore_dirs=ignore_dirs,
+                engine_hints=engine_hints,
+            )
+        )
+        truncated = len(sampled) > max_files
+        return sampled[:max_files], {
+            "enumeration_mode": "filesystem-fallback",
+            "git_ignored_excluded": False,
+            "items_excluded": "not-counted",
+            "truncated": truncated,
+            "coverage_note": (
+                "Git index unavailable; bounded filesystem walk used with hard "
+                "Search Hygiene exclusions. .gitignore rules were not evaluated."
+            ),
+        }
+
+    candidates, _ = git_result
+    files: list[Path] = []
+    excluded = 0
+    truncated = False
+    for path in candidates:
+        if path_is_hard_excluded(path, root, ignore_dirs):
+            excluded += 1
+            continue
+        if len(files) >= max_files:
+            truncated = True
+            break
+        if path.is_file() and not path.is_symlink():
+            files.append(path)
+
+    names = {path.name for path in files}
+    relative_parts = {path.relative_to(root).parts for path in files}
+    if "project.godot" in names:
+        engine_hints.add("Godot")
+    if any(name.endswith(".uproject") for name in names):
+        engine_hints.add("Unreal")
+    if any("Assets" in parts for parts in relative_parts) and any(
+        "ProjectSettings" in parts for parts in relative_parts
+    ):
+        engine_hints.add("Unity")
+
+    return files, {
+        "enumeration_mode": "git-index-plus-unignored",
+        "git_ignored_excluded": True,
+        "items_excluded": excluded,
+        "truncated": truncated,
+        "coverage_note": (
+            "Git tracked files and unignored untracked files were inspected; "
+            "Git-ignored paths were excluded without enumerating their contents."
+        ),
+    }
+
+
 def rel_list(paths: Iterable[Path], root: Path, limit: int = 25) -> list[str]:
     values = []
     for path in paths:
         try:
-            values.append(str(path.relative_to(root)).replace("\\", "/"))
+            values.append(
+                safe_display_text(str(path.relative_to(root)).replace("\\", "/"))
+            )
         except ValueError:
-            values.append(str(path))
+            values.append(safe_display_text(path))
         if len(values) >= limit:
             break
     return values
@@ -299,9 +455,23 @@ def build_inventory(root: Path, max_files: int, include_generated: bool = False)
         ignore_dirs.discard("runtime")
         ignore_dirs.discard(".playwright-mcp")
     engine_hints: set[str] = set()
-    files = list(iter_files(root, max_files=max_files, ignore_dirs=ignore_dirs, engine_hints=engine_hints))
-    ext_counts = Counter(p.suffix.lower() or "[none]" for p in files)
-    top_dirs = Counter((p.relative_to(root).parts[0] if len(p.relative_to(root).parts) > 1 else ".") for p in files)
+    files, coverage = enumerate_inventory_files(
+        root,
+        max_files=max_files,
+        ignore_dirs=ignore_dirs,
+        engine_hints=engine_hints,
+    )
+    ext_counts = Counter(
+        safe_display_text(p.suffix.lower() or "[none]") for p in files
+    )
+    top_dirs = Counter(
+        safe_display_text(
+            p.relative_to(root).parts[0]
+            if len(p.relative_to(root).parts) > 1
+            else "."
+        )
+        for p in files
+    )
 
     docs = [p for p in files if is_doc_file(p, root)]
     configs = [
@@ -331,10 +501,14 @@ def build_inventory(root: Path, max_files: int, include_generated: bool = False)
         config_hints.append("package.json present without a lockfile - installs are not reproducible")
 
     return {
-        "root": str(root),
+        "root": safe_display_text(root),
         "file_count_sampled": len(files),
         "max_files": max_files,
-        "truncated": len(files) >= max_files,
+        "truncated": coverage["truncated"],
+        "enumeration_mode": coverage["enumeration_mode"],
+        "git_ignored_excluded": coverage["git_ignored_excluded"],
+        "items_excluded": coverage["items_excluded"],
+        "coverage_note": coverage["coverage_note"],
         "include_generated": include_generated,
         "extensions": ext_counts.most_common(20),
         "top_dirs": top_dirs.most_common(20),
@@ -357,6 +531,10 @@ def emit_markdown(inv: dict) -> str:
         "",
         f"- Root: `{inv['root']}`",
         f"- Files sampled: {inv['file_count_sampled']} / max {inv['max_files']}" + (" (truncated)" if inv["truncated"] else ""),
+        f"- Enumeration: {inv['enumeration_mode']}",
+        f"- Git-ignored paths excluded: {'yes' if inv['git_ignored_excluded'] else 'not evaluated'}",
+        f"- Hard-filtered files: {inv['items_excluded']}",
+        f"- Coverage note: {inv['coverage_note']}",
         *(
             [
                 "- NOTE: sampling was truncated - docs/code may be underrepresented. "
@@ -397,6 +575,10 @@ def emit_markdown(inv: dict) -> str:
 
 
 def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Create a compact project inventory for blindspot audits.")
     parser.add_argument("root", type=Path, help="Project root to inspect")
     parser.add_argument("--max-files", type=int, default=5000, help="Maximum files to sample")
@@ -405,7 +587,9 @@ def main() -> int:
     args = parser.parse_args()
 
     if not args.root.exists():
-        raise SystemExit(f"Project root does not exist: {args.root}")
+        raise SystemExit(
+            f"Project root does not exist: {safe_display_text(args.root)}"
+        )
     inv = build_inventory(args.root, args.max_files, include_generated=args.include_generated)
     if args.format == "json":
         print(json.dumps(inv, indent=2, ensure_ascii=False))

@@ -49,7 +49,7 @@ dejar que tu agente lo haga — están en [Instalación](#instalación).
 - Reporta entre 3 y 7 hallazgos priorizados, no una lista infinita. Siempre incluye dos secciones de confianza: «qué está bien cubierto»
   y «qué se puede omitir por ahora», con señales para volver a revisar.
 - Entrevista a la persona dueña sobre qué hallazgos ya conocía. Una brecha conocida necesita una línea accionable, no una explicación larga.
-- Se enfoca cuando hace falta: una ejecución `focus: ux-ui` carga un paquete de sondas profundas para ese dominio,
+- Se enfoca cuando hace falta: `focus: ux-ui` y `focus: security` cargan un paquete de sondas profundas para un solo dominio,
   y la auditoría completa no pasa en silencio por las superficies de los dominios débiles del dueño
   (la UI de un ingeniero, las operaciones de un diseñador): lo reporta como hallazgo. Habrá más paquetes con el tiempo.
 - Mantiene un `BLINDSPOT_LEDGER.md` duradero (el cuaderno que la auditoría deja en tu proyecto). Las siguientes ejecuciones comparan contra ese archivo y reportan solo lo nuevo o cambiado.
@@ -122,6 +122,17 @@ qué nunca se decidió, dónde puede quedarse bloqueado el usuario y qué compro
 
 Úsalo cuando una auditoría completa marque UX/UI como deuda de cobertura, o cuando la persona dueña sea fuerte en otras áreas
 y quiera una pasada más profunda sobre la superficie de usuario.
+
+## Focus: Security
+
+`focus: security` traza qué debe protegerse, quién o qué cruza cada límite de confianza, dónde se aplican realmente los permisos,
+cómo circulan los secretos y las publicaciones, y cómo detectaría y recuperaría la persona dueña ante un uso indebido.
+Separa los archivos actuales, el historial de Git, los artefactos desplegados y el estado de las credenciales en el proveedor,
+para que arreglar una superficie no cierre las demás por error.
+
+La pasada es defensiva y principalmente de lectura. Oculta los valores secretos y propone escáneres autorizados,
+comprobaciones en un entorno de prueba o revisión especializada, en vez de enviar cargas de ataque, usar credenciales
+o explorar sistemas en producción.
 
 No es una checklist genérica de calidad. La pregunta que responde es:
 
@@ -447,10 +458,26 @@ todo el texto del paquete es original:
 - [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
   (MIT) - patrones de agentes de auditoría de accesibilidad.
 
+La estructura de auditoría y los límites defensivos del paquete `security` se
+basaron en estos proyectos con licencia MIT; todo el texto del paquete es original:
+
+- [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)
+  - reconocimiento y mapeo de límites de confianza, consolidación de duplicados
+  y estructura de validación independiente.
+- [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks)
+  - separación entre secretos del árbol actual y del historial de Git, líneas
+  base, huellas e ignorados estrechos.
+- [microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit)
+  - comportamiento de cierre seguro ante fallos de política y aprobaciones
+  vinculadas a una acción concreta.
+
 ## Seguridad
 
 Qué hacen los scripts, qué no toca la red y cómo reportar problemas de
 forma privada: ver [SECURITY.md](./SECURITY.md).
+Los helper incluidos abarcan inventario y comprobaciones de secretos de lectura,
+archivos ledger temporales validados y un tablero de decisiones opcional en
+`127.0.0.1`. Instalar la skill no concede acceso a redes externas ni a providers.
 
 ## Licencia
 

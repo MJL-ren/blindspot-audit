@@ -2,6 +2,181 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.7.0] - 2026-07-11
+
+### Added
+
+- Added `references/packs/index.md` as the canonical focus-pack registry and
+  shared extension contract. It defines runtime routing, applicability,
+  required pack sections, the finding gate, coverage-note behavior, and the
+  registration steps future domain packs must satisfy.
+- Added `focus: security`, a defensive read-mostly pack for trust boundaries,
+  identity, authorization, untrusted input, secret lifecycle, sensitive data,
+  software supply chains, secure failure, detection, and incident readiness.
+  It redacts credential material, separates current-tree/history/provider/
+  downstream closure, and prohibits active testing without authorization.
+- Added the `security-boundary-gap` behavior fixture to grade root-cause
+  consolidation, owner-doc filtering, secret-closure evidence, stage fit,
+  positive controls, and the no-exploitation boundary.
+- Added contract tests that keep registered Focus IDs, pack filenames, source
+  files, canonical scope labels, required section order, and the early
+  `SKILL.md` mode router aligned.
+- Added deterministic security verification tiers (`static-only`,
+  owner-approved `ephemeral-local`, and separately authorized dynamic checks),
+  plus an internal boundary-coverage matrix and explicit completion states.
+- Added a value-suppressing `secret_presence_scan.py` helper for bounded
+  current-tree and separately approved Git-history location checks. It emits
+  only sanitized metadata, distinguishes manual heuristics from dedicated
+  scanners, and leaves provider state for owner confirmation.
+- Added a lightweight durable security-batch template for explicit
+  multi-finding deferrals, with restart order, prerequisite decisions,
+  verification matrix, completion criteria, and closeout lifecycle.
+- Added `audit_followup_guard.py` with existing-ledger schema snapshots,
+  schema-only validation before interviews, language-independent structured
+  owner-response previews, final ID/batch/backlink validation, and safe temp
+  cleanup. It never edits the ledger or keyword-parses owner language.
+- Added grouped `blindspot-owner-response.v2` decisions with deterministic v1
+  expansion, conflict detection, explicit localized-ledger application maps,
+  and per-finding applied-state output while retaining v1 compatibility.
+- Added `scaffold-security-batch` to generate the exact durable batch headers,
+  included IDs, verification placeholders, repo-relative restart pointers, and
+  ledger-backlink suggestion without editing the ledger.
+- Added shared `safe_output.py` console/log escaping for all four packaged
+  helpers. Repository-controlled C0/C1, terminal escape, line-separator, and
+  Unicode direction/format controls are rendered visibly without damaging
+  normal owner-language text.
+- Added a shared PowerShell install-removal guard. All three PowerShell
+  installers now prove direct-child containment and refuse root or nested
+  junction/symlink/reparse-point deletion before recursively replacing an
+  install.
+- Added GitHub Actions Dependabot updates and pinned all workflow actions to
+  verified full commit SHAs with read-only package-job permissions; only the
+  release job retains `contents: write`.
+- Added `prepare-awareness` as a short, guarded path for one explicit
+  awareness-only owner reply. It prepares a temporary v1 response and the same
+  application preview without editing the ledger, and custom/localized schemas
+  still require exact column and value adapters.
+- Added a maintainer-only testing-copy sync script that reproduces the canonical
+  skill content at an explicit `blindspot-audit-testing` target while preserving
+  its distinct trigger and Codex display identity.
+
+### Changed
+
+- Focus routing now resolves only registered pack IDs, loads one pack per
+  focused pass, keeps multi-focus requests as separate passes, and explicitly
+  disambiguates overlapping aliases instead of guessing. Generic unregistered
+  domains and path-limited partial focuses are recorded without clearing
+  project-wide pack coverage by accident.
+- Coverage debt now applies only when a registered pack's own applicability
+  rules match a substantial project surface. It is no longer possible to read
+  the registry as a requirement that every project run every pack.
+- The existing `ux-ui` pack now follows the common contract with explicit
+  activation, surface mapping, stage-fit boundaries, current-source anchors,
+  and coverage recording while preserving its established probe behavior.
+- All README translations and bilingual prompt examples now document the
+  defensive `focus: security` workflow and credit the MIT-licensed reference
+  projects that informed its structure without copying their prose.
+- Owner awareness and implementation disposition are now independent axes, so
+  "I did not know; handle it in the next batch" records
+  `unknown_unknown + deferred`, never an intentional skip. Existing localized
+  ledger schemas remain authoritative and are not auto-migrated.
+- Host adapters now distinguish advertised, callable-now, mode-gated, and
+  unavailable structured-choice tools. Only a tool callable in the current
+  mode is used; the other cases take the documented no-choice fallback.
+- Security findings merge only when their enforcement point, remediation
+  owner/surface, and cheapest closing check all match. Long security reports
+  gain a three-line owner summary, and external calibration now starts with
+  official stack/provider advisories before community leads.
+- Security runs now record project interaction and external evidence on
+  separate axes, build conditional locked-dependency, product-lineage, and
+  promise-to-enforcement working tables, and use a compact owner-facing chat
+  layer only when full self-contained records were written to the ledger.
+- Provider checks now pass through separate presence, authentication,
+  current-mode callability, granted-scope, and per-run consent gates. Mixed
+  owner replies apply global awareness and numbered dispositions independently;
+  `owner_followup` remains a next-action route rather than a disposition.
+- Security batch handoffs now declare visibility/detail policy and require one
+  check, one tier, and one evidence channel per verification row. Audit Log rows
+  use compact `BA-` run IDs with detailed limits in an in-ledger Audit Evidence
+  section.
+- All existing-ledger writes now require owning-repo dirty-worktree baselines,
+  contextual target patches, preservation checks for prior hunks/unrelated
+  files, whitespace validation, and stable-ID/row-count verification.
+- Security secret closure now preserves current-tree, history/artifact,
+  provider, and downstream substates independently, and executable/update
+  surfaces are prioritized by their own owner/team/tester/public audience.
+- The redacted secret locator now supports repeatable include/exclude filters,
+  file and history-blob caps, an internal time budget, and value-free partial
+  coverage/resume output instead of losing bounded results to host timeout.
+- The secret locator's first pass now follows Search Hygiene by excluding noisy
+  generated/reference/vendor paths. Explicit `--include` paths or
+  `--include-generated` opt those surfaces back in for separate artifact or
+  product-lineage checks.
+- Project inventory and current-tree secret scans now use Git tracked files plus
+  unignored untracked files when possible, report their enumeration mode, and
+  avoid reading ignored clones/caches. Narrow `--include-ignored` scans require
+  an explicit include filter.
+- Provider connector evidence may now be `not-applicable(reason)` when the
+  surface is genuinely absent instead of filling every gate with misleading
+  `unconfirmed` values.
+- Public security documentation now describes the exact read/write/loopback/
+  cleanup boundary of four executable helpers plus their safe-output support
+  module. All README translations disclose temporary ledger files and the
+  optional loopback board, while the public bug form requires sensitive-output
+  redaction and links directly to private vulnerability reporting.
+- `SKILL.md` is now a bounded cross-host entrypoint with the complete mode and
+  reference router in its first 100 lines. Detailed normal/focus audit procedure
+  moved to `references/audit-workflow.md` for progressive disclosure on Codex,
+  Claude Code, OpenCode, and compatible hosts.
+- Repeat-run routing now resolves an unnamed "same focus" only from one clear
+  registered focus in the current project ledger. Explicit delta-only reporting
+  suppresses unchanged finding bodies without weakening bounded verification or
+  coverage work, while changed-path-only requests remain a true scope boundary.
+- First-run closeout now classifies each created ledger, routing file, and
+  durable handoff as tracked, owner-approved local-only, untracked pending, or
+  not versioned. The report exposes unresolved durability without staging files
+  automatically.
+
+### Fixed
+
+- Security-batch validation now identifies its machine-readable headers and
+  reads only the `Finding`, `Verification tier`, and `Evidence channel` cells.
+  A normal word such as `repository` in the check or pass-condition prose no
+  longer creates a false second evidence channel.
+- Final owner-response validation now compares each canonical decision with the
+  actual standard-ledger cell or an explicit custom-schema adapter/archive
+  destination. A valid JSON response can no longer pass while the ledger still
+  contains its old awareness and status values.
+- Search Hygiene now excludes both `external_repos` and `external-repos`, and
+  public-safe or visibility-unconfirmed security batch handoffs reject local
+  absolute paths.
+- Testing-copy refreshes no longer silently lose the `-testing` skill name,
+  explicit-only description, display name, or default invocation prompt.
+- Ledger-triage board creation now retains language-independent review hashes
+  for helper-generated explanation fields. Removing `draftOnly` without
+  rewriting the scaffold no longer produces an owner-facing board full of
+  generic or untranslated draft text.
+
+Field driver: a multi-surface application security focus run found seven
+useful unknown-unknowns while exposing ambiguity around local probes, owner
+follow-up mapping, coverage completion, and candidate consolidation. A second
+multi-repository desktop/cloud run confirmed those fixes and exposed the need
+for safer secret-location evidence, locked-version and copy-lineage working
+state, durable batch restart notes, and a shorter owner-facing report. A third
+public-site/serverless run confirmed the batch flow while exposing provider
+connection-state ordering, mixed owner routing, batch visibility, compact audit
+evidence, and dirty-worktree preservation needs. A fourth commercial-game plus
+owner-only-tooling run caught actual ledger schema drift, manual complex-reply
+application, an initially missed batch handoff, multi-axis secret closure, and
+an unbounded secret-locator timeout. A fifth self-audit of a skill-distribution
+repository confirmed the follow-up guard end to end and exposed a real
+verification-cell false block, Search-Hygiene drift, stale public helper
+promises, unsafe terminal display characters, mutable privileged Actions, a
+public-report redaction gap, and insufficient PowerShell deletion containment.
+A sixth static-site tooling run confirmed the strengthened follow-up flow while
+exposing ignored-clone inventory pollution, unapplied owner decisions that could
+still validate, repeated batch JSON, and hand-written public handoff paths.
+
 ## [0.6.6] - 2026-07-10
 
 ### Fixed

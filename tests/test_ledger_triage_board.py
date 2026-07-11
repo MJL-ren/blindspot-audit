@@ -658,11 +658,11 @@ class LedgerTriageBoardTests(unittest.TestCase):
 
     def test_board_directory_preserves_readable_project_token(self):
         readable = self.board_data()
-        readable["boardId"] = "cardmonster-ledger-triage-01"
+        readable["boardId"] = "sample-project-ledger-triage-01"
         self.data.write_text(json.dumps(readable, ensure_ascii=False), encoding="utf-8")
 
         board_dir = self.create_board()
-        self.assertIn("cardmonster-ledger-triage-01", board_dir.name)
+        self.assertIn("sample-project-ledger-triage-01", board_dir.name)
 
     def test_draft_from_ledger_creates_scaffold_json(self):
         self.ledger.write_text(
@@ -694,7 +694,7 @@ class LedgerTriageBoardTests(unittest.TestCase):
                 ledger=self.ledger,
                 out=out,
                 language="en",
-                board_id="cardmonster-draft",
+                board_id="sample-project-draft",
                 project_name="",
                 title="",
             )
@@ -702,6 +702,7 @@ class LedgerTriageBoardTests(unittest.TestCase):
 
         data = json.loads(out.read_text(encoding="utf-8"))
         self.assertTrue(data["draftOnly"])
+        self.assertIn("_draftReview", data["groups"][0])
         item_ids = [
             item["ledgerId"]
             for group in data["groups"]
@@ -717,6 +718,10 @@ class LedgerTriageBoardTests(unittest.TestCase):
         )
         self.assertEqual("cheap_verification", secret_item["executionKind"])
         self.assertIn("Git history", secret_item["implementationHint"])
+        self.assertEqual(
+            {"plainExplanation", "whyItMatters"},
+            set(secret_item["_draftReview"]),
+        )
 
     def test_draft_from_korean_ledger_sections_and_headers(self):
         self.ledger.write_text(
@@ -819,6 +824,14 @@ class LedgerTriageBoardTests(unittest.TestCase):
         )
 
         with self.assertRaises(SystemExit):
+            ledger_triage_board.command_create(
+                SimpleNamespace(project_root=self.project, ledger=self.ledger, data=out)
+            )
+
+        data = json.loads(out.read_text(encoding="utf-8"))
+        data.pop("draftOnly")
+        out.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaisesRegex(SystemExit, "unchanged generated draft scaffolding"):
             ledger_triage_board.command_create(
                 SimpleNamespace(project_root=self.project, ledger=self.ledger, data=out)
             )
@@ -1088,6 +1101,13 @@ class LedgerTriageBoardTests(unittest.TestCase):
         self.assertEqual("cheap_verification", items[0]["executionKind"])
 
         data.pop("draftOnly")
+        data["groups"][0]["plainSummary"] = "현재 검증 결과와 원장 요약이 맞는지 확인하는 묶음입니다."
+        data["groups"][0]["items"][0]["plainExplanation"] = (
+            "원장에 적힌 버전과 테스트 숫자가 지금 저장소의 실제 값과 같은지 확인합니다."
+        )
+        data["groups"][0]["items"][0]["whyItMatters"] = (
+            "오래된 숫자가 남으면 다음 작업자가 이미 끝난 검증을 다시 하거나 잘못된 버전을 기준으로 판단할 수 있습니다."
+        )
         self.data.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         board_dir = self.create_board()
         board_data = json.loads((board_dir / "board-data.json").read_text(encoding="utf-8"))

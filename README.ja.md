@@ -54,8 +54,8 @@ Run a blindspot audit on this project. What am I missing that I don't even know 
   と「今は後回しでよいもの（再確認のきっかけつき）」も必ず含めます。
 - どの発見を持ち主がすでに知っていたかを確認します。知っている穴に必要なのは長い説明ではなく、
   次に動ける短いチェック項目です。
-- 必要なときは絞って掘ります。`focus: ux-ui` 実行はそのドメイン専用の深掘りプローブパックを
-  読み込み、フル監査はオーナーの弱いドメインの表面（エンジニアの UI、デザイナーの運用）を
+- 必要なときは絞って掘ります。`focus: ux-ui` と `focus: security` は一つのドメイン専用の
+  深掘りプローブパックを読み込み、フル監査はオーナーの弱いドメインの表面（エンジニアの UI、デザイナーの運用）を
   ざっと見ただけなら、その事実を黙って通さず発見として報告します。パックは順次増えます。
 - `BLINDSPOT_LEDGER.md`（監査がプロジェクトに残すノートファイル）を残します。次回以降はその台帳と比較し、新しく出たもの、変わったものだけを
   報告します。変化がなければ手ぶらで戻る代わりに一段深く降ります（未実行パック、
@@ -126,6 +126,18 @@ Run a blindspot audit on this project. What am I missing that I don't even know 
 
 フル監査が UX/UI のカバレッジ不足を指摘したとき、または持ち主が別の領域には強いが
 ユーザー表面を深く見たいときに使います。
+
+## Focus: Security
+
+`focus: security` は、何を守るのか、誰または何がどの信頼境界を越えるのか、
+権限が実際にどこで強制されるのか、秘密情報とリリースがどう移動するのか、
+悪用を持ち主がどう検知して復旧するのかを確認します。現在のファイル、Git 履歴、
+配布済み成果物、プロバイダー側の認証情報を分けて扱い、一か所の修正だけで全体を
+解決済みにしないようにします。
+
+この実行は防御的で、読み取り中心です。秘密値は伏せ、攻撃ペイロードの送信、
+認証情報の使用、稼働中システムへの探索は行わず、許可されたスキャナー、検証環境での
+確認、専門家レビューを次の確認手段として提案します。
 
 これは汎用的な品質チェックリストではありません。答える問いはこれです。
 
@@ -446,10 +458,23 @@ python3 scripts/verify-codex-plugin.py
 - [Community-Access/accessibility-agents](https://github.com/Community-Access/accessibility-agents)
   (MIT) - アクセシビリティ監査エージェントのパターン。
 
+`security` フォーカスパックの監査構造と防御境界は、以下の MIT ライセンスの
+プロジェクトを参考にしました。パックの文章はすべて独自に作成しています。
+
+- [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)
+  - 事前調査と信頼境界の整理、重複発見の統合、独立検証の構造。
+- [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks)
+  - 現在のツリーと Git 履歴を分けた秘密情報確認、ベースライン、識別指紋、狭い例外。
+- [microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit)
+  - ポリシー確認失敗時の遮断と、承認対象の操作に結び付いた承認設計。
+
 ## セキュリティ
 
 スクリプトの動作、ネットワークに触れない範囲、問題を非公開で報告する方法は
 [SECURITY.md](./SECURITY.md) を参照してください。
+同梱 helper には、読み取り中心のインベントリ・秘密情報確認、検証付きの一時
+ledger ファイル、任意の `127.0.0.1` 決定ボードが含まれます。スキルを
+インストールしても、外部ネットワークや provider への権限は付与されません。
 
 ## ライセンス
 

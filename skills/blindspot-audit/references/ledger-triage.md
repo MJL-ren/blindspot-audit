@@ -134,16 +134,16 @@ description" over "ARIA"; and "movement-reduction setting" over
 ## Host Behavior
 
 Prefer the host's native decision UI in this precedence order: a structured
-choice tool first (Cowork and Claude Code both have one - it is the
-least-effort surface for the owner); then, on a file-writing host with no
-choice tool, the HTML decision board; then a numbered reply for
+choice tool that is `callable-now` under `references/host-surfaces.md` first;
+then, on a file-writing host with no choice tool callable in the current mode,
+the HTML decision board; then a numbered reply for
 read-only/chat-only hosts or when the owner asked for no temporary files.
 The board is a fallback, not the default on hosts that can ask directly.
 
 ### Structured Choice Hosts
 
-Use the host's choice tool (for example `AskUserQuestion`) for decisions
-before editing the ledger. Triage is bundle-first, not row-first: group the
+Use the host's choice tool (for example `AskUserQuestion`) for decisions only
+when it is callable in the current mode, before editing the ledger. Triage is bundle-first, not row-first: group the
 ledger before asking, so the host's small per-question option cap (Cowork
 and Claude Code cap at 4 options plus a built-in "Other") rarely bites. Good
 grouping collapses a 20-row ledger into roughly 4-7 questions - one or two
@@ -186,10 +186,10 @@ the owner answers.
 
 ### No-Choice File-Writing Hosts
 
-This is the fallback for surfaces with no structured choice tool (for
-example Codex); on a host that has a choice tool, use the section above
-instead. When the host can write files but cannot present a structured
-choice UI, create an HTML decision board with
+This is the fallback for surfaces with no structured choice tool callable now,
+including a host where the tool is advertised but mode-gated. When the host can
+write files but cannot present the structured choice UI in the current mode,
+create an HTML decision board with
 `scripts/ledger_triage_board.py` whenever there is any meaningful ledger
 decision to apply. Use the board even for small "obvious" cleanup unless the
 owner explicitly asked for chat-only or read-only output.
@@ -205,8 +205,12 @@ python "<skill-folder>/scripts/ledger_triage_board.py" draft --project-root "<pr
 
    The draft is only a scaffold. Review and rewrite plain explanations,
    recommendations, options, `executionKind`, and any implementation hints
-   before creating the board. Draft output is marked `draftOnly: true`, and
-   `create` refuses it until that marker is removed after review. Use
+   before creating the board. Draft output is marked `draftOnly: true` and
+   carries internal `_draftReview` hashes for every generated explanation,
+   importance note, and group summary. Keep that metadata, rewrite each marked
+   owner-facing field, and only then remove `draftOnly`. `create` rejects fields
+   that still match their generated scaffold hash, so deleting the top-level
+   marker alone is not review. The metadata is not shown in the HTML. Use
    `--allow-unreviewed-draft` only for explicit tests or debugging.
    The draft parser accepts English and localized ledger tables, including
    Korean headings such as `발견 항목`, `결정 묶음`, and `감사 이력`, and

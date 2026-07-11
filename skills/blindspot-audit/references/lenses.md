@@ -30,10 +30,11 @@ fits none of them cleanly, apply the frames yourself:
 
 Lenses are breadth: a few questions per frame, applied to the whole
 project. When one domain needs real depth - the owner is weak there and
-the surface is large - the deep probes live in `references/packs/`
-(currently `packs/ux-ui.md`), loaded only for `focus: <domain>` runs or
-weak-domain escalation (SKILL.md Workflow step 4). Do not inline a pack's
-detail into a full audit; emit the escalation meta-finding instead.
+the surface is large - read `references/packs/index.md` and load exactly
+one registered deep-probe pack for an explicit `focus: <domain>` run or
+eligible weak-domain escalation (SKILL.md Workflow step 4). Do not inline
+pack detail into a normal full audit; emit the escalation meta-finding
+instead. Never invent a pack for an unregistered domain.
 
 ## User And Workflow Lens
 
