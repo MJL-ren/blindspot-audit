@@ -2,6 +2,20 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.7.1] - 2026-07-14
+
+### Added
+
+- Added a transparent Blindspot Audit icon with distinct light- and dark-theme
+  contrast, and registered it for both standalone skill installs and Codex
+  marketplace plugin surfaces so every supported Codex install path shows the
+  same identity.
+
+### Changed
+
+- Extended the Codex plugin verifier to reject missing, unsafe, non-square, or
+  non-alpha PNG interface assets before release.
+
 ## [0.7.0] - 2026-07-12
 
 ### Added

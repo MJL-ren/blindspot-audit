@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import struct
 import sys
 from pathlib import Path
 
@@ -28,6 +29,42 @@ def load_json(path: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"Invalid JSON in {path}: {exc}") from exc
+
+
+def verify_png_asset(plugin_root: Path, field: str, relative_path: object) -> list[str]:
+    """Verify a manifest PNG asset without adding an image-library dependency."""
+    if not isinstance(relative_path, str) or not relative_path:
+        return [f"plugin.json interface.{field} must be a non-empty path"]
+
+    root = plugin_root.resolve()
+    asset = (root / relative_path).resolve()
+    try:
+        asset.relative_to(root)
+    except ValueError:
+        return [f"plugin.json interface.{field} must stay inside the plugin root"]
+
+    if not asset.is_file():
+        return [f"plugin.json interface.{field} asset is missing: {relative_path}"]
+    if asset.suffix.lower() != ".png":
+        return [f"plugin.json interface.{field} must point to a PNG asset"]
+
+    header = asset.read_bytes()[:26]
+    if len(header) < 26 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
+        return [f"plugin.json interface.{field} is not a valid PNG: {relative_path}"]
+
+    width, height = struct.unpack(">II", header[16:24])
+    color_type = header[25]
+    errors: list[str] = []
+    if width != height or width < 256:
+        errors.append(
+            f"plugin.json interface.{field} PNG must be square and at least 256px; "
+            f"found {width}x{height}"
+        )
+    if color_type not in {4, 6}:
+        errors.append(
+            f"plugin.json interface.{field} PNG must have an alpha channel for theme-safe rendering"
+        )
+    return errors
 
 
 def compare_skill_copy(repo_root: Path) -> list[str]:
@@ -101,6 +138,9 @@ def verify_plugin_manifest(repo_root: Path) -> list[str]:
             errors.append("plugin.json interface.defaultPrompt must be a non-empty list")
         elif any(not isinstance(prompt, str) or len(prompt) > 128 for prompt in prompts[:3]):
             errors.append("plugin.json interface.defaultPrompt entries must be strings of 128 chars or fewer")
+        plugin_root = path.parent.parent
+        for field in ["composerIcon", "logo"]:
+            errors.extend(verify_png_asset(plugin_root, field, interface.get(field)))
 
     if "[TODO:" in path.read_text(encoding="utf-8"):
         errors.append("plugin.json contains a TODO placeholder")

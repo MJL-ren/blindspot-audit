@@ -1,4 +1,6 @@
 interface:
   display_name: "Blindspot Audit"
   short_description: "Find hidden project gaps and triage the project ledger."
+  icon_small: "./assets/icon.png"
+  icon_large: "./assets/icon.png"
   default_prompt: "Use $blindspot-audit to run a blindspot pass on this project and surface the important unknown unknowns."

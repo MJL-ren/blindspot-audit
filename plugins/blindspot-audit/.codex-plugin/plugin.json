@@ -1,6 +1,6 @@
 {
   "name": "blindspot-audit",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Find project unknown unknowns, hidden risks, stale assumptions, and missing decisions with a durable, triageable BLINDSPOT_LEDGER.md.",
   "author": {
     "name": "MJL-ren",
@@ -38,6 +38,8 @@
       "Run mode: ledger-triage on the existing ledger."
     ],
     "brandColor": "#0F766E",
+    "composerIcon": "./skills/blindspot-audit/assets/icon.png",
+    "logo": "./skills/blindspot-audit/assets/icon.png",
     "screenshots": []
   }
 }
