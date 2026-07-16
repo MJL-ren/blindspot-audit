@@ -1885,6 +1885,14 @@ def main(argv: list[str] | None = None) -> int:
                 else "Deleted applied owner-response snapshot directory"
             )
             print(f"{action}: {safe_display_text(removed)}")
+            tmp_root = removed.parent
+            if tmp_root.is_dir() and {
+                entry.name for entry in tmp_root.iterdir()
+            } == {".gitignore"}:
+                print(
+                    "Kept temporary safety root with .gitignore only: "
+                    f"{safe_display_text(tmp_root)}"
+                )
             return 0
 
         raise GuardError("Unknown command.")

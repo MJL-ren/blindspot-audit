@@ -167,11 +167,11 @@ re-reported unless evidence changes.
 
 Before those edits, encode the semantic mapping as individual
 `blindspot-owner-response.v1` decisions or grouped v2 decisions and show the
-Existing Ledger Write Guard preview from `references/ledger-lifecycle.md`. The
-helper validates structure and conflicts; it does not parse the owner's natural
-language. Apply only the previewed IDs, leave omitted IDs unchanged, and require
-final validation to compare those decisions with the actual ledger cells or
-archive destinations.
+Existing Ledger Write Guard preview from
+`references/owner-response-guard.md`. The helper validates structure and
+conflicts; it does not parse the owner's natural language. Apply only the
+previewed IDs, leave omitted IDs unchanged, and require final validation to
+compare those decisions with the actual ledger cells or archive destinations.
 
 For `focus/security`, an explicit decision to handle two or more findings in
 one later batch also creates the lightweight durable handoff defined by

@@ -38,11 +38,12 @@ Neighboring domains keep their own ownership:
 
 ### Owner-Response Completion Gate
 
-After the awareness interview, use the Existing Ledger Write Guard in
-`SKILL.md` before applying the response. Use grouped owner-response v2 when
-several findings share one batch decision, and require final validation to
-show their actual applied ledger mappings. If two or more findings become
-`deferred` under the same named batch, the run is not complete until the
+After the awareness interview, load `references/owner-response-guard.md` and
+use the Existing Ledger Write Guard in `SKILL.md` before applying the response.
+Use grouped owner-response v2 when several findings share one batch decision,
+and require final validation to show their actual applied ledger mappings. If
+two or more findings become `deferred` under the same named batch, the run is
+not complete until the
 durable `SECURITY_BATCH_PLAN` exists, the affected rows or their shared batch
 note link back to it, and final guard validation passes. Generate its mechanical
 skeleton with

@@ -386,6 +386,11 @@ Detail policy: generalized
             )
             self.assertEqual(cleanup.returncode, 0, cleanup.stderr)
             self.assertIn("Discarded validated pre-delta", cleanup.stdout)
+            self.assertIn("Kept temporary safety root with .gitignore only", cleanup.stdout)
+            self.assertEqual(
+                {path.name for path in (project / ".blindspot-tmp").iterdir()},
+                {".gitignore"},
+            )
 
             owner_response_snapshot = self.create_snapshot(project, ledger)
             prepared = self.run_guard(

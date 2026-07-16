@@ -137,7 +137,8 @@ Use the host's choice tool only when it is callable in the current mode, before
 editing the ledger. Triage is bundle-first, not row-first. In the tested Claude
 adapter, each call allows at most 4 questions and each question allows 4 options
 plus a built-in "Other". Collapse a 20-row ledger into roughly 4-7 questions
-across one or two calls, never 7 questions in one call. Other hosts follow their
+across one or two calls, never 7 questions in one call. This is the active-batch
+budget, not permission to omit the remaining rows. Other hosts follow their
 current callable schema.
 
 Option labels obey the self-sufficiency rule in `host-surfaces.md`: each option
@@ -155,10 +156,13 @@ ID or topic shorthand is not an understandable option.
 - `needs_reexplain`: re-explain in chat and leave awareness `unconfirmed`.
 
 Per row, show the recommended action and 1-2 useful alternatives; use Other for
-unusual corrections. Split groups across calls rather than dropping overflow.
-If independent decisions still exceed two comfortable rounds, ask whether the
-owner wants continued batches or a one-page board. Do not switch surfaces on
-your own.
+unusual corrections. When `needs_owner_detail` exceeds the active batch, ask
+`now` rows first, then rows blocking the most other decisions, then `next`, and
+finally `watch`. Keep one question per row inside the selected batch and name
+every deferred row by ID plus plain title in a continued-batch note. Split
+groups across calls rather than dropping overflow. If independent decisions
+still exceed two comfortable rounds, ask whether the owner wants continued
+batches or a one-page board. Do not switch surfaces on your own.
 
 Record the choices and update only selected rows after the owner answers. A
 choice-capable run must not load `ledger-triage-board.md` or generate HTML unless

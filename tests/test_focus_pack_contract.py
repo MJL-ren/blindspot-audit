@@ -19,6 +19,7 @@ SECURITY_EXPECTED_PATH = SECURITY_FIXTURE / "EXPECTED.md"
 REPORT_TEMPLATE_PATH = SKILL_ROOT / "references" / "report-template.md"
 HOST_SURFACES_PATH = SKILL_ROOT / "references" / "host-surfaces.md"
 LEDGER_LIFECYCLE_PATH = SKILL_ROOT / "references" / "ledger-lifecycle.md"
+OWNER_RESPONSE_GUARD_PATH = SKILL_ROOT / "references" / "owner-response-guard.md"
 LEDGER_TRIAGE_PATH = SKILL_ROOT / "references" / "ledger-triage.md"
 LEDGER_TRIAGE_BOARD_REFERENCE_PATH = (
     SKILL_ROOT / "references" / "ledger-triage-board.md"
@@ -112,15 +113,20 @@ class FocusPackContractTests(unittest.TestCase):
         self.assertIn("`references/audit-workflow.md`", first_hundred_lines)
         self.assertIn("`references/ledger-triage.md`", first_hundred_lines)
         self.assertIn("`references/ledger-triage-board.md`", first_hundred_lines)
+        self.assertIn("`references/owner-response-guard.md`", first_hundred_lines)
         self.assertIn("## Existing Ledger Write Guard", skill)
         self.assertIn("audit_followup_guard.py", skill)
 
     def test_entrypoint_stays_bounded_and_routes_detailed_workflow(self):
         skill = SKILL_PATH.read_text(encoding="utf-8")
         workflow = AUDIT_WORKFLOW_PATH.read_text(encoding="utf-8")
+        description = re.search(r'^description: "(?P<value>.*)"$', skill, re.MULTILINE)
 
         self.assertLess(len(skill.splitlines()), 500)
         self.assertLess(len(skill.split()), 5000)
+        self.assertIsNotNone(description)
+        self.assertLess(len(description.group("value")), 850)
+        self.assertNotIn("\nversion:", "\n" + skill.split("---", 2)[1])
         self.assertIn("## Mode Router", skill)
         self.assertIn("## Reference Router", skill)
         self.assertIn("## Inventory And Search Hygiene", workflow)
@@ -159,9 +165,14 @@ class FocusPackContractTests(unittest.TestCase):
     def test_claude_code_adapter_resolves_active_skill_without_copy_search(self):
         skill = SKILL_PATH.read_text(encoding="utf-8")
         hosts = HOST_SURFACES_PATH.read_text(encoding="utf-8")
+        compact_skill = " ".join(skill.split())
         compact_hosts = " ".join(hosts.split())
 
         self.assertIn("`${CLAUDE_SKILL_DIR}`", skill)
+        self.assertIn(
+            "bind `<skill>` directly from `${CLAUDE_SKILL_DIR}`",
+            compact_skill,
+        )
         self.assertIn("## Claude Code CLI Adapter", hosts)
         self.assertIn("resolved `${CLAUDE_SKILL_DIR}`", hosts)
         self.assertIn(
@@ -172,6 +183,37 @@ class FocusPackContractTests(unittest.TestCase):
         self.assertIn("An invocation with no mode arguments uses `normal`", hosts)
         self.assertIn("do not load the HTML-board reference", compact_hosts)
         self.assertIn("`--write-url`/`--write-board-dir`", hosts)
+
+    def test_host_and_owner_response_references_are_progressively_loaded(self):
+        skill = SKILL_PATH.read_text(encoding="utf-8")
+        hosts = HOST_SURFACES_PATH.read_text(encoding="utf-8")
+        lifecycle = LEDGER_LIFECYCLE_PATH.read_text(encoding="utf-8")
+        owner_guard = OWNER_RESPONSE_GUARD_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("## Progressive Loading", hosts)
+        self.assertIn("skip unrelated host adapters", skill)
+        self.assertIn("stop here and load", lifecycle)
+        self.assertIn("Load this reference only after an explicit owner reply", owner_guard)
+        self.assertLess(len(lifecycle.splitlines()), 450)
+        self.assertLess(len(owner_guard.splitlines()), 250)
+
+    def test_pre_interview_guard_is_complete_before_delayed_owner_response_load(self):
+        lifecycle = LEDGER_LIFECYCLE_PATH.read_text(encoding="utf-8")
+        stop = lifecycle.index("After an explicit owner reply")
+        pre_interview = lifecycle[:stop]
+        commands = (
+            'audit_followup_guard.py" snapshot --project-root',
+            'audit_followup_guard.py" validate --snapshot',
+            'audit_followup_guard.py" cleanup --snapshot',
+        )
+
+        positions = [pre_interview.index(command) for command in commands]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("--discard", pre_interview)
+        self.assertIn("If validation is BLOCKED", pre_interview)
+        self.assertIn("--allow-schema-change", pre_interview)
+        self.assertNotIn("blindspot-owner-response.v1", pre_interview)
+        self.assertNotIn("blindspot-owner-response.v2", pre_interview)
 
     def test_helper_command_notation_is_consistent_across_references(self):
         reference_paths = list((SKILL_ROOT / "references").rglob("*.md"))
@@ -319,7 +361,9 @@ class FocusPackContractTests(unittest.TestCase):
     def test_existing_ledger_followup_guard_is_deterministic(self):
         skill = SKILL_PATH.read_text(encoding="utf-8")
         lifecycle = LEDGER_LIFECYCLE_PATH.read_text(encoding="utf-8")
+        owner_guard = OWNER_RESPONSE_GUARD_PATH.read_text(encoding="utf-8")
         security = SECURITY_PACK_PATH.read_text(encoding="utf-8")
+        full_guard_contract = lifecycle + "\n" + owner_guard
 
         self.assertTrue(AUDIT_FOLLOWUP_GUARD_PATH.is_file())
         self.assertIn("schema-only validation", skill)
@@ -332,13 +376,14 @@ class FocusPackContractTests(unittest.TestCase):
             "scaffold-security-batch",
             "cleanup",
         ]:
-            self.assertIn(f"audit_followup_guard.py\" {command}", lifecycle)
-        self.assertIn("Do NOT use keyword matching", lifecycle)
-        self.assertIn("blindspot-owner-response.v1", lifecycle)
-        self.assertIn("blindspot-owner-response.v2", lifecycle)
-        self.assertIn("applicationMap", lifecycle)
-        self.assertIn("mapped ledger", lifecycle)
+            self.assertIn(f"audit_followup_guard.py\" {command}", full_guard_contract)
+        self.assertIn("Do NOT use keyword matching", owner_guard)
+        self.assertIn("blindspot-owner-response.v1", owner_guard)
+        self.assertIn("blindspot-owner-response.v2", owner_guard)
+        self.assertIn("applicationMap", owner_guard)
+        self.assertIn("mapped cells", owner_guard)
         self.assertIn("--allow-schema-change", lifecycle)
+        self.assertIn("references/owner-response-guard.md", security)
         self.assertIn("### Owner-Response Completion Gate", security)
         self.assertIn("ledger-only batch section is not a", security)
 
@@ -441,11 +486,18 @@ class FocusPackContractTests(unittest.TestCase):
             "SKILL.md Workflow step",
             "SKILL.md Guardrails",
             "SKILL.md fresh-eyes scan",
-            "send_user_message",
             "`known_known`",
         ):
             with self.subTest(retired=retired):
                 self.assertNotIn(retired, reference_text)
+        for path in (SKILL_ROOT / "references").rglob("*.md"):
+            if path == HOST_SURFACES_PATH:
+                continue
+            with self.subTest(no_cowork_message_tool=str(path)):
+                self.assertNotIn(
+                    "send_user_message",
+                    path.read_text(encoding="utf-8"),
+                )
 
     def test_security_pack_routes_secret_search_through_redacted_helper(self):
         security = SECURITY_PACK_PATH.read_text(encoding="utf-8")
@@ -494,10 +546,23 @@ class FocusPackContractTests(unittest.TestCase):
         self.assertIn("mode-gated", triage)
         self.assertIn("at most 4 questions per call", hosts)
         self.assertIn("never 7 questions in one call", triage)
+        self.assertIn("such as `send_user_message`", hosts)
+        self.assertIn("Use only a message tool actually exposed", hosts)
+        self.assertIn("project-level skill installation", hosts)
+        self.assertIn("`<workspace>/.claude/skills/<skill-name>/scripts/`", hosts)
+        self.assertIn("arbitrary scratch or\n  temporary copy is not", hosts)
+        self.assertIn("by hash or byte-for-byte", hosts)
+        self.assertIn("matching size alone is not enough", hosts)
+        self.assertIn("same-sized copy with different content", hosts)
+        self.assertIn("requires this copy-both path", hosts)
+        self.assertIn("active-batch\nbudget", triage)
+        self.assertIn("ask\n`now` rows first", triage)
+        self.assertIn("continued-batch note", triage)
 
     def test_entrypoint_names_helpers_and_two_snapshot_guard(self):
         skill = SKILL_PATH.read_text(encoding="utf-8")
         lifecycle = LEDGER_LIFECYCLE_PATH.read_text(encoding="utf-8")
+        owner_guard = OWNER_RESPONSE_GUARD_PATH.read_text(encoding="utf-8")
         hosts = HOST_SURFACES_PATH.read_text(encoding="utf-8")
 
         for helper in (
@@ -510,15 +575,15 @@ class FocusPackContractTests(unittest.TestCase):
             self.assertIn(helper, skill)
         self.assertIn("copy the selected helper and `safe_output.py` together", skill)
         self.assertIn("pre-delta snapshot", lifecycle)
-        self.assertIn("new owner-response snapshot", lifecycle)
+        self.assertIn("Create The Owner-Response Snapshot", owner_guard)
         self.assertIn("cleanup --snapshot \"<pre-delta-snapshot-file>\" --discard", skill)
-        self.assertIn("schema-only snapshot;\n   `--discard`", skill)
-        self.assertIn("If validation is BLOCKED", skill)
+        self.assertIn("Only then load `references/owner-response-guard.md`", skill)
+        self.assertIn("If validation is BLOCKED", lifecycle)
         self.assertIn("`--discard` is accepted", lifecycle)
         self.assertIn("Run `cleanup --discard` only after a VALID", lifecycle)
         self.assertIn("ledger-snapshot.json` **file**", lifecycle)
-        self.assertIn("Repeat `--finding`", lifecycle)
-        self.assertIn('"dispositionMatchModes": {"deferred": "annotated"}', lifecycle)
+        self.assertIn("Repeat `--finding`", owner_guard)
+        self.assertIn('"dispositionMatchModes": {"deferred": "annotated"}', owner_guard)
         self.assertIn("same-turn sequencing", hosts)
         self.assertIn("file-tool copy is intact", hosts)
         self.assertIn("--response \"<mounted-response-json>\"", hosts)

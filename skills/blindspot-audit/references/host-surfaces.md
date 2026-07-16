@@ -3,6 +3,20 @@
 Use this reference when the same blindspot audit should run across AI coding
 hosts, desktop apps, CLI tools, API-backed agents, or plain chat.
 
+## Progressive Loading
+
+When the host can read selected sections, load only:
+
+1. Shared Core and Capability Detection.
+2. Structured Choice or No Structured Choice according to current callability.
+3. The named adapter for the current host, when one exists.
+4. OS And Shell Notes, plus the Decision Packet only when that fallback is used.
+
+Do not load the Cowork adapter during an ordinary Claude Code CLI run, or the
+Claude Code adapter during Cowork, merely because both are Claude surfaces. If
+the host cannot read sections selectively, reading this whole file is allowed;
+correct behavior takes priority over token savings.
+
 ## Shared Core
 
 All hosts should do the same core work:
@@ -158,27 +172,35 @@ Do not rely on default Downloads collection in Cowork because Downloads is not
 mounted into its sandbox.
 
 One interaction quirk changes how the interview is delivered: narration
-written between tool calls may be summarized away from the owner. Write the
-findings in normal owner-visible assistant prose, then immediately invoke
-`AskUserQuestion` after that prose in the **same turn**. Do not end the turn,
-promise to ask next time, or wait for another owner message. Cowork renders the prose
-before the choice UI when they are emitted in that order. Do not search for or
-invent a special message tool that the host does not expose.
+written between tool calls may be summarized away from the owner. If Cowork
+exposes a verbatim owner-message tool such as `send_user_message`, use that
+exposed tool for the finding summary; otherwise use normal owner-visible
+assistant prose. Immediately invoke `AskUserQuestion` after the summary in the
+**same turn**. Do not end the turn, promise to ask next time, or wait for
+another owner message. Use only a message tool actually exposed in the current
+session; do not search for or invent one.
 
 Two environment quirks change HOW to gather evidence:
 
-- The installed plugin folder is usually NOT reachable from the shell
-  sandbox. To run a packaged executable helper, copy that script **and its
-  required companion `safe_output.py`** into the same session-workspace
-  directory with file tools, then run the copied helper. This applies to
+- The installed plugin folder is usually NOT reachable from the shell sandbox.
+  First check whether the active helper path itself is shell-readable. A
+  project-level skill installation inside the attached workspace may also be
+  considered at a host-recognized path such as
+  `<workspace>/.claude/skills/<skill-name>/scripts/`. An arbitrary scratch or
+  temporary copy is not a project-level mirror and cannot use this exception.
+  Execute a recognized mirror directly only when file-tool and shell views
+  match the active helper **and `safe_output.py`** by hash or byte-for-byte
+  comparison; matching size alone is not enough. Do not select a same-named
+  project copy by filename search or trust it without that comparison. When no
+  exact readable copy is verified, copy the requested
+  helper and `safe_output.py` together into the same session-workspace
+  directory with file tools, then run the copies. This applies to
   `project_inventory.py`, `audit_followup_guard.py`,
-  `ledger_triage_board.py`, and `secret_presence_scan.py`. Copying only the
-  executable helper is an incomplete installation and must fail with a clear
-  companion-file message. For a byte-stable shell handoff, use file tools to
-  write both files through Cowork's mounted outputs/session-files area, then
-  execute the mounted copies. Do not copy from a stale project mirror or
-  reconstruct a helper by pasting text; compare byte size or hash when the host
-  exposes both views.
+  `ledger_triage_board.py`, and `secret_presence_scan.py`. For a byte-stable
+  shell handoff, write both through Cowork's mounted outputs/session-files area.
+  Any mismatch, including a same-sized copy with different content, forbids
+  direct execution and requires this copy-both path. Never reconstruct a helper
+  by pasting text.
 - The shell sandbox works on a synced mirror of the user's folders, while
   the file tools read the real files. On a folder attached mid-session the
   mirror can lag or even truncate file contents. If shell output (`wc`,

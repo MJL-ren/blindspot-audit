@@ -1,6 +1,6 @@
 ---
 name: blindspot-audit
-description: "Project-level blind spot audit and BLINDSPOT_LEDGER.md triage. Use for ledger-triage or ledger cleanup after an audit: organize, close, process, decide, handle, or go through existing ledger findings/items/rows, including equivalent non-English requests. Also use for blindspot passes, unknown-unknown audits, hidden risks, missing decisions, stale assumptions, readiness/gap/health checks beyond the owner's own checklist, unfamiliar-domain planning, cross-project sanity checks, and post-implementation review. Works across software, games, writing, research, content, and business plans. Ledger triage is consent-gated: collect owner choices before applying status, awareness, archive, or decision-packet edits. Do not trigger for routine bug fixes, ordinary code review, formatting, or implementation-only requests unless the user also asks what they may be missing, risking, overlooking, or cleaning up in the blindspot ledger."
+description: "Project-level blind spot audits and consent-gated BLINDSPOT_LEDGER.md triage. Use when the owner asks to find unknown unknowns, overlooked risks, missing decisions, stale assumptions, or readiness and health gaps beyond their checklist; during unfamiliar-domain planning, cross-project sanity checks, or post-implementation review; and when they ask in any language to organize, close, process, decide, or go through existing ledger rows. For ledger cleanup, collect owner choices before changing awareness, status, decisions, or archives. Do not trigger for routine bug fixes, ordinary code review, formatting, or implementation-only work unless the owner also asks what may be missing or wants the blindspot ledger handled. Works across software, games, writing, research, content, and business projects."
 ---
 
 # Blindspot Audit
@@ -63,10 +63,14 @@ Load only what this run needs:
 - Project type and expected failure shapes: `references/archetypes.md`.
 - Broad project lenses: `references/lenses.md`.
 - Focus runs: `references/packs/index.md`, then one registered pack.
-- Host capability, structured choice, no-choice, Cowork/file-mirror, CLI, and
-  read-only behavior: `references/host-surfaces.md`.
+- Host capability and interaction behavior: read Shared Core, Capability
+  Detection, the current capability/host adapter, and OS notes from
+  `references/host-surfaces.md`; skip unrelated host adapters when section
+  reads are available.
 - Existing/new ledger location, diff runs, durability, schema adaptation, and
-  owner-response guard: `references/ledger-lifecycle.md`.
+  pre-interview schema guard: `references/ledger-lifecycle.md`.
+- After an explicit owner reply outside ledger triage: read
+  `references/owner-response-guard.md` before preparing or applying it.
 - Ledger maintenance only: `references/ledger-triage.md`.
 - HTML decision-board fallback only: `references/ledger-triage-board.md`. Do
   not load it when a structured choice tool is callable now.
@@ -80,11 +84,11 @@ the exact next reference within the first 100 lines.
 ## Packaged Helper Map
 
 `<skill>` means the directory containing the **active** `SKILL.md`, never a
-same-named copy found by searching the project. Claude Code replaces
-`${CLAUDE_SKILL_DIR}` with that directory for personal, project, and plugin
-skills; bind `<skill>` to the resolved value. Other hosts use the loaded skill
-path they expose. If a host exposes no active path and multiple copies exist,
-do not guess by filename.
+same-named copy found by searching the project. In Claude Code, bind `<skill>`
+directly from `${CLAUDE_SKILL_DIR}`; it is the host-resolved active skill path
+for personal, project, and plugin skills. Other hosts use the loaded skill path
+they expose. If a host exposes no active path and multiple copies exist, do not
+guess by filename.
 
 Command examples use `python`. If it is unavailable, substitute `py -3` on
 Windows or `python3` on POSIX, and keep that launcher consistent for the run.
@@ -174,10 +178,10 @@ the evidence only supports a candidate.
 7. Present self-contained findings before asking awareness. Use a structured
    choice tool only when it is callable now; otherwise use the exact no-choice
    fallback in `references/host-surfaces.md` and `references/report-template.md`.
-8. After an explicit owner reply, create a fresh owner-response snapshot of the
-   current ledger, preview the structured response before edits, apply only
-   that delta, satisfy required security-batch links, run final validation,
-   and clean up temporary files.
+8. After an explicit owner reply, read `references/owner-response-guard.md`.
+   Create its fresh snapshot, preview the structured response before edits,
+   apply only that delta, satisfy required security-batch links, run final
+   validation, and clean up temporary files.
 9. Before finishing a first run, classify every created ledger, routing file,
    and durable handoff as `tracked`, `owner-approved-local-only`,
    `untracked-pending`, or `not-versioned`. Never stage automatically. An
@@ -189,32 +193,21 @@ the evidence only supports a candidate.
 Use `scripts/audit_followup_guard.py` for every existing-ledger write outside
 `mode: ledger-triage`:
 
-1. Run `snapshot` before the first edit. Keep its printed
-   `.../ledger-snapshot.json` file path as the pre-delta snapshot.
-2. Append only the audit delta, run schema-only `validate`, then delete the
-   validated pre-delta snapshot with:
-   `cleanup --snapshot "<pre-delta-snapshot-file>" --discard`.
-   If validation is BLOCKED, fix the ledger and rerun it; use
-   `--allow-schema-change` only after explicit schema-migration approval. Do not
-   clean up until validation is VALID.
-3. After an explicit owner reply, run `snapshot` again. This fresh
-   owner-response snapshot contains the new `BA-` run and finding IDs.
-4. Map the reply to `blindspot-owner-response.v1` or grouped v2;
-   never keyword-parse natural language. Run `preview` before applying it.
-5. For one or more findings sharing one awareness-only reply,
-   `prepare-awareness` may create and preview the temporary v1 response, but it
-   still never edits the ledger.
-6. Apply only previewed rows, then run final `validate --data`. It must compare
-   the response with the actual mapped cells or archive destination.
-7. For two or more security findings deferred to one named batch, use
-   `scaffold-security-batch`, fill its human-judgment fields, add the ledger
-   backlink, and validate.
-8. Run `cleanup --confirm-applied` on an owner-response snapshot only after
-   successful final validation. Never use it for a schema-only snapshot;
-   `--discard` is the pre-delta path.
+1. Before the first edit, create the pre-delta `snapshot` described in
+   `references/ledger-lifecycle.md`.
+2. Append only the audit delta, run schema-only `validate`, then use
+   `cleanup --snapshot "<pre-delta-snapshot-file>" --discard`. If validation is
+   BLOCKED, correct the ledger and rerun it; permit schema migration only after
+   explicit owner approval.
+3. Present the findings and collect an explicit owner reply.
+4. Only then load `references/owner-response-guard.md`, create its fresh
+   owner-response snapshot, preview the mapped response, apply only previewed
+   rows, run final validation, and use `cleanup --confirm-applied`.
 
-Detailed commands, custom/localized schema mapping, dirty-worktree protection,
-and archive rules live in `references/ledger-lifecycle.md`.
+Dirty-worktree protection, schema preservation, and pre-interview commands live
+in `references/ledger-lifecycle.md`. Response schemas, localized application
+maps, security-batch scaffolding, final validation, and archive checks live in
+`references/owner-response-guard.md`.
 
 ## Host And Consent Policy
 

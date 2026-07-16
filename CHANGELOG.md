@@ -2,6 +2,27 @@
 
 All notable changes to the blindspot-audit skill and this repository.
 
+## [0.7.2] - 2026-07-16
+
+### Added
+
+- Added `references/owner-response-guard.md` as a delayed-load contract for
+  post-interview response mapping, preview, localized application maps,
+  security-batch scaffolding, final validation, and cleanup.
+- Added explicit progressive-loading guidance for host adapters, including
+  conditional Cowork `send_user_message` use and byte-verified direct execution
+  from a recognized project-level skill mirror, with fail-closed copy-both
+  fallback for stale or same-sized-but-different mirrors.
+
+### Changed
+
+- Slimmed the entrypoint guard and frontmatter description while preserving
+  normal, focus, ledger-triage, consent, and natural-language trigger behavior.
+- Made ledger-triage question batching deterministic when owner-detail rows
+  exceed the active question budget.
+- Clarified that cleanup intentionally retains `.blindspot-tmp/.gitignore` as a
+  safety marker when no run directories remain.
+
 ## [0.7.1] - 2026-07-14
 
 ### Added
